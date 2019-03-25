@@ -1,0 +1,5 @@
+change visudo default text editor
+
+sudo update-alternatives --config editor
+
+http://askubuntu.com/questions/539243/how-to-change-visudo-editor-from-nano-to-vim

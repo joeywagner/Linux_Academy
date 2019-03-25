@@ -1,0 +1,281 @@
+##################################################
+Mastering The Linux Command Line
+##################################################
+##################################################
+Command Line Basics
+##################################################
+##################################################
+A Look At Text Editors
+##################################################
+vi
+nano
+
+##################################################
+Copying, Moving, & Removing Files & Directories
+##################################################
+tail
+head
+
+rmdir #only works if the dir is empty
+
+##################################################
+Command Line Keyboard Shortcuts
+##################################################
+Hello my name is hello world
+ctrl+a #will take you to the beginning of a line
+ctrl+e #will move you to the end of a line
+ctrl+k #will delete everything after your cursor
+ctrl+l #will clear everything except the line that you are on
+ctrl+u #will delete everything to the left of your cursor
+ctrl+w #deletes on word at a time going to the left
+ctrl+t #switches characters
+ctrl+f #remove one character forward
+ctrl+b #remove back one character at a time
+ctrl+h #will remove back one character
+ctrl+p #will take you to the last command executed
+
+
+##################################################
+Aliases
+##################################################
+cd /var/log
+tail -n 20 messages
+head messages
+
+alias showlog="your commands"
+
+
+##################################################
+Bash Shell Configuration File & Shell Variables
+##################################################
+vim .bashrc #put your alias here to make it permanent
+
+
+export MYNAME="joseph"
+echo $MYNAME
+
+vi .bashrc
+export MYNAME="joseph"
+:wq
+
+
+##################################################
+Setting & Unsetting Environment Variables
+##################################################
+set an environment variable with export
+
+set will show all environment variables
+
+mkdir -p #will create nested dirs down the path is they dont exist
+
+unset #to unset an environment variable
+
+vi .bashrc #put your export variables here to set them every time you login
+
+cd profile.d
+vim custome.sh #put you exports here for the env variables to be set for all users that login
+
+
+##################################################
+Customizing The Bash Prompt
+##################################################
+set | grep PS
+export PS1='\t @ \h Jobs: {\j} '
+
+man bash #will show you all the available options
+
+
+##################################################
+Command Line History
+##################################################
+cat .bash_history
+
+ctrl+r will let you search
+
+history -c will clear your history
+
+##################################################
+Creating A Simple Bash Script To Automate Commands
+##################################################
+vim myscript
+#!/bin/bash
+
+
+##################################################
+Finding Files In Linux
+##################################################
+##################################################
+Which and Whereis
+##################################################
+these commands are used to find information about other commands
+
+
+##################################################
+Finding Files With Locate
+##################################################
+some ditros do not come with locate
+
+locate is a database, thats why its fast searching
+
+updatedb #this will update the locate db
+
+
+##################################################
+The Powerful Find Command
+##################################################
+find . -name= 'cron*' #searching the dir that you are in for anything that starts with cron
+
+find . -type f  #find files, thats what the f means
+
+find . -type d #this will find directories
+
+find . -perm 777 #find files with the 777 permissions
+
+find . -perm 777 -exec chmod 555 {}\;
+
+find / -mtime +1 #find all files that were built within the last day
+
+find / -a +1 #find the last accessed time
+
+find /- -group <group_name>
+
+find / -size 512c #find a file by 512 bytes
+
+find . -name 'file*' -exec rm {} \;
+
+##################################################
+Use Streams, Pipes, Redirects, Grep and Cut!
+##################################################
+##################################################
+wc, split, cat, and diff commands
+##################################################
+cat file1 file2
+
+split -l <filename>
+
+diff <file1> <file2>
+
+
+##################################################
+Streams (stdin, stdout, stderr) and Redirects
+##################################################
+cat * #to get the out put from all files
+cat * > newfile #all the content from the files will get redirected into a new file
+
+>> is append
+> is over write
+
+#standard error
+ls hghf 2> <file_name> #to get the standard error
+
+/dev/null  #this is nothing
+
+#redirect stdout and stderr
+cat file filefile > stdoutfile 2> stderrfile
+
+
+cat file filefile > stdoutfile 2>&1
+
+set -o noclobber #this will stop you from overwriting files if they already exist
+
+set +o noclobber #this
+
+some commands have have a noclobber attribute too
+
+##################################################
+Pipes
+##################################################
+
+
+
+##################################################
+grep, egrep, and fgrep
+##################################################
+global regular expressions print
+grep is a command-line utility for searching plain-text data sets for lines matching a regular expression.
+Its name comes from the ed command g/re/p (globally search a regular expression and print).
+
+^ #starts with
+$ #ends with
+
+grep -f filewithpattern searchlocation #you put the pattern you want to search for and put it in the first file
+
+grep -lr <patternt> /searchdirectory #this is for file names, the -l the -r is for recursive
+
+grep ^="" #this ids starts with equals
+
+
+
+#extended global regular expressions print
+egrep 'hello.*world' filename #search for all of the lines that contain hello and world
+
+egrep 'hello:world' filename #search for only lines that contain hello or world
+
+-v #with is a inverse search, lines that do not contain hello or world
+
+egrep 'hello|world' | grep -v jeff #lines that do not contain the pattern jeff
+
+
+#fixed global regular expressions print
+fgrep hello$ filename #this will not interpret, this will search for exactly hello$, the special character is ignored.
+
+##################################################
+Cut Command
+##################################################
+cut -f1 -d: filename #this will cut the first field and use the : as the delineator
+
+cut -f7 -d: filename
+
+
+##################################################
+sed Stream Editor
+##################################################
+sed 's/stringtofind/stringtoreplace' filetoread #the s means substitute
+
+sed 's/stringtofind/stringtoreplace/w filetowriteto' filetoread
+
+sed '/stringtomatch/w filetowriteto' filetoread
+
+sed '0,/firstocurancofstring/s/stringtosubstitue/newstring' filetoread
+
+sed 's/<[^>]*>//' filetoread #anything that begins with < and isnt followed bay a >, has anything before > and it replaces it with nothing
+
+##################################################
+tee command
+##################################################
+The tee utility copies standard input to standard output, making a copy in zero or more files.  The output is unbuffered.
+
+command | tee filename.txt
+
+##################################################
+Advanced Commands And Examples
+##################################################
+##################################################
+Using Test/Tests On The Linux Command Line
+##################################################
+The test utility evaluates the expression and, if it evaluates to true, returns a zero (true) exit status; otherwise it returns 1 (false).
+If there is no expression, test also returns 1 (false).
+
+test -f filename && echo "true" #it will check if the file is a file and it will print out true
+
+
+
+##################################################
+Lab: Check For Text On A Web Site From The Linux Command Line Using curl & Test
+##################################################
+curl -s google.com
+
+
+
+##################################################
+Writing A For Loop On The Command Line
+##################################################
+for name in `ls`
+do
+echo $name
+done;
+
+for line in 'cat file'
+do
+echo $line
+done;

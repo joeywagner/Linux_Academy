@@ -1,0 +1,274 @@
+##################################################
+Introduction To Linux With Ubuntu 14 Desktop
+##################################################
+##################################################
+A Linux Overview
+##################################################
+##################################################
+Syllabus
+##################################################
+##################################################
+Brief History of Linux
+##################################################
+
+From: torvalds@klaava.Helsinki.FI (Linus Benedict Torvalds)
+Newsgroups: comp.os.minix
+Subject: What would you like to see most in minix?
+Summary: small poll for my new operating system
+Message-ID: <1991Aug25.205708.9541@klaava.Helsinki.FI>
+Date: 25 Aug 91 20:57:08 GMT
+Organization: University of Helsinki
+
+Hello everybody out there using minix –
+
+I’m doing a (free) operating system (just a hobby, won’t be big and
+professional like gnu) for 386(486) AT clones. This has been brewing
+since april, and is starting to get ready. I’d like any feedback on
+things people like/dislike in minix, as my OS resembles it somewhat
+(same physical layout of the file-system (due to practical reasons)
+among other things).
+
+I’ve currently ported bash(1.08) and gcc(1.40), and things seem to work.
+This implies that I’ll get something practical within a few months, and
+I’d like to know what features most people would want. Any suggestions
+are welcome, but I won’t promise I’ll implement them
+
+Linus (torvalds@kruuna.helsinki.fi)
+
+PS. Yes – it’s free of any minix code, and it has a multi-threaded fs.
+It is NOT protable (uses 386 task switching etc), and it probably never
+will support anything other than AT-harddisks, as that’s all I have :-(.
+
+
+
+Licensing
+GNU GPL copy left licensing was adopted
+https://en.wikipedia.org/wiki/GNU_General_Public_License
+
+The GNU General Public License (GNU GPL or GPL) is a widely used free software license, which guarantees end users the freedom to run, study, share and modify the software.[6]
+The license was originally written by Richard Stallman of the Free Software Foundation (FSF) for the GNU Project, and grants the recipients of a computer program the rights of the Free Software Definition.[7]
+The GPL is a copyleft license, which means that derivative work can only be distributed under the same license terms.
+This is in distinction to permissive free software licenses, of which the BSD licenses and the MIT License are widely used examples.
+GPL was the first copyleft license for general use.
+Historically, the GPL license family has been one of the most popular software licenses in the free and open-source software domain.[6][8][9][10][11][12][13]
+Prominent free software programs licensed under the GPL include the Linux kernel and the GNU Compiler Collection (GCC).
+David A. Wheeler argues that the copyleft provided by the GPL was crucial to the success of Linux-based systems, giving the programmers who contributed to the kernel the assurance that their work would benefit the whole world and remain free, rather than being exploited by software companies that would not have to give anything back to the community.[14]
+
+
+Milestones
+1991 1st linux kernel was released
+
+
+##################################################
+Linux Distributions
+##################################################
+Based on 3
+Debian
+RPM
+BSD
+
+packages at their most basic level are services libraries or applications compiled into a formate that can be easily distributed.
+
+distrowatch.com reports more than 201 distributions
+
+##################################################
+Linux Server vs. Desktop
+##################################################
+
+
+##################################################
+Installing Linux
+##################################################
+##################################################
+Ubuntu 14.10 Installation on VirtualBox
+##################################################
+virtualbox
+new
+name it, pick the type and version
+set memory
+create virtual hard disk, change it to a vmdk, dynamically allocate, then set the max size for the drive
+
+click setting, advanced, enable the shared clipboard and drag and drop
+
+system, unceck booting from floppy, processor > give it 2 cpu, enable PAE, acceleration, enable VT
+
+display, give it 64mb, enable 3d acceleration
+
+storage, associate you linux distribution ISO to the IDE, check the live CD option
+
+networking, bridge the adapter,
+
+share, share your desktop and auto mount
+
+#once the live CD boots click install ubuntu
+
+select english > click download updates > continue > accept the formatting for the disk > time zone > leave the keyboard layout > create a local user >
+
+#install guest tools from ubuntu repo
+sudo apt-get update
+sudo apt-get upgrade
+reboot
+sudo apt-get install virtualbox-guest-dkms
+
+sudo apt-get install openssh-server
+
+reboot
+
+##################################################
+Ubuntu 14.10 Installation on VMWare ESXi
+##################################################
+
+
+##################################################
+Top Things To Do After Installing
+##################################################
+sudo apt-get remove apport
+
+sudo apt-get install flashplugin-installer
+
+sudo apt-get install chromium-browser
+
+sudo apt-get install synaptic
+
+sudo apt-cache restricted-extras
+
+sudo apt-get install vlc
+
+#test your system
+system test
+
+##################################################
+Desktop Customization
+##################################################
+its called unity because its an attempt to merry a single user interface across multiple device
+
+##################################################
+Customizing the Unity Desktop
+##################################################
+sudo apt-get install unity-tweak-tool
+
+##################################################
+Gnome Desktop
+##################################################
+apt-cache search gnome-session
+
+sudo apt install ubuntu-gnome-desktop
+
+#still using the underlying metacity display manager
+
+#logout then log back in
+
+##################################################
+Customizing the Gnome Desktop
+##################################################
+sudo apt-get install gnome-tweak-tool
+
+##################################################
+KDE4 Desktop
+##################################################
+https://www.linuxbabe.com/ubuntu/install-kde-plasma-5-7-ubuntu-16-04-ubuntu-16-10
+
+sudo apt update
+
+sudo apt install kubuntu-desktop
+
+##################################################
+Customizing the KDE4 Desktop
+##################################################
+
+
+##################################################
+System Management
+##################################################
+##################################################
+Updates and Repositories
+##################################################
+software that is restricted by copyright or legal issues is enabled by enabling the 3rd party or multiverse repos
+
+cd /etc/apt
+vim sources.list
+
+#personal package archives
+these are personally maintained
+
+sudo add-apt-repository ppa:webud8repo/java
+
+#a lot of personal package archives are maintained here:
+http://ppa.launchpad.net
+
+##################################################
+Basic User Management
+##################################################
+you can add users in the user manager
+
+you can also add users with addusr in the command line, and use passwd to change the users password
+
+##################################################
+Understanding Permissions
+##################################################
+user group other user:group
+drwx rwx    rwx  linux:linux   the other group is considered everybody else
+
+
+chmod +w dir  #this will not do anything because you are the owner and you already have write privileges
+chmod -w dir #this will do something, it will remove write privileges for you
+
+u = user or owner
+g = group
+o = other
+a = all
+
+
+##################################################
+File and Directory Management
+##################################################
+using numbers for permissions
+4 = read
+2 = write
+1 = execute
+
+
+##################################################
+Windows, Office Applications and Gaming
+##################################################
+##################################################
+Run Windows Applications in Linux
+##################################################
+#remote desktop, linux to windows
+rdesktop
+apt-get install rdesktop
+
+#to connect
+rdesktop -g 1024x768 <windows server ip>
+
+
+#to install windows applications on linux WINE = wine is not a emulator
+#no matter how good wine is it will never be able to implement the entire windows dependency stack
+sudo apt-add-repository ppa:ubuntu-wine/ppa
+
+sudo apt-get update
+sudo apt-cache search wine
+sudo apt-get install wine1.7 winetricks
+
+#note pad was the first application that was ported for wine
+everything that we do will show up as a menu entry
+wine configuration will help you install windows applications
+
+#wine tricks, this will ask us what to do
+
+#how to install via the cli
+wine <exectable>
+
+
+##################################################
+Office Applications
+##################################################
+
+
+
+
+##################################################
+Gaming On Linux
+##################################################
+#play on linux is how to run a windows game
+sudo apt-add-repostiory ppa:noobslab/apps

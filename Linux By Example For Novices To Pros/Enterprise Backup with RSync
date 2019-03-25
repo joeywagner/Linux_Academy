@@ -1,0 +1,97 @@
+##################################################
+Enterprise Backup with RSync
+##################################################
+##################################################
+Enterprise Backup with RSync
+##################################################
+#we can see the rsync is installed
+which rsync
+
+#how to backup dirs and files locally
+mkdir bkup1
+mkdir bkup2
+
+#create a bunch of empty files
+touch /bkup1/myfiles{1..75}
+
+rsync -r bkup1/ bkup2 #to get just the contents you need to add the /, if you dont you will get the dir/and the files into bkup2
+
+#create a linked file
+
+ln -s bkup1/myfile75.txt bkup1/myfile100.txt
+
+#what does that do from a rsync perspective
+rsync -r bkup1/ bkup2
+skipping non-regular file "myfile100.txt"
+
+#the -r assumes that all files are regular files, it also doesnt do special attribute copies
+#to fix this we need to add the -a flag, -a says make a complete duplicate
+rsync -a bkup1/ bkup2
+
+#we can run a test run of out backups
+rsync -anv bkup1/ bkup2 #-a, rsync everything, n means dry run, v means verbose
+sending incremental file list
+
+sent 1,378 bytes  received 12 bytes  2,780.00 bytes/sec
+total size is 18  speedup is 0.01 (DRY RUN)
+
+
+#how would be backup between different servers
+ssh-keygen
+ll .ssh
+#we can see that we have a public and a private key
+ssh-copy-id <user_name>@<other_server_ip>
+#once we authenticate it will copy our public key to match against our private key
+#we can verify
+ssh <other_server_ip> #we should get no server password prompt
+
+#now that the keys are copied over we can do a rsync push
+#create  backup dir on the secondary server
+mkdir bkup1
+
+#dry run of a backup on a secondary server
+rsync -anv bkup1/ <other_server_ip>:/home/<user_home>/<dir>
+
+#if the dr run looks good
+rsync -a bkup1/ <other_server_ip>:/home/<user_home>/<dir>
+
+
+
+#the most common way to handle with performing backups are done with cron
+vim mybackup.sh
+#!/bin/bash
+/usr/bin/rsync -a /home/<user>/bkup1 <other_server_ip>:/home/<user_home>/<dir>
+chmod 755 mybackup.sh
+
+#createa the actual cron job
+crontab -e
+55  14  * * * /home/<user>/mybackup.sh > /home/usr/mybackup.log 2>&1
+:wq
+
+
+
+##################################################
+Rsync: Advanced Examples
+##################################################
+rsync -a #just copies the contents from dir1 to dir2 but it doesnt remove things that we want deleted.
+
+#if we run a --delete
+rsync -av --delete dir1/ dir2 #this will keep the source files in sync with the destination files
+
+#to exclude files
+rsync -av --exclude='filename' dir1/ dir2
+
+#to include only certain files, and exclude everything else
+rsync -av --include='filename' --exclude='*' dir1/ dir2
+
+#exclude files of a size or >
+--max-size='200m'
+
+
+#for full system backups we want to create a exclusion list
+vim exclude.txt
+#add the files you want to exclude
+:wq
+
+
+rsync -av --exclude-from='exclude.txt' dir1/ dir2

@@ -1,0 +1,2191 @@
+##################################################
+Certified Chef Developer Basic Chef Fluency Badge
+##################################################
+##################################################
+Introduction
+##################################################
+##################################################
+Lecture: Course and Chef Certification Overview
+##################################################
+Certified Chef Developer
+This course is focused around the Chef Fluency Badge.
+This course is part of an overall learning path to include all three courses for the Chef Certified Developer Certification.
+This course, and learning Chef through Linux Academy, does not require any prior Ruby development experience. We will teach you everything you need to know!
+
+
+§ The exam is not issued or proctored by Linux Academy.
+§ To register for the exam go here: https://training.chef.io/basic-chef-fluency-
+badge
+§ The exam costs $75.
+
+##################################################
+Cert info
+##################################################
+Confirmation Code
+9B0-762
+
+Candidate Id
+5889768639
+
+Transaction Date
+2/16/2018
+
+What to bring:
+
+You will need to use 9B0-762 as the confirmation code to begin your exam.
+Cancellation and Refund Policy:
+
+If you should need to cancel or reschedule your exam, please use the cancellation options found at https://www.examslocal.com/Candidate or email us at examsupport@psionline.com or call +1-888-504-9178, +1-702-904-7342 for additional support.
+To receive a full refund you may cancel or reschedule the examination 24 hours prior to the scheduled time.
+If you do not cancel the exam within 24 hours of your scheduled appointment, you will be charged the full original fee and you will not be issued a refund. In addition your appointment will be marked as a "no show".
+Exams must be canceled or rescheduled 24 hours before the scheduled exam time. Failing to cancel or reschedule within this time period, will result in forfeiting exam fees, exam eCredits and/or your exam eligibility will be marked as redeemed.
+Additional Exam Program Information:
+
+Please be aware this exam is remotely proctored and you must clear your workspace and close all applications and browser tabs besides the Google Chrome tab with your exam launch page. Please refer to the compatibility tool on Examslocal for ensure compatibility prior to your exam date and time.
+
+
+##################################################
+Lecture: Setting Up the Lab Environment
+##################################################
+#use the default centos7 instance in the linux academy lab
+
+#ssh into the node
+
+#change the user passwd
+
+#su as root
+
+#change the root passwd
+
+#add the user user to the wheel group
+usermod -g wheel user
+
+#download the chef-dk
+#because we are using centos use the redhat download
+http://downloads.chef.io/chef-dk/
+
+wget <url>
+
+sudo rpm -ivh chefdk*.rpm
+
+#to test that chef has installed correctly
+chef-client --local-mode
+
+
+##################################################
+Resources
+##################################################
+##################################################
+Lecture: Understanding Chef and Chef Convergence
+##################################################
+What is Chef?
+Chef put simply, is a configuration management and deployment tool.
+Chef at its core, is designed for configuration management of nodes within an environment.
+Chef has evolved over the years to be a very robust and complete Continuous Integration, Continuous Deployment, and infrastructure compliance tool.
+Chef is not just for on-premises environments, but also cloud-based environments like Amazon Web Services and Azure.
+
+
+Anatomy of a Chef "Convergence"
+Pre-convergence - Phase before a node is configured
+• Lint tests occur in this phase - Lint tests run tools to analyze source code to identify stylistic problems, foodcritic is a tool for this when using chef. Convergence - Occurs when Chef runs on the node
+• Tests the defined resources to ensure they are in the desired state
+• If they are not, then the resources are put in the desired state (repaired)
+• "Providers" are what do the work to enforce the desired configuration
+• Chef can be run over and over again without changing configurations if configurations are already in place (Idempotency)
+Post-convergence – Occurs after the Chef convergence
+• Run tests that verifies a node is in the desired state of configuration also known as Unit Testing
+
+##################################################
+Lecture: Common Chef Resources
+##################################################
+Resources
+A resource is a statement of desired configuration for a given item.
+A resource describes the desired state and steps for achieving the desired configuration.
+Resources are managed within "recipes" (which will be covered in later videos) and are generally grouped together within cookbooks for management-specific software and tasks.
+A resource statement defines the desired state of the configuration, a resource maps to a "provider" which defines the steps to achieve that desired state of configuration.
+
+Resources
+Chef is idempotent, which means, during a Chef run (aka convergence) Chef determines if the desired configuration within a resource is set; if it is set, Chef does not run anything against the node. If the desired configuration does not match then Chef enforces the desired state configuration.
+A resource has four components and is made up of a Ruby block of code o Resource Type
+o Resource Name
+o Resource Properties
+o Actions to be applied to the resource
+
+
+
+Package Resource Type
+#Ruby block of code
+package 'httpd' do
+action :install
+end
+
+Note: In the absent of action, the default is :install package 'httpd' do
+end
+
+What is happening here?
+The httpd package is being installed ONLY if it is not already installed.
+Why httpd over Nginx?
+
+
+
+Package Actions
+:install – install a package (the default if no action is defined)
+:nothing – This action does nothing UNTIL it is notified by another resource to perform an action
+:purge – Removes the configuration files as well as the package (Only for Debian) :reconfig – Reconfigures a package
+:remove – Removes a package (also removes configuration files)
+:upgrade – Install a package, if it is already installed, ensure it is at the latest version.
+
+Service Resource Type
+service 'httpd' do
+action [:enable, :start]
+End
+
+The service httpd is enabled so it starts at boot time and then started so that it is currently running.
+
+Service Resource Type
+service 'apache' do service_name 'httpd'
+action [: enable, :start]
+End
+
+What happened here?
+
+Service Actions
+Service actions are available as a property for the service resource type.
+:disable – Disable a service so it does not start at startup :enable – Enable a service to start at boot time
+:nothing – Does nothing to the service
+:reload – Reloads the service configuration
+:start – Starts the service and keeps it running until stopped or disabled :restart – Restart a service
+:stop – Stop a service
+
+Service resource type: Notifies property
+What happens when a change is made that requires a restart to a service?
+The notifies property allows a resource to "notify" another resource when the state changes.
+Example:
+What happens when a change is made that requires a restart to a service?
+file '/etc/httpd/vhost.conf' do
+  content 'fake vhost file'
+  notifies :restart, 'service[httpd]'
+end
+
+NOT_IF & ONLY_IF Guards
+NOT_IF - prevents a resource from executing when a condition returns true.
+execute ‘not-if-example’ do
+  command ‘/usr/bin/echo "10.0.2.1 webserver01" >> /etc/hosts’
+  not_if ‘test -z $(grep "10.0.2.1 webserver01" /etc/hosts)’
+end
+
+ONLY_IF -Allow a resource to execute only if the condition returns true.
+execute ‘only-if-example’ do
+  command ‘/usr/bin/echo "10.0.2.1 webserver01" >> /etc/hosts’
+  only_if ‘test -z $(grep "10.0.2.1 webserver01" /etc/hosts)’
+end
+
+Installing Multiple Packages At One Time
+%w{httpd vim tree emacs}.each do |pkg| package pkg do
+  action :upgrade
+  end
+end
+
+Installing Multiple Packages At One Time
+package ‘httpd’ do
+  action :install
+end
+
+package ‘vim’ do
+  action :install
+end
+
+package ‘emacs’ – No “do or end is required”
+
+
+
+Installing Multiple Packages At One Time
+['mysql-server','mysql-common','mysql-client'].each do |pkg|
+  package pkg do
+    action :install
+    end
+end
+
+
+
+##################################################
+Lecture: Default Resource Actions
+##################################################
+#We are going to focus on the package, the service and the file resource type
+
+Default Resource Actions
+package ‘httpd’
+In the absence of a defined “action” property the default action for the package resource type is “:install”.
+
+Default Resource Actions
+service ‘httpd’
+In the absence of a defined “action” property the default action for the service resource type is “:nothing”.
+
+Default Resource Actions
+file ‘/etc/motd’
+In the absence of a defined “action” property the default action for the file resource type is “:create”.
+
+
+
+
+##################################################
+Lecture: Applying Chef Resources Hands On
+##################################################
+#ssh into cloud server
+
+#Create a basic ruby file
+vim learn.rb
+package 'apache' do
+end
+
+ruby -c learn.rb  #this test the ruby syntax is correct and does not test if the chef syntax is correct
+
+foodcritic learn.rb  #this test if our chef syntax is correct
+
+chef-client --local-mode learn.rb #this will run the resource locally.  chef-client ids the tool that runs the convergence
+
+
+vim learn.rb
+package 'apache' do
+  package_name 'httpd'
+end
+
+#check our ruby code
+ruby -c learn.rb && foodcritic learn.rb
+
+#chef convergence
+chef-client --local-mode learn.rb
+
+#validate the service
+systemctl status httpd
+
+#add the service resource
+vim learn.rb
+service 'httpd' do
+end
+
+chef-client --local-mode learn.rb
+
+#validate the service
+systemctl status httpd
+
+#we can see that the service has not started, thats because the default action of the service resource is do nothing
+
+
+#add a action to the service resource
+vim learn.rb
+service 'httpd' do
+  action [:enable, :start]
+end
+
+#test the ruby code and chef
+ruby -c learn.rb && foodcritic learn.rb
+
+#converge the code
+chef-client --local-mode learn.rb
+
+#validate the service
+systemctl status httpd
+
+#our resources are executed in the order in which they are defined within the recipe
+#resources are executed in the order that they are declared in the recipe and cookbook
+
+#lets create a hello world landing page
+vim learn.rb
+
+
+#we can manually edit the file but chef will run a checksum against it to make sure that the file contains what its supposed to
+
+
+##################################################
+Lecture: Working with not_if and only_if Guards
+##################################################
+vim learn.rb
+
+file '/etc/motd' do
+  content 'welcome to my server!'
+end
+
+#run the ruby and chef test
+ruby -c learn.rb && foodcritic learn.rb
+
+#converge
+chef-client --local-mode learn.rb
+
+#the execute resource type is going to allow us to execute a command every time a chef convergence is run, execute is into idempotency
+#the only_if and not_if guard are to add idempotency
+
+vim learn.rb
+
+execute 'command-test' do
+  command 'echo blah >> /etc/motd'
+  only_if 'test -r /etc/motd'     #test -r will test if the file exists and is readable
+end
+
+#test ruby and chef
+ruby -c learn.rb && foodcritic learn.rb
+
+#run chef convergence
+chef-client --local-mode learn.rb
+
+#if we converge it again the motd file will get over written because its under chef control and doesnt match what it supposed to be, then it appended the blah at the end so blah will only be there once
+
+#the not_if guard prevents the resource type from executing
+execute 'command-test' do
+  command 'echo blah >> /etc/motd'
+  not_if 'test -r /etc/motd'     #the not_if will not execute if the condition is true
+end
+
+
+
+#we can call ruby methods and classes with chef
+
+only_if { File.exists?('/etc/motd') }
+
+
+#the shortcut for --localmod is -z
+chef-client --local-mode <file.rb>
+#to this
+chef-client -z <file.rb>
+
+
+##################################################
+Lecture: Extending Chef with Custom Resources
+##################################################
+Understanding Chef Extensibility: Custom Resources
+Chef is designed to be extended and grow with the complexity and requirements of any environment.
+Chef is also designed in a way that custom resources can be used to reduce repetitive coding and manual errors that are accompanied with such coding.
+
+Understanding Chef Extensibility: Custom Resources
+Very simply, a custom resource:
+• Is a simple extension of Chef
+• Is implemented as part of a cookbook (in the /resources directory)
+• Follows easy, repeatable syntax patterns
+• Effectively leverages resources that are built into Chef
+• Is reusable in the same way as resources that are built into Chef
+• Can be used to take complex resource declarations and reduce the properties required for configuration that allows less experienced admins to be able to use those custom resources rather than more complex resource policies
+
+
+Understanding Chef Extensibility: Libraries
+Libraries in Chef are used to create reusable sets of code that can be placed or used within a recipe in a clean way.
+
+Example:
+execute 'not-if-example' do
+  command '/usr/bin/echo "10.0.2.1 webserver01" >> /etc/hosts'
+  not_if 'test -z $(grep "10.0.2.1 webserver01" /etc/hosts)'
+end
+
+
+Understanding Chef Extensibility: Libraries
+Take the "test -z $(grep "10.0.2.1 webserver01" /etc/hosts)'" and add it to a library as a Ruby function
+
+(We will avoid the library code at the moment until knowledge on writing libraries is required)
+
+The execute resource type then looks liked this:
+
+execute 'not-if-example' do
+  command '/usr/bin/echo "10.0.2.1 webserver01" >> /etc/hosts'
+  not_if { has_host_entry? }   #the ? at the end of ruby code means that the function is going to return a true or false
+end
+
+
+##################################################
+Recipes and Cookbooks
+##################################################
+##################################################
+Lecture: Understanding Chef Recipes and Run Lists
+##################################################
+Recipes
+We've been writing our resource blocks within a recipe.
+Recipes are written using Ruby. There is no "custom" language DSL to use Chef. Not a bunch
+of Ruby knowledge is required, just the basics, of which we will learn in the course.
+Recipes are a collection of resources, defined and written using patterns. Helper code, such as loops and if statements, can be written around those resources to help customize the configurations of specific nodes. For example, if or case statements around package names.
+
+
+Chef defines a recipe as the most fundamental configuration element within the organization.
+A recipe:
+• Is created using Ruby
+• Is a collection of resources defined using patterns; helper code is added using Ruby
+• Must define everything that is required to configure part of a system
+• Must be stored in a cookbook
+• May be included in a recipe (include_recipe)
+• May use the results of a search query and read the contents of a data bag
+• May have a dependency on one (or more) recipes
+• May tag a node to facilitate the creation of arbitrary groupings
+• Must be added to a run-list before it can be used by the chef-client
+• Is always executed in the same order as listed in a run-list
+• If included multiple times in a run-list, will only be executed once
+
+Chef Resource Ordering Execution
+Resources are executed in the order that they are listed/created within a recipe, starting with the first recipe in a run-list.
+There are "directives" that can change the order in which resources are executed
+• notifies: A notification property that allows a resource to notify another resource to take action when its state changes
+• subscribes: A notification property that allows a resource to listen to another resource and then take action if the state of the resource being listened to changes.
+
+Chef Resource Ordering Execution
+service "httpd" do
+end
+
+cookbook_file "/etc/httpd/conf/httpd.conf" do
+  owner 'root'
+  group 'root'
+  mode '0644'
+  source 'httpd.conf'
+  notifies :restart, "service[httpd]"
+end
+
+Chef Resource Ordering Execution
+service "httpd" do
+  subscribes :reload, "service[httpd]"
+end
+
+cookbook_file "/etc/httpd/conf/httpd.conf" do
+  owner 'root'
+  group 'root'
+  mode '0644'
+  source 'httpd.conf'
+end
+
+
+
+Chef Resource Ordering Execution
+service "httpd" do
+  action [:enable, start]
+end
+
+cookbook_file "/etc/httpd/conf/httpd.conf" do
+  owner 'root'
+  group 'root'
+  mode '0644'
+  source 'httpd.conf'
+  notifies :restart, "service[httpd]"
+end
+
+
+
+A Brief Look at run_list
+A run-list is a list of cookbooks/recipes that are to be executed on the given node
+
+Example:
+run_list ”recipe[base]","recipe[apache]","recipe[selinux_policy]"
+
+chef-client will execute the base recipe followed by apache, selinux_policy.
+run_list ”recipe[base::recipe]","recipe[apache::recipe]", "recipe[selinux_policy::recipe]","recipe[base::recipe"
+
+Note: If for any reason a recipe is assigned to a node more than once (via roles/environments/etc.) chef-client will only execute it one time.
+
+
+include_recipe
+A recipe can include a recipe from an external cookbook
+For example, including the mod_php recipe in an already existing recipe
+include_recipe 'cookbook_name::recipe_name'
+
+Note:
+include_recipe 'cookbook_name' will, by default, translate to
+'cookbook_name::default' the default recipe
+
+
+include_recipe
+A recipe can include a recipe from an external cookbook
+
+For example, including the mod_php recipe in an already-existing recipe
+
+include_recipe 'cookbook_name::recipe_name'
+
+Note:
+include_recipe 'cookbook_name' will, by default, translate to
+'cookbook_name::default' the default recipe
+
+
+Important: If a recipe is being included from an external cookbook, then it's important to create a dependency on that cookbook in the metadata.rb file of the existing cookbook. We'll cover this in up coming lessons.
+
+
+
+##################################################
+Lecture: Understanding Chef Cookbooks
+##################################################
+Cookbooks
+A cookbook is the fundamental unit of configuration and policy distribution when using Chef.
+Cookbooks contain the following information:
+• Recipes
+• Attribute files
+• File distributions
+• Templates
+• Any extensions to Chef such as libraries and custom resources
+
+A Chef cookbook defines a scenario. For example, our Apache cookbook. The cookbook defines everything needed to install and configure Apache.
+Modules and additional Apache configurations required for our application can be broken out into individual recipes within the cookbook.
+
+
+Cookbooks: README.md
+The cookbook readme file, located inside of cookbooks/cookbookname/README.rb is a description of the cookbook's features that is written using Markdown.
+
+Markdown is text-to-HTML conversion tool for making it easy to write structurally valid HTML.
+
+Cookbooks: metadata.rb
+Cookbook metadata is located in cookbooks/cookbookname/metadata.rb. Each cookbook requires certain metadata information.
+
+Common Metadata Settings for Chef Fluency Badge
+• chef_version: Allows you to specify which version of Chef the cookbook requires to operate correctly
+• depends: Allows you to specify if there are any other cookbook dependencies, including the same cookbook but a different version (think back to include_recipe)
+• version: Specifies the version of the cookbook. Chef server stores the versions differently, allowing for version control of cookbooks within Chef server.
+
+
+Cookbooks: metadata.rb
+name 'mycookbook'
+maintainer 'The Authors'
+maintainer_email 'you@example.com'
+license 'all_rights'
+description 'Installs/Configures mycookbook' long_description 'Installs/Configures mycookbook' version '0.1.0'
+depends 'mysql', '>= 1.0'
+
+
+Cookbooks: Default Cookbook Recipe
+The default cookbook recipe is default.rb, which is created with the cookbook. The main part of the configuration for the cookbook generally lives here. For example, installing packages and starting services for the cookbook scenario (i.e Apache/MariaDB).
+
+What does the default cookbook mean?
+If you were to include a cookbook without a recipe in a run list, then by default it would run cookbookname::default the default recipe.
+
+
+Cookbooks: Default Cookbook Recipe
+run_list "recipe[apache]"
+This is the same as: run_list "recipe[apache::default]"
+Use the apache cookbook and add the default recipe to the node's run-list. All other recipes in the cookbook, unless include_recipe is used, are ignored.
+
+##################################################
+Lecture: Generating a Cookbook
+##################################################
+#to create a cookbook
+chef gernerate cookbook /root/workstation
+
+cp /root/learn.rb /root/workstations
+
+cd workstation/recipes
+vim default.rb
+package 'tree'do
+end
+
+#converge the cookbook
+chef-client --local-mode recipes/default.rb
+
+
+##################################################
+Lecture: Cookbook Pro-Tips
+##################################################
+#be familiar with chefdk generators
+Available generators:
+  app             Generate an application repo
+  cookbook        Generate a single cookbook                      #know this
+  recipe          Generate a new recipe                           #know this
+  attribute       Generate an attributes file
+  template        Generate a file template
+  file            Generate a cookbook file
+  helpers         Generate a cookbook helper file in libraries
+  lwrp            Generate a custom resource
+  resource        Generate a custom resource
+  repo            Generate a Chef code repository
+  policyfile      Generate a Policyfile for use with the install/push commands
+  generator       Copy ChefDK's generator cookbook so you can customize it
+  build-cookbook  Generate a build cookbook for use with Delivery
+
+
+
+
+##################################################
+Chef Server
+##################################################
+##################################################
+Lecture: Chef Server
+##################################################
+The chef server is the central location which acts as an artifact repository or "hub" that stores cookbooks, cookbook version, facts about the node, data bags and metadata information about nodes
+
+all metadata of node, when it is registered with chef server, is stored on the chef server
+
+The metadata is populated and sent to the server with chef-client, which is an application that runs on the node.  (covered in later lessons)
+
+configuration enforcement is not handled by the chef server, instead, the desired state configuration is enforced when chef-client runs and a "convergence" happens, allowing for easy scalability
+
+##################################################
+Lecture: Installing Chef Server
+##################################################
+#goto the cloud lab server and create a chef-ent-12-8 instance
+
+#cd to root
+#we can see that the chef rpm is there
+
+rpm -Uvh chef-server
+
+chef-server-ctl reconfigure
+
+chef-manage-ctl reconfigure
+
+or
+
+chef-manage-ctl reconfigure --accept-license
+
+#to create a user
+chef-server-ctl user-create username firstname lastname email@email.com 'password' --filename nameuserrsa
+chef-server-ctl user-create joe joe wagner joseph.wagner@bestbuy.com '!1l1nux!1' --filename joewagnerrsa
+
+#create an organization
+chef-server-ctl org-create orgname 'Full Organization Name' --association_user username --filename orgname-validator.pem
+chef-server-ctl org-create la_test 'Linux Academy Test' --association_user joe --filename la_test-validator.pem
+
+#install the rails chef manager gui web interface
+chef-server-ctl install chef-manage
+
+
+
+#login to the chef manage web page
+<ip_address>/login
+
+
+##################################################
+Lecture: Chef-Repo, Setting Up the Work Station, and Bootstrapping A Node
+##################################################
+#set up a chef work station
+#login to the web page of our chef server
+#select nodes
+#download the chef starter kit, in order to run chef on a node they need to communicate to the chef server
+#a node is anything that can run our chef client
+#prior to chef 12 we needed a organization validator key, in this class we are going to skip that
+#in this course we are going to use our pem key
+##to get that we need to click on the admin tab > organization > download starter kit
+#boot another cloud node
+
+#connect to our work station
+
+scp chef-starter.zip user@ipaddress:~/
+
+yum install unzip
+
+usermod -g wheel user
+
+unzip chef-starter.zip
+
+rm -ef chef-starter.zip
+
+cd chef-repo
+
+ll -al
+
+cd .chef
+
+ll -al
+
+cat knife.rb
+
+#to recognize the selfsigned cert on the chef server we need to:
+sudo knife ssl fetch
+
+#boot strap our first node
+#we are not applying any runlists just installing chef and connecting to our chef server
+#get the ipaddres of the other node we started
+
+ssh to the node
+su root
+
+usermod -g wheel user
+
+#now we boot strap it
+cd chef-repo
+knife bootstrap <ip_address> -N <node_name>  --ssh-user user --sudo
+
+#now its under chef configure management
+
+#we will now see the node in the management console
+
+
+##################################################
+Lecture: Configuring Git
+##################################################
+#Create a git hub account
+#Create a repo name
+#once created git provides you with the steps to connect your workstation to the git project
+
+#we will need to install git
+sudo yum install git
+
+#in the chef repo dir on your workstation
+git init
+
+ls -al #we will see a git directory
+
+#the ownership on the files is git because we sudo to install the package
+
+#to change it to the user owner
+chown user.user -R .
+
+#to add everything in the dir to to the git repo
+git add .
+
+#now we want to commit our code
+git config --global user.email "joeywagner@gmail.com"
+git config --global user.name "<user_name>"
+git commit -am "adding chef-repo to git"
+
+#now we need to add our origin
+git remote add origin https://github.com/*/<reponame>.git
+git push -u origin master
+
+#create a new cookbook
+knife cookbook create learn
+
+cd cookbooks
+cd ..
+git add
+git commit -am "learn cookbook"
+git push -u origin master
+
+##################################################
+Lecture: Chef Solo vs Chef Zero vs Chef Server
+##################################################
+Chef Solo and Chef Zero is a lightweight Chef Server that runs in-memory on the local node and are now rolled into chef-client and used as “local mode” chef-client –z or chef-client --
+local-mode
+• Allows chef-client to run against the chef-repo as if it was running against Chef Server.
+• Useful for testing and validating the behavior of chef-client against our cookbooks, recipes, and run- lists before uploading those to the Chef Server for usage
+• Allows Chef to run on single nodes without the need of a central server for distributing artifacts.
+• Allows chef-client to run against the chef-repo as if it was running against Chef Server.
+• Useful for testing and validating the behavior of chef-client against our cookbooks, recipes, and run-lists before uploading those to the Chef Server for usage
+
+Chef Server
+Chef Server is a central point of management for nodes within an environment.
+• Authentication is required for the nodes to communicate with the Chef Server.
+• During a convergence the chef-client pulls updated cookbook, recipe, roles, and environment information from Chef Server.
+• Chef Server is used for managing many different nodes and different node scenario configurations within an environment.
+
+
+
+##################################################
+Chef Client, Nodes and Run Lists
+##################################################
+##################################################
+Lecture: Building A Quick Apache Cookbook
+##################################################
+chef generate cookbook cookbook/apache
+
+#we should edit our metadata.rb
+vim metadata.rb
+#edit the maintainer information
+
+#go into our recipe directory
+cd recipe
+
+vim default.rb
+
+package 'apache2' do
+  package_name 'httpd'
+  action :install
+end
+
+service 'apache2' do
+  service_name 'httpd'
+  action  [:start, :enable]
+end
+
+:wq
+
+#check the chef code
+foodcritic default.rb
+
+vim websites.rb
+
+file 'default www' do
+  path '/var/www/html/index.html'
+  content 'Hello World'
+end
+
+:wq
+
+#validate our code
+ruby -c websites.rb
+
+foodcritic websites.rb
+
+#we can also test the cookbook
+cd ..
+foodcritic apache
+
+
+#when to use chef or knife
+the chef command line tool is used to work with items in our chef repo directory
+
+we use knife to interact with nodes or work with objects on the chef server, simply knife is use to do anything with the chef server
+
+
+#upload a cookbook to our chef server
+knife cookbook upload apache
+
+#upload our changes to git
+git add .
+
+git commit -am "added basic apache cookbook"
+
+git push -u origin master
+
+#move to our chef management console
+#the policy tab, this is where we are storing our configuration management, our cookbooks
+
+
+##################################################
+Lecture: Managing Node Run_Lists
+##################################################
+#if you goto the web management console you can click on the node and edit the runlist, you can add recipes to the node there
+
+#you can also use the knife cmd line interface
+#to see what nodes are available to us
+knife node list
+
+knife node run_list <node_name> 'recipe[apache]'
+
+#to verify that the runlist has been applied to the node
+knife node show <node_name>
+
+#to see all information about a node, the node object information is updated every time chef-client is run and a convergence occurs
+knife node show -l <node_name>
+
+#to see what a chef client run would do we can test with why-run
+chef-client --why-run  #or chef-client -W
+
+#now run chef
+chef-client
+
+#we will see that the websites recipe didnt run because the webpage does say hello world
+#we can add that through the web console or in the default recipe with a include_recipe statement
+vim cookbooks/apache/recipes/default.rb
+
+#add the following
+include_recipe 'apache:websites'  #this will run this resource every time the chef converges
+
+#we can now edit the metadata version
+
+#now we want to upload the new cookbook version
+knife cookbook upload apache
+
+#chef client the node to pickup the changes
+
+#to add the websites.rb to the runlist
+knife node run_list add <node_name> '[recipe::websites]'
+
+
+#runlist execute top to bottom, left to right
+
+#we can also remove recipes from runlists
+knife node run_list remove <node_name> 'recipe[cookbook::recipe],recipe[cookbook::recipe]'
+
+
+##################################################
+Lecture: Chef-Client Configuration
+##################################################
+#the chef client communicates and connects to the chef server
+
+#all of the work of the configuration checking is run on the node itself
+
+cat client.rb
+
+
+#by default chef-client is scheduled to run every 30 min
+
+
+
+
+##################################################
+Nodes and Search
+##################################################
+##################################################
+Lecture: Node Object
+##################################################
+Node Object
+The node object is made up of groups of attributes and the node run-lists.
+What is an attribute?
+• An attribute is a specific piece of data about the node.
+• cpu information
+• ip address
+• hostname
+• memory
+• swap
+• etc
+
+Node Object
+Attributes are collected by a tool called ohai, which we’ll explore in our hands on
+lesson coming up.
+Chef-client automatically executes ohai and stores the data (attributes) about a node in an object.
+This node object information can be used within the recipes named node.
+This information combined with the nodes run-lists is called the node object.
+The node object is stored in a JSON (JavaScript Object Notation) file on the server.
+
+
+
+
+##################################################
+Lecture: Working With Ohai and Node Attributes
+##################################################
+ohai  #this will give us a dump of all the node attributes
+
+ohai ipaddress #give use the ipaddress of the node
+
+ohai platform
+
+ohai platform_family
+
+
+#how can we use node attributes
+
+vim cookbooks/apache/recipes/default.rb
+
+if node['platform_family'] == "rhel"
+  package = "httpd"
+elseif node['platform_family'] == "debian"
+  package = "apache2"
+end
+
+package 'apache2' do
+  package_name package
+  action :install
+end
+
+:wq
+
+
+#to evaluate code
+ruby -c default.rb
+
+foodcritic default.rb
+
+
+#create a new recipe
+vim motd.rb
+
+hostname = node['hostname']
+
+file '/etc/motd' do
+  content "Hostname is this: #{hostname}"
+end
+
+:wq
+
+ruby -c motd.rb
+
+foodcritic motd.rb
+
+#update metadata version
+
+git add .
+git commit -am "added motd file"
+
+git push origin master
+
+#upload the cookbook
+knife cookbook upload apache
+
+
+#add motd to the runlist for the node
+knife node run_list add <node_name> 'recipe[apache::motd]'
+
+
+##################################################
+Lecture: Understanding Search
+##################################################
+
+Search
+Chef search allows a search from either knife or within a recipe in order to search
+any data that is indexed by the Chef server.
+Data is stored within Chef server indexes (5 of them):
+• Client
+• Data bags
+• Environments
+• Nodes
+• Roles
+
+Knife Query Syntax
+Knife search INDEX “key:search_pattern”
+Note: If no index is passed, then the default “node” is applied.
+Key is a field name found in the JSON description of an indexable object on the Chef server and search_pattern defines what will be searched for.
+Index can either be a role, node, client, environment, or data bag.
+The search pattern can include certain regular expressions to form a search query. This is supported in knife as well as when using search within a recipe.
+
+Data bags:
+A data bag is a global variable that is stored as JSON data and is accessible from a
+Chef server. A data bag is indexed for searching and can be loaded by a recipe or accessed during a search.
+Example use cases:
+• Storing API and APP id information
+• Storing users to be added to a system
+
+
+Using Search For Dynamic Orchestration
+Scenario: Discover all nodes with a role of “web” and add them to a load balancer. Web_nodes = search(‘role’, ‘role:web’)
+Role = The index we are going to search Role:web = The key:search_pattern
+Example: Hands-on later in the course.
+
+Search
+Knife search node ‘platform_family:rhel’
+Knife search node ‘recipes:apache\:\:default’
+Knife search node ‘platform:centos or platform:debian’
+Regular Expressions in search:
+Knife search node ‘platform*:ubuntu’
+Knife search node ‘platfor?:centos’
+Knife search ‘network_interfaces__addresses:*’
+* - Replaces zero or more characters with a wildcard ? – Replaces a single character with a wildcard
+
+Search Flags:
+-i will show the node ID
+-a attribute_name will display the specified attribute from the search query results -r will show the run-lists for the query results
+Knife search ‘*:*’ –r
+Will yield the same results as Knife search ‘*:*’ –a run_list
+
+##################################################
+Lecture: knife Search
+##################################################
+#we will want to do this from our workstation
+knife search node 'platform_family:rhel'
+
+#to search for a node with a specific recipe
+knife search node 'recipes:apache\:\:websites'
+
+#we can also add a wildcard
+knife search node 'recipes:apache\:\:website*'
+
+knife seach node 'platfor?:centos'
+
+#this will pull the node attribute hostname
+knife seach node 'platfor?:centos' -a hostname
+
+#if we want to return all nodes in the system
+knife search node '*:*'
+
+#if we want to pull the ipaddress if all nodes
+knife search node '*:*' -a ipaddress  #we are not querying the node we are querying a index with this information stored
+
+knife search role '*:*' -a run_list
+
+knife search node '*:*' -a recipes
+
+
+##################################################
+Roles and Environments
+##################################################
+##################################################
+Lecture: Setting Up A New Node
+##################################################
+#lunch another centos 7 node
+#login to our workstation
+
+#bootstrap our new machine
+knife bootstrap <ipaddress> -N <node_name> -x <user_name> -p <password> --sudo
+
+knife node show <node_name>
+
+#create database cookbook
+
+cd cookbooks
+chef generate postgresql
+cd postgresql/recipies
+vim default.rb
+
+package 'postgresql-server' do
+  notifies :run, 'execute[postgresql-init]', :immediately
+end
+
+execute 'postgresql-init' do
+  command 'postgresql-setup initdb'
+  action :nothing
+end
+
+servis 'postgresql' do
+  action [:enable, :start]
+end
+
+:wq
+
+ruby -c default.rb
+
+foodcritic default.rb
+
+git add .
+git commit -am "added the postgresql cookbook"
+git push origin master
+
+##################################################
+Lecture: Understanding Roles
+##################################################
+Roles
+A role describes a run_list of recipes that are executed on a node.
+How might you specify which recipes are to be run on different sets of nodes, without manually modifying each nodes run_list each time a run_list change is required?
+
+
+Roles
+{
+"name": ”web",
+"description": ”Role for our web sever nodes for wordpess application",
+"json_class": "Chef::Role",
+"default_attributes": {
+},
+  "override_attributes": {
+},
+"chef_type": "role", "run_list": [
+  "recipe[apache2]",
+  "recipe[apache2::websites]",
+  "role[monitoring]"
+],
+"env_run_lists": {
+}
+}
+
+
+Roles
+{
+"name": ”database",
+"description": ”Database Servers For Our WordpresL "json_class": "Chef::Role",
+"default_attributes": {
+}, "override_attributes": {
+},
+"chef_type": "role", "run_list": [
+"recipe[postgreSQL]", "recipe[postgreSQL::create_databases]", ”role[monitoring]"
+],
+"env_run_lists": {
+} }
+
+
+Roles
+{
+"name": ”haproxy",
+"description": ”Haproxy load balancer for webnodeL "json_class": "Chef::Role",
+"default_attributes": {
+}, "override_attributes": {
+},
+"chef_type": "role", "run_list": [
+”recipe[haproxy]”,
+"role[monitoring]" ],
+"env_run_lists": {
+} }
+
+
+What about role[monitoring] included in the db, haproxy, and web roles we created?
+{
+"name": ”monitoring",
+"description": ”Recipes that make up the monitoring stack required for all nodes", "json_class": "Chef::Role",
+"default_attributes": {
+}, "override_attributes": {
+},
+"chef_type": "role", "run_list": [
+”recipe[nagios]”,
+"recipe[collectd]" ],
+"env_run_lists": {
+} }
+
+
+When you assign a role to a node you do so in its run list.
+$ Knife node run_list set nodename “role[web]”
+All recipes and roles assigned to the web role run list will be executed on this node.
+
+
+After making a change to the roles, how can we force the new run list to execute on nodes with a given role assigned to them?
+
+1. Wait for chef-client on the nodes to execute if chef-client is set to run at intervals
+2. Execute knife ssh
+Knife ssh ”role:web” “sudo chef-client” –x user –P password
+
+
+##################################################
+Lecture: Creating Roles
+##################################################
+#login to the chef manage interface
+
+#login to our chef workstation
+#we need to set our text editor
+which vim
+export EDITOR=$(which vim)
+
+#we need to set this in our .bashrc file so the variable is set everytime we login
+vim .bashrc
+export EDITOR=$(which vim)
+
+:wq
+
+cd chef-repo
+
+#generate a role
+knife role create web
+
+#once the role is generated a .json file is created and automatically opens the .json
+#go down to runlist
+"recipe[apache::default]",
+"recipe[apache::websites]",
+"recipe[apache::motd]"
+
+:wq
+
+#if we ll, we can dont see the web role file, so what really happened?
+#if we go to our chef manage interface > policy tab > we can see that it was created here, we dont have to upload the role each time, the file was actually managed and edited here
+
+#if we want to edit the role
+knife role edit web
+
+#it will open the file and we can edit it from our workstation
+
+#assign the role to a node, to do that we want to edit the nodes runlist
+knife node run_list set <node_name> "role[web]"
+
+#now if we wantto remove a recipe from our web node we only have to edit the web role
+knife node edit web
+
+#if we want to look at the role that is applied to the node
+knife node show <node_name>
+
+#we can see that the recipes havent changed, thats because these are attributes of the node object and we havent run a convergence since we updated the runlist, so the node object hasnt changed
+
+#we can either login to the node to run chef client or we can run it from our work station
+knife ssh "role:web" "sudo chef-client" -x user -P <password>
+
+###now lets do this for postgresql
+#upload the cookbook
+knife cookbook upload postgresql
+
+#create the db role
+knife role create database
+
+"recipe[postgresql]"  #by calling the cookbook name it will run the default recipe
+
+#assign the role to a node
+knife node run_list set <node_name> "role[database]"
+
+
+ knife ssh "role:database" "sudo chef-client" -x user -P
+
+ knife ssh "role:database" "sudo systemctl status postgresql" -x user -P
+
+
+##################################################
+Lecture: Example: Using Search In Recipes
+##################################################
+cd chef-repo/cookbooks/apache/recipes
+
+vim websites.rb
+
+webnodes = search['node', 'role:web']
+
+#now we  need to loop through the webnodes array to get access to the information
+webnodes.each do |node|
+  puts "The Web nodes are #{node}."
+end
+
+knife cookbook upload apache
+
+#move to our web node
+chef-client
+
+##################################################
+Lecture: Understanding Environments
+##################################################
+Implementing Web Node Apache Cookbook Changes
+
+Scenario: You’ve been tasked with making changes to the apache cookbook from 1.0 to 2.0 versions. These changes need to go through the Testing, Q/A, and Staging environments before production. How can we use the same roles for all environments, including production, but limit the cookbook version only to specific environments?
+
+Environments: Understanding Chef Environments
+Every node belongs to the _default environment. The _default environment cannot be modified.
+Environments allow you to assign roles that contain a specific cookbook version to a group of nodes, while also allowing a certain cookbook version to execute given the environment “configurations”.
+A more simple way of thinking about it is “generally every environment is associated with one or more cookbooks or cookbook versions”
+
+Environments: Understanding Chef Environments
+name ' Staging'
+description ' Staging Environment Before Production' cookbook 'apache', ’ = 2.0'
+name ' Production'
+description 'Production Environment' cookbook 'apache', '= 1.0'
+
+
+
+##################################################
+Lecture: Bootstrapping The Staging Node
+##################################################
+#create a Centos linux academy cloud server with a staging node label
+
+#login to our chef workstation
+
+#bootstrap our new node
+knife bootstrap <node ipaddress> -N <node name> -x user --sudo
+
+knife node list
+
+knife node run_list add <node name> 'role[web]'
+
+knife role show web
+
+cd apache
+
+knife cookbook upload apache
+
+vim recipes/websites.rb
+
+content "Hello world! v1.0"
+
+:wq
+
+knife cookbook upload apache
+
+vim recipes/websites.rb
+
+content "Hello world! v2.0"
+
+:wq
+
+vim metadata.rb
+#change version 1.0 to 2.0
+
+:wq
+
+knife cookbook upload apache
+
+#open the chef manage interface
+#take a look at the different apache cookbook versions
+
+##################################################
+Lecture: Creating And Using Environments
+##################################################
+#you can use knife to create environment files but for visualization we are going to use chef manage
+
+# chef manage > policy > environments > create
+Name = staging
+Description = this is going to run the apache 2.0 cookbook
+
+Next
+
+Name = Apache
+Operator = =
+Version 2.0.0  Add
+
+Create Environment
+
+
+Name = production
+Description = runs the current production cookbook version
+
+Next
+
+Name = Apache
+Operator = =
+Version 1.0.0  Add
+
+Create Environment
+
+#note we cant change or edit the default environment
+
+#Move to the nodes tab, lets assign the nodes to their proper environments
+
+#chef-client both the staging node and the production node
+
+##################################################
+Infrastructure As Code
+##################################################
+##################################################
+Lecture: Infrastructure as Code
+##################################################
+Advantages and reasons of defining your infrastructure as code
+
+Flexibility
+Version control of infrastructure
+Human-readable infrastructure – the code is the documentation!
+Create testable infrastructures just like testable code!
+Easily scalable to thousands of systems, multiple clouds, and on-premises
+Use existing cookbooks created on Chef Supermarket as well as automate deployments and compliance
+
+Rolling back vs Rolling forward
+Rolling backward: Roll back the environment or code to a previous state (Restore / Blue- Green)
+Con: A roll back must succeed for ALL components in your environment or it fails. Generally a riskier method of fixing issues.
+
+Rolling forward:
+Rolling forward means, understanding the current issue and implementing a permanent fix applied going forward.
+In Chef it is generally best practice to roll forward rather than roll backwards.
+
+
+##################################################
+Desired State Configuration
+##################################################
+##################################################
+Lecture: Imperative Vs Declarative Approach To Configuration Management
+##################################################
+Imperative vs Declarative
+
+Chef is considered an imperative configuration management tool.
+Ansible and Puppet are both considered declarative configuration management tools.
+But what is the difference between Imperative and Declarative languages?
+Imperative describes “how” you’re going to implement the code (in our case, the Chef configuration on a node).
+Declarative describes “the end result” or the “desired result” but does not describe how to implement that result. That is left up to the executor.
+
+Imperative vs Declarative: Still Confused?
+
+Think about SQL: SQL allows you to pull data from a database but does not specify “how” to pull the data. It only specifies “what” data to pull.
+Puppet and Ansible: Specify the desired end result.
+Chef: Specify how you want the configuration to be put in place (How to get to the end result).
+Example: With Chef you can use “for each loops,” but with Puppet, it is not allowed.
+
+
+
+
+Imperative vs Declarative: Getting Clearer....
+With Chef, resources are executed in the order they are listed in the page.
+This is considered an imperative approach because it places resources correctly within a recipe and allows the ability to determine execution order and “how” the configuration is put into place.
+
+
+##################################################
+Lecture: Pull vs Push Approach
+##################################################
+Push vs. Pull
+
+Push deployment occurs when the deployment of infrastructure changes are pushed from central location (server) to the nodes
+Pull deployment is when each server polls/queries a central location for changes and applies those changes locally on the node
+Chef does both! Up until this point we’ve been working with “pull deployments” because chef-client runs in intervals and pulls cookbook changes from the server.
+
+Push vs. Pull: Chef Push Jobs
+Chef push jobs is a Chef server extension that allows jobs to be executed against a node, without the dependency of a chef-client run.
+A separate agent is running on the node listening to the Chef push jobs server for any jobs that might be sent.
+A job is an action or command that is to be executed against a set of nodes.
+A search query made to the Chef server is what determines “which” nodes receive the push job.
+
+Push vs. Pull: Chef Push Jobs
+Knife SSH
+• Requires SSH keys or sudo permissions
+• No corrective action if a job fails
+• Hard to scale to large amounts of nodes
+• Requires scripting if you want to schedule a command
+
+Push Jobs
+• An installed agent much like chef-client is listening to the chef server and requires no additional authentication
+• Is a resource type that is managed with knife and recipes
+• Can be used within recipes to orchestrate actions between nodes
+
+##################################################
+Lecture: Windows DSC
+##################################################
+Windows DSC
+
+Windows DSC is a PowerShell task-based command-line shell and scripting language that was developed by Microsoft.
+
+DSC (Desired State Configuration) is a PowerShell feature which provides a set of language extensions, cmdlets, and resources.
+
+Essentially, it’s a tool for configuration management on Windows machines using PowerShell. The DSC is exposed as configuration data from within the Windows PowerShell but Chef uses Ruby.
+
+Windows DSC
+
+The dsc_resource type allows the DSC to be used in Chef recipes along with any custom resources that have been added to the PowerShell environment.
+
+
+##################################################
+Lecture: Removing Resources From Recipes
+##################################################
+Removing Resources From A Recipe
+
+Chef recipes are used to describe a desired state of configuration. If there a resource type is removed from within a recipe, then the resource it manages is no longer evaluated by the chef-client during a chef-client run.
+
+The underlying resource will very simply stay in the state of the last chef-client run (unless it’s changed manually)
+
+##################################################
+Chef Supermarket
+##################################################
+##################################################
+Lecture: Chef Supermarket
+##################################################
+Chef Supermarket
+
+Chef Supermarket is 100% free, everything uploaded is available to any Chef user to use within any of their environments at no cost.
+There is no shopping cart functionality.. Supermarket is free.
+Chef Supermarket can be run on a machine, on your network, within your own environment, and at no additional cost.
+The job of public Chef Supermarket is to host community built cookbooks.
+
+##################################################
+Lecture: Using A Private Supermarket
+##################################################
+Chef Supermarket: Private Super Markets
+
+A private Supermarket, located behind your firewall, can be installed on a local machine in your environment.
+
+Using Berkshelf multiple Supermarket installations can be specified, for example, a local one, and the public Chef supermarket. In the event that a cookbook book is not available on one, it pulls from the other.
+How can we modify cookbooks from Chef Supermarket without forking?!? Cookbook Wrappers! (Covered later in this course)
+
+
+Chef Supermarket: More than just a cookbook repository!
+
+Chef Supermarket is a site for uploading and downloading community built (and a lot of Chef built) cookbooks.
+Cookbooks available on the Chef Supermarket available and accessible to all Chef users
+Don’t skip the video!, there is a lot more to Chef Supermarket than just hosting cookbooks!
+• Chef Supermarket can be part of your deployment process
+• Using Berkshelf, cookbooks can be deployed directly from the Chef Supermarket and use multiple installations of Chef Supermarket to help resolve dependency issues
+
+Chef Supermarket: Private Super Markets
+
+A private Supermarket, located behind your firewall, can be installed on a local machine in your environment.
+Using Berkshelf multiple Supermarket installations can be specified, for example, a local one, and the public Chef supermarket. In the event that a cookbook book is not available on one, it pulls from the other.
+How can we modify cookbooks from Chef Supermarket without forking?!? Cookbook Wrappers! (Covered later in this course)
+
+##################################################
+Test Kitchen
+##################################################
+##################################################
+Lecture: Test Kitchen
+##################################################
+What is test kitchen?
+your infrastructure deserves test too
+test kitchen is a test harness for your "infrastructure as code"
+supports multiple platforms :i.e. Centos, ubuntu, windows, .etc
+run your recipes on various cloud providers and hypervisers in isolation
+use already familiar testing frameworks :i.e. rspec, serverspec, chef inspec, etc
+test kitchen also knows how to handle dependencies with cookbooks
+
+
+Test kitchen encourages test-driven development (TDD)
+Test driven development is a software development process
+-requirements are turned into tests
+-software is only improved to pass tests
+
+TDD encourges simple designs
+
+test kitchen allows you to apply the "red, green, refactor" workflow to your "code as infrastructure"
+
+
+TDD Primer
+Add a test
+Run all test and see if the new test fails
+write the code
+run tests
+refactor code
+
+
+Getting Started with test kitchen
+
+the kitchen commad is included in the ChefDK
+-or it can be installed via: gem install test-kitchen
+
+Helpful Commands
+Commands:
+  kitchen console                         # Kitchen Console!
+  kitchen converge [INSTANCE|REGEXP|all]  # Converge one or more instances
+  kitchen create [INSTANCE|REGEXP|all]    # Create one or more instances
+  kitchen destroy [INSTANCE|REGEXP|all]   # Destroy one or more instances
+  kitchen diagnose [INSTANCE|REGEXP|all]  # Show computed diagnostic configuration
+  kitchen driver                          # Driver subcommands
+  kitchen driver create [NAME]            # Create a new Kitchen Driver gem project
+  kitchen driver discover                 # Discover Test Kitchen drivers published on RubyGems
+  kitchen driver help [COMMAND]           # Describe subcommands or one specific subcommand
+  kitchen help [COMMAND]                  # Describe available commands or one specific command
+  kitchen init                            # Adds some configuration to your cookbook so Kitchen can rock
+  kitchen list [INSTANCE|REGEXP|all]      # Lists one or more instances
+  kitchen login INSTANCE|REGEXP           # Log in to one instance
+  kitchen setup [INSTANCE|REGEXP|all]     # Setup one or more instances
+  kitchen test [INSTANCE|REGEXP|all]      # Test one or more instances
+  kitchen verify [INSTANCE|REGEXP|all]    # Verify one or more instances
+  kitchen version                         # Print Kitchen's version information
+
+
+
+Understanding .kitchen.yaml
+Driver
+-responsible for creating a machine that we'll use to test our cookbook
+-in this case, we're telling the kitchen Driver to use vagrant to create an instance to test
+
+Provisioner
+-Responsible for telling Test Kitchen how to run chef to apply the cookbook to the instance in test
+
+Platform
+-List of operating systems we want to run our infrastructure code against
+
+Suites
+-Defines what to test from our cookbook
+
+##################################################
+Lecture: Test Kitchen Hands On Example
+##################################################
+#Create a new instance in the test lab
+#download the chefdk
+#install the chefdk rpm
+rpm -ivh chefdk
+
+#Install docker
+yum install docker
+
+systemctl start docker
+
+systemctl enable docker
+
+#install the dicker test kitchen plugin
+chef exec gem install kitchen-docker
+
+#generate a cookbook
+chef generate cookbook my_cookbook
+
+cd my_cookbook
+
+vim .kitchen.yml
+#modify the driver from vagrant to docker
+name: docker
+
+#now we need to run a convergence
+kitchen converge
+
+#list instances
+kitchen list
+
+kitchen verify
+
+#move into the smoke dir
+cd smoke/default
+vim default_test.rb
+
+#to learn more about test open up th inspec.io documentation
+
+describe package('cowsay') do
+  it { should be_installed }
+end
+
+:wq
+
+cd ../..
+
+kitchen verify
+#the test should fail because cowsay wasnt installed
+
+cd recipies
+vim default.rb
+
+package 'cowsay'
+
+:wq
+
+#now we want to run the convergence and verify
+#we can do that with one command
+cd ..
+kitchen test
+
+##################################################
+Chef Offerings
+##################################################
+##################################################
+Lecture: Open Source vs. Premium
+##################################################
+the open source nature of chef
+
+chef is an open source company
+
+How does opensource apply to chef?
+Chefs core product offering are opesource
+chef
+habitat
+inspec
+
+
+Chefs premium offerings
+chef automate
+chef automate provides a centralized hum of information to unite your dev and opts teams
+
+Chef support subscriptions include
+standard  businesss hours
+premium   24hr support
+customer success
+
+chef solution services
+
+chef training and certifications
+
+##################################################
+Lecture: Habitat
+##################################################
+Habitat exists to solve the problem of how to organizations build, deploy and manage applications
+
+"what if we focused in on what it means to build easy to manage and easy to deploy?"
+
+The answer: application automation
+-automation cant come from the platform but must travel with the application
+-runtime and infrastructure layers: decoupled
+
+
+Habitat benefits
+you can take an application, wrap it in a layer of application automation
+
+the resulting package can be deployed on the infrastructure or runtime that suits it best
+
+you can manage it the same ay whether it exists on premis, on top of a PaaS, or even in a container orchestration system
+-this is accomplished because of two main components:
+--a robust, safe and secure software packaging system
+--a supervisor which manages the lifecycle of the services declared in the package
+
+How do i use habitat?
+you can start with the hab command line interface to scaffold a new project
+you define a plan.sh with instructions to build and install the application
+
+##################################################
+Lecture: Chef Compliance and InSpec
+##################################################
+Compliance as code
+chef compliance is a standalone server that allows you to scan nodes to see if they match your compliance requirements
+
+Just like how recipes are "infrastructure as code", compliance profiles are "compliance as code"
+
+"Compliance as code" increases your:
+-velocity
+-consistance
+-scale
+-feedback
+
+DevOps principles now extend to your compliance and security teams!
+
+
+
+Benefits of chef compliance
+Chef compliance is agentless
+-no software needs to be preinstalled (not even chef) for compliance scans to occur
+-Scans on a windows operating system communicate over WinRM
+-Scans on a Linux OS communicate over SSH
+
+Chef Compliance provides some standard compliance profiles to start with
+
+Chef Compliance allows you to be proactive by providing compliance reports from your scans
+
+Compliance profiles are expressed in domain-specific language (DSL) called InSpec, which is designed to be human readable
+-Auditors didnt want to write bash commands to express their tests
+-The DSL was heavily influenced by serverspec
+
+InSpec
+By writing compliance profiles in InSpec, you can easily integrate automated tests that check for adherence to policy into any stage of your deployment pipeline
+
+
+Using InSpec
+InSpec is included in the chefdk
+
+You can start using inspec command line interface
+
+Common inpec commands
+inspec init TEMPLATE  #scaffolds a new project
+inspec check PATH     #Verify all tests at the specified PATH
+inspec exec PATHS     #Run all test files at the specified PATH
+inspec shell          #open a interactive debugging shell
+
+
+Remote scan example
+inspec exec my_compliance_profile.rb -t ssh://bob@host.node -i bob.rsa
+
+
+Getting started with chef compliance and inspec
+you can download chef compliance separatley from chef, however, chef compliance is being moved into chef automate, be sure to try it there
+
+For local development consider writing inspec compliance profiles in your cookbooks and running test kitchen
+
+##################################################
+Lecture: Chef Automate: Overview
+##################################################
+Chef automate provides a centralized hub of information to unite your dev and ops teams
+
+chef automate provides visibility into the health and compliance of their system
+
+chef automate enforces a "workflow" for code to build and ship to production with the necessary controls for audit and compliance
+
+How does chef automate work?
+you still develop locally on your chef workstation with the chefdk
+
+you will configure knife to point to your chef automate instance
+-be sure to knife bootstrap your nodes to the chef automate instance
+-be sure to knife cookbook upload or berks upload your cookbooks
+-runners need to be installed for your cookbook to execute
+
+With these elements in place, chef automate relies on:
+-chef cookbooks
+-habitat plans
+-inspec compliance profiles
+
+Your development work flow will be familiar if you have used chef server
+
+Getting started with chef automate
+Host in the cloud with aws opsworks for chef automate
+-AWS will spin up a working chef automate instance within 20 minutes
+-You can immediatly begin to attach nodes with knife to manage your instance
+--a userdata.sh is provided if you want to launch a new EC@ instance that automatically bootstraps
+--You can automatically attach nodes with the provided StarterKit userdata.sh file for EC2
+
+
+When you use chef automate you no longer need to use chef server
+
+You can also host chef automate on AWS with one of chefs cloudformation templates
+
+##################################################
+Lecture: Chef Automate: Workflow
+##################################################
+Chef automate provides a workflow for managing changes:
+-through the pipeline from local workstation
+-through automated tests
+-out to production
+
+Chef automate handles many types of systems:
+-upload cookbooks to chef server
+-publish cookbooks to chef supermarket
+-release code or artifacts to gethub
+-publish artifacts to production in real time
+
+Automate pipelines have 6 stages
+verify
+-the purpose of the verify stage is to run checks before human code review
+-chef automate allows users to review "patchsets" from the user intrerface
+--you can also integrate chef automate with existing systems :i.e. github, bitbucket
+-chef changes are submitted with the delivery review command
+--this triggers the verify stage
+-changes are approved by clicking "Approve" button
+
+build
+-Clicking the "approve" button from the verify stage triggers the build stage
+-the build stage re-runs the same phases as the verify stage
+--upon success quality and security phases are run
+-the publish phase is the final phase in the build stage
+--build artifacts can be delivered to an artifact
+---chef server
+---chef supermarket
+---jfrog artifactory
+
+acceptance/deliver
+-The acceptance stage is the first stage to assess build artifacts
+--the build artifacts were generated and published in the previouse stage
+-this is the stage where your team decidese whether the change chould be delivered through the pipline out to its final destination
+-infrastructure is provisioned and the build artifats are deployed
+--the deployment is verified with:
+---Automation smoke tests
+---functional tests
+---Ad-Hoc tests
+---manual user acceptance tests
+
+union
+-the union is the first stage of the three shared delivery pipeline stages
+--this means that the environments are running artifacts with multiple projects
+--each previous stage ran in isolation
+
+-the purpose of the union stage is to test the artifacts in context of the system as a whole
+--you are able to test for interactions between interdependent projects
+--the phases of this stage include: provision, deploy, smoke, functional
+
+-any project that depends on an artifact in union must prove compatibility
+--any broken dependencies must be resolved before continuing
+--if there is a problem, cooperating teams need to discuss the right fix
+--sometimes a fix may require a change on a different project than the broken project
+--chef automate is fundamentally a "roll-forward" system, you wont be able to roll-back
+
+rehearsal
+-Rehearsal increases confidence in the artifacts and the deployment
+--rehearsal repeats the exact same phase as union but in a different environment
+--similarly to union this environment is meant to bring interdependent projects together
+-if a failure occures in union, rehearsal plays a different critical purpose
+--you will have confidence that your latest fix:
+---specifically addresses the failures that was exposed in union
+---works in a clean environment
+-the rehearsal stage is an opportunity to test the change in an environment that didnt see the failure as it goes through the provision, deploy, smoke and functional phases
+
+delivered
+-Delivered is the final stage of the pipeline
+-the delivered stage runs through the same phases as union and rehearsal:
+--provision
+--deploy
+--smoke
+--functional
+-you are responsible for what delivered means for your system
+--this could mean that a change is deployed to received production traffic
+--this could mean publishing a final set of artifacts for your customers
+
+##################################################
+##################################################
+##################################################
+##################################################
+
+ would like to say that the exam felt more like a sales/marketing pitch by Chef rather than testing my technical ability. A good 30% of the exam was related to Chef Automate and the tools/components included. This was something that felt kind of rushed over in the course, making me think it was not a huge part of the exam. Oh how I was wrong there.
+
+
+
+##################################################
+Quiz: Practice Exam
+##################################################
+1) You've been tasked with making changes to a MySQL cookbook that are substantial enough to take it from 1.0.0 version to 2.0.0 version. What tool might you use so that during development you can switch between 1.0.0 and 2.0.0 when needed?
+
+Incorrect
+
+Correct answer
+Use git and create a branch for version 1.0.0 and a branch for version 2.0.0 and checkout the branch you'd like to work on
+
+Explanation
+The best way to do this is to work with version control tools such as git and github.
+
+2) Where is the chef-client configuration file located?
+
+Correct
+
+Correct answer
+/etc/chef/client.rb
+
+3) The following block of Ruby code does what? package 'httpd' do action :upgrade end Choose the best possible answer
+
+Correct
+
+Correct answer
+Install a package if it is not installed; upgrade a package if it is not to the latest version
+
+4) When is the node object updated on the Chef Server, and where is it stored?
+
+Correct
+
+Correct answer
+The node object is pulled from the Chef server during a chef-client run and updated. The updated node object is stored on Chef server.
+
+5) You've been writing a cookbook on your workstation, after development you are unsure that it is going to work as expected. How might you test your code to determine what the convergence might look like but do so without letting chef enforce the desired configurations on the node?
+
+Incorrect
+
+Correct answer
+On the node with the assigned recipe in the run list run chef-client -W
+
+6) Which of the following syntax correctly displays the IP address of all nodes that belong to the web role?
+
+Incorrect
+
+Correct answer
+knife search node 'role:web' -a ipaddress
+
+7) Which recipe does the Chef convergence run given the following run list? run_list ”recipe[base]","recipe[apache]","recipe[apache::mysql]"
+
+Correct
+
+Correct answer
+The default recipe in the base cookbook, followed by default recipe in apache cookbook and then mysql recipe in apache cookbook
+
+8) Given the following bootstrap command, what would the node name be? If the nodes hostname is nock1.linuxacademy.com knife bootstrap 10.0.1.2 -r 'role[webserver]' --ssh-user user --sudo
+
+Correct
+
+Correct answer
+The hostname would be nock1.linuxacademy.com
+
+9) Which components of Chef Automate are all open source?
+
+Correct
+
+Correct answer
+Habitat, Chef, InSpec
+
+Explanation
+Habitat, Chef and InSpec are open source components of Chef Automate. Review the Chef Automate videos.
+
+10) Given the following block of code, in what order are the resources executed? service "httpd” do subscribes :reload, "cookbook_file[/etc/httpd/conf/httpd.conf] ” end cookbook_file "/etc/httpd/conf/httpd.conf" do	owner 'root'	group 'root'	mode '0644' source 'httpd.conf'	end
+
+Incorrect
+
+Correct answer
+cookbook_file[/etc/httpd/conf/httpd.conf] is first executed. If the resource requires execution then service is executed and a reload occurs against the httpd service.
+
+11) You have company-specific cookbooks which you only wish to share within your company. Which is the best option to share these cookbooks?
+
+Correct
+
+Correct answer
+Share them using a private supermarket on your company network so that company-specific cookbooks can be only accessed on the company network.
+
+Explanation
+A private supermarket will provide private access to cookbooks, typically this would be deployed on your network so that no one outside of your company can access it.
+
+12) What is the node object made up of?
+
+Correct
+
+Correct answer
+Node attributes, Nodes run_list
+
+13) Given the following block of Ruby code located in /opt/chef-repo/cookbook/default.rb, how would you test Ruby syntax? file '/etc/motd/' do end
+
+Correct
+
+Correct answer
+ruby -c /opt/chef-repo/cookbook/default.rb
+
+14) The following block of Ruby code does what? package 'apache2' do action :purge end
+
+Correct
+
+Correct answer
+On Debian, it automatically removes config files.
+
+15) Given the following block of Ruby code: package 'httpd' do end What happens during a run?
+
+Correct
+
+Correct answer
+The httpd package will be installed if it is not currently installed
+
+Explanation
+The default action for the package resource type, if no property is given in the resource declaration, is :install.
+
+16) Given the following Ruby block of code, what would the outcome be? file '/etc/motd' do content 'Hello world!' path '/etc/motd1' action :nothing end
+
+Incorrect
+
+Correct answer
+Neither the /etc/motd or the /etc/motd1 file is created until the file[/etc/motd] resource receives a notification to perform a specified action, and then, when the notification is received, the /etc/motd1 file is the one affected.
+
+17) Chef Automate pipeline stages consist of which phases?
+
+Correct
+
+Correct answer
+Verify, Build, Acceptance, Union, Rehearsal and Delivered.
+
+Explanation
+The pipeline stages in Chef Automate are Verify, Build, Acceptance, Union, Rehersal and Delivered.
+
+18) You are creating a cookbook and writing Ruby code. You are concerned that your code isn't quite right in terms of style or best practices. What might you do to verify and validate the Ruby code is correct as it relates to Chef syntax?
+
+Correct
+
+Correct answer
+Run foodcritic to test the Ruby code for syntax and best practices
+
+Explanation
+ruby -c file.rb will test the file.rb for Ruby syntax but not for correct Chef syntax. foodcritic cookbook or foodcritic recipe.rb will test for correct Chef syntax.
+
+19) When should you use knife tool over the chef tool? Select the two correct use cases.
+
+Correct
+
+Correct answer
+The chef tool is used when managing chef-repo items within a workstation, The knife tool is used for managing artifacts on the Chef server
+
+20) Which command should be used to create a Chef cookbook within the chef-repo, if the cookbook name is apache?
+
+Incorrect
+
+Correct answer
+chef generate cookbook apache
+
+21) Which of the following includes the recipe mod_php from the apache cookbook if your currently working within the "base" cookbook?
+
+Correct
+
+Correct answer
+include_recipe 'apache::mod_php'
+
+22) If you needed to understand why the chef-client makes the decisions that it makes, without modifying the system, how might you accomplish this task?
+
+Correct
+
+Correct answer
+Run chef-client in why-run mode.
+
+23) Big Cloud Jumbo Corp has hired you to build an environment which is maintained and configured using Chef. The development environment uses a different branch to deploy the application than the production environment. How might you build the deployment cookbook so that the same cookbook will deploy to dev and production?
+
+Correct
+
+Correct answer
+Create a dev Chef environment and assign it to the dev node and a production environment and assign it to the production node. Once completed ensure to use attributes or cookbook versions to deploy the proper code to the proper environment
+
+24) Select the answer that best describes a Chef convergence.
+
+Correct
+
+Correct answer
+A Chef convergence runs tests to determine if the resources defined in the Chef recipe are in the desired state. If they are not in the desired state during the convergence, chef-client repairs the resources by enforcing the configuration; all of the work is completed on the node.
+
+25) The following set of code shows that Chef is a declarative configuration management tool. If node[‘os_family’] == “debian” execute “install apache2” do command “apt-get install apache2 -y” end end
+
+Correct
+
+Correct answer
+False
+
+Explanation
+The code describes "how" to install a package. Declarative languages only describe that the package should be installed.
+
+26) What are the three core components of Chef Automate?
+
+Correct
+
+Correct answer
+Workflow, Visibility and Compliance
+
+Explanation
+Workflow, Visibility and Compliance are the core components of the Chef Automate solution.
+
+27) You're the only highly experienced Chef developer on staff and you've been tasked to allow junior-level developers be able to add important concepts to a Chef cookbook. They need to be able to easily create a file and not be burdened with the task of managing the additional properties such as permissions. Assume that each time a file is created it can have the same permissions. What is the best way to solve this issue in your environment?
+
+Correct
+
+Correct answer
+Create a custom resource that does the work of configuring the security but allows for custom properties to be passed in, such as filename and contents
+
+28) Given the following bootstrap command, what would the node name be? If the nodes hostname is nock1.linuxacademy.com knife bootstrap 10.0.1.2 -N webserver -x user -P password --sudo
+
+Incorrect
+
+Correct answer
+The node name would be webserver
+
+29) You've been tasked with managing an infrastructure with over 500 nodes. As part of this deployment you need to be able to run commands and scripts on a specific subset of nodes at any given time. It is imperative that the commands get executed on-demand and have fail management. What would be the best way to implement this?
+
+Incorrect
+
+Correct answer
+Install Chef Push Jobs server addon and use push jobs to deploy the script or command
+
+Explanation
+Knife SSH has limitations that make using it for push deployments not ideal. These limitations include, ssh authentication requirements and no fail recovery. Chef Push Jobs is an addon to Chef server which resolves these issues and would be the ideal solution for push deployments.
+
+30) Given the following resource declarations, in what order are the resources tested and repaired during a Chef convergence? package 'apache' do package_name 'httpd' end service 'httpd' do action [:enable, :start] end file '/var/www/html/index.html' do content 'Hello world!' mode '0755' owner 'root' group 'apache' end
+
+Correct
+
+Correct answer
+package, service, file
+
+31) What is the default action for the service resource type?
+
+Correct
+
+Correct answer
+action :nothing
+
+Explanation
+action :nothing - [] are not required when there is only a single action.
+
+32) Given the following block of code, what order do you expect the resources to be executed in? service "httpd” do action [:enable, :start] end cookbook_file "/etc/httpd/conf/httpd.conf" do	owner 'root'	group 'root'	mode '0644'	source 'httpd.conf'	notifies :restart, "service[httpd]” end
+
+Correct
+
+Correct answer
+During the convergence the service[httpd] resource enables and starts the service if it is not already; then, if the cookbook file requires changes, httpd.conf is updated and the cookbook_file[/etc/httpd/conf/httpd.conf] resource sends a notification to restart the httpd service.
+
+Explanation
+Because the action [:enable, :start] exists on the resource and it is added above the cookbook_file block of code, it indeed executes first. However, if the cookbook_file requires changes it sends a notification to the service[httpd] resource to restart the service. You'll only want to do this if changes that require a restart of a service are needed. For example, apache configuration files do not apply until a restart or graceful restart occurs.
+
+33) Which of the following syntax is correct when attempting to display the IP address of all nodes that belong to the loadbalancer role?
+
+Correct
+
+Correct answer
+knife search 'role:loadbalancer' -a ipaddress
+
+
+
+
+
+
+
+##################################################
+Cert info
+##################################################
+Confirmation Code
+9B0-762
+
+Candidate Id
+5889768639
+
+Transaction Date
+2/16/2018
+
+What to bring:
+
+You will need to use 9B0-762 as the confirmation code to begin your exam.
+Cancellation and Refund Policy:
+
+If you should need to cancel or reschedule your exam, please use the cancellation options found at https://www.examslocal.com/Candidate or email us at examsupport@psionline.com or call +1-888-504-9178, +1-702-904-7342 for additional support.
+To receive a full refund you may cancel or reschedule the examination 24 hours prior to the scheduled time.
+If you do not cancel the exam within 24 hours of your scheduled appointment, you will be charged the full original fee and you will not be issued a refund. In addition your appointment will be marked as a "no show".
+Exams must be canceled or rescheduled 24 hours before the scheduled exam time. Failing to cancel or reschedule within this time period, will result in forfeiting exam fees, exam eCredits and/or your exam eligibility will be marked as redeemed.
+Additional Exam Program Information:
+
+Please be aware this exam is remotely proctored and you must clear your workspace and close all applications and browser tabs besides the Google Chrome tab with your exam launch page. Please refer to the compatibility tool on Examslocal for ensure compatibility prior to your exam date and time.

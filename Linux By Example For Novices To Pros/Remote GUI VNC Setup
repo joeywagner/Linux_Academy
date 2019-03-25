@@ -1,0 +1,49 @@
+##################################################
+Remote GUI VNC Setup
+##################################################
+##################################################
+Secure VNC Remote Access
+##################################################
+apt-get install gnome-core xfce4
+
+
+apt-get install vnc4server
+
+vncpasswd #set a password
+
+cd .vnc
+
+#if you forget you password you can remove the password file and vncpasswd to regrenerate the password file
+
+vncserver
+
+vncserver -kill :1
+
+#now we need to edit out xstartup file so that our xvnc client will be able to properly connect
+
+vim xstartup
+#!/bin/bash
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+startxfce4 &
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xr  esources
+xsetroot -solid grey
+vncconfig -iconic &
+
+
+:wq
+
+echo "vncserver :1 -geometry 1280x800 -depth 16 -localhost &" > vncuser.sh
+chmod 755 vncuser.sh
+cp vncuser.sh /usr/bin/
+
+
+vncuser.sh
+
+
+#tunnel over ssh
+echo "ssh -L 5901:localhost:5901 -N -f -l <username> <publicipaddress>" > hostsetup.sh
+chmod 755 hostsetup.sh
+./hostsetup.sh

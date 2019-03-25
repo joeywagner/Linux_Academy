@@ -1,0 +1,847 @@
+##################################################
+Learning Python 2.7 Development
+##################################################
+##################################################
+Introduction
+##################################################
+##################################################
+Overview
+##################################################
+##################################################
+Why Python
+##################################################
+IDLE:interactive interpreter
+
+
+##################################################
+Installing Python
+##################################################
+sudo su -
+apt-get install python
+apt-get install python-pip
+
+there are a few ways to run python
+you can put your code in a file and run it
+or you can run your code interactively in a shell #also known as the python interpreter
+
+python
+the >>> tells you that you are in the interpreter
+
+import this #these are the guidelines called the zen of python
+
+>>> print "hello world"
+hello world
+
+##################################################
+Python Basics
+##################################################
+##################################################
+Python Variable Basics and Numeric Variables
+##################################################
+python variables are required to start with a letter and can only contain letters number and under scores
+
+my_variable = "hello world"
+
+numeric variables
+number_of_items = 1247 #if you include the number in quotes it will be treated as a string
+
+if you needed to force a variable to an number
+number_of_items = "1247"
+int(number_of_items) + 1
+
+float(number_of_items) + 1
+
+to see the type of a variable
+type(number_of_items)
+
+number_of_items = 1247
+total_price = 31
+price_of_one_item = total_price/number_of_items
+print price_of_one_item
+
+since we require floats we can use 31.0 or we can use the float type
+float(price_of_one_item) = total_price/number_of_items
+
+round(float(total_price) / number_of_items, 4)
+
+##################################################
+Strings
+##################################################
+python single and double quotes
+>>> server_name = "alpha_01"
+>>> print server_name
+alpha_01
+
+
+>>> server_type = 'centos'
+>>> print server_type
+centos
+
+>>> server_dec = """ my test server .... at linux academy """
+>>> server_dec
+' my test server .... at linux academy '
+
+>>> print "Server name: %s" % (server_name)
+Server name: alpha_01
+
+>>> len(server_dec)
+38
+
+to join 2 strings us the + sign
+>>> server_desc = "server " + server_name + " is running " + server_type
+>>> print server_desc
+server alpha_01 is running centos
+
+using the join function
+server_desc = " ".join(("server", server_name, "is running", server_type))
+
+>>> server_desc = " ".join(("server", server_name, "is running", server_type))
+>>> print server_desc
+server alpha_01 is running centos
+
+searching
+>>> "centos" in server_desc
+True
+
+server_desc.find("centos")
+
+>>> server_desc.find("centos")
+27 #this is the position of the word
+
+search by char position
+>>> server_desc[7:15]
+'alpha_01'
+>>> server_desc[0:6]
+'server'
+
+>>> server_desc[:6]
+'server'
+
+>>> server_desc[-6:]
+'centos'
+
+>>> server_desc[7:]
+'alpha_01 is running centos'
+
+
+>>> server_desc[server_desc.find("is"):]
+'is running centos'
+
+
+>>> server_desc = server_desc.replace('centos','CentOS')
+>>> server_desc
+'server alpha_01 is running CentOS'
+
+Strip functions
+>>> my_str =  "    text    "
+>>> my_str.strip()
+'text'
+>>> my_str.lstrip()
+'text    '
+>>> my_str.rstrip()
+'    text'
+>>> my_str.rstrip(" t ")
+'    tex'
+
+
+
+##################################################
+Standard Modules and Libraries
+##################################################
+https://docs.python.org/2/library/
+
+
+a module is s et of pre written functions that you can add to your script
+
+to use a module you have to import it
+
+>>> import subprocess
+>>> dir(subprocess) #this shows the available functions
+['CalledProcessError', 'MAXFD', 'PIPE', 'Popen', 'STDOUT', '_PIPE_BUF', '__all__', '__builtins__', '__doc__', '__file__', '__name__', '__package__', '_active', '_args_from_interpreter_flags', '_cleanup', '_demo_posix', '_demo_windows', '_eintr_retry_call', '_has_poll', 'call', 'check_call', 'check_output', 'errno', 'fcntl', 'gc', 'list2cmdline', 'mswindows', 'os', 'pickle', 'select', 'signal', 'sys', 'traceback', 'types']
+>>> host_name = subprocess.check_output("hostname")
+>>> host_name
+'joe-Ubuntu\n'
+
+
+Standard Modules (come pre-installed):
+collections: Extended functionality for Lists, Dicts, Tuples and Sets. Counter is one of the most useful
+
+datetime: Provides date manipulation functions. eg current date date.today()
+
+glob: Traverse directory structures eg to find files
+
+logging: Logging
+
+os: Operating system functions
+
+re: Regular Expressions. Pattern matching at its finest
+
+string: String manipulations and helpers. eg: ascii_lowercase returns the string 'abcdefghijklmnopqrstuvwxyz'
+
+subprocess: Run processes and get the output back. eg: subprocess.check_output("ls")
+
+timeit: How long does it take to run??
+
+urllib: Open URL or webpages
+
+
+
+Non-standard Modules
+paramiko: SSH interface
+
+pexpect: Control other applications
+
+requests: Send HTTP requests to webpages. Think web-scraping
+
+
+sudo pip install boto3
+
+>>> import boto3
+>>> dir(boto3)
+['DEFAULT_SESSION', 'NullHandler', 'Session', '__author__', '__builtins__', '__doc__', '__file__', '__name__', '__package__', '__path__', '__version__', '_get_default_session', 'client', 'docs', 'exceptions', 'logging', 'resource', 'resources', 'session', 'set_stream_logger', 'setup_default_session', 'utils']
+
+
+##################################################
+If Statement
+##################################################
+>>> import platform
+>>> dir(platform)
+['DEV_NULL', '_WIN32_CLIENT_RELEASES', '_WIN32_SERVER_RELEASES', '__builtins__', '__copyright__', '__doc__', '__file__', '__name__', '__package__', '__version__', '_abspath', '_architecture_split', '_bcd2str', '_codename_file_re', '_default_architecture', '_dist_try_harder', '_distributor_id_file_re', '_follow_symlinks', '_get_real_winver', '_ironpython26_sys_version_parser', '_ironpython_sys_version_parser', '_java_getprop', '_libc_search', '_lsb_release_version', '_mac_ver_gestalt', '_mac_ver_lookup', '_mac_ver_xml', '_node', '_norm_version', '_parse_release_file', '_platform', '_platform_cache', '_popen', '_pypy_sys_version_parser', '_release_file_re', '_release_filename', '_release_version', '_supported_dists', '_sys_version', '_sys_version_cache', '_sys_version_parser', '_syscmd_file', '_syscmd_uname', '_syscmd_ver', '_uname_cache', '_ver_output', 'architecture', 'dist', 'java_ver', 'libc_ver', 'linux_distribution', 'mac_ver', 'machine', 'node', 'os', 'platform', 'popen', 'processor', 'python_branch', 'python_build', 'python_compiler', 'python_implementation', 'python_revision', 'python_version', 'python_version_tuple', 're', 'release', 'string', 'sys', 'system', 'system_alias', 'uname', 'version', 'win32_ver']
+>>> platform.linux_distribution()
+('Ubuntu', '16.04', 'xenial')
+
+>>> if "Ubuntu" in sys_info:
+...     print "Ubuntu"
+... elif "CentOS" in sys_info:
+...     print "redhat"
+... else:
+...     print "unknown os"
+...
+Ubuntu
+
+
+>>> import random
+>>> test_score = random.randint(0,100)
+>>> if test_score >= 90:
+...     print "A"
+... elif test_score >= 80:
+...     print "B"
+... elif test_score >= 70:
+...     print "C"
+... else:
+...     print "f"
+...
+f
+>>> print test_score
+36
+>>>
+
+
+##################################################
+Loops
+##################################################
+
+>>> for number in range(1,11):
+...     if number % 2 > 0:
+...         print number
+...
+1
+3
+5
+7
+9
+>>>
+
+>>> for number in range(1,10):
+...     if number == 5:
+...         print "I have counted to %s" % number
+...         break
+...
+I have counted to 5
+>>>
+
+>>> for number in range(1,10):
+...     if number == 5:
+...         print "I have counted to %s" % number
+...         break
+...
+I have counted to 5
+>>> for number in range(1,10):
+...     if number == 5:
+...         print "I have counted to %s" % number
+... else:
+...     print "I counted from 1 to 10"
+...
+I have counted to 5
+I counted from 1 to 10
+
+>>> for number in range(1,10):
+...     if number == 5:
+...         print "I have counted to %s" % number
+...         break
+...
+I have counted to 5
+>>> for number in range(1,10):
+...     if number == 5:
+...         print "I have counted to %s" % number
+... else:
+...     print "I counted from 1 to 10"
+...
+I have counted to 5
+I counted from 1 to 10
+
+
+Clear your screen
+import os
+os.system('clear')
+
+
+>>> import random
+>>> heads_in_a_row_needed = 10
+>>> heads_in_a_row = 0
+>>> total_tries =0
+>>> while heads_in_a_row_needed != heads_in_a_row:
+...     toss = random.randint(0,1)
+...     if toss == 1:
+...         heads_in_a_row +=1
+...     else:
+...         heads_in_a_row = 0
+...     total_tries +=1
+...
+>>> print "it took %s tries to get %s heads in a row" % (total_tries, heads_in_a_row)
+it took 3167 tries to get 10 heads in a row
+>>>
+
+
+##################################################
+Lists
+##################################################
+a list is a group of numbers, characters and even data structures
+
+list = [1,2,3,4]
+list = range(1,19)
+list2 = ['a', 'b', 'c', '9']
+list3 = [1,62,"q", "i ama a member"]
+list4 = [ 1, 2, list3]
+
+people[2]
+people.append("george")
+people.remove("donny")
+people.insert(people.index('paul'), 'ben')
+
+
+import subprocess
+partition_usage_threshold = 5
+df_cmd = subprocess.check_output(['df','-k'])
+print df_cmd
+
+lines = df_cmd.splitlines()
+print lines
+
+for line in lines[1:]:
+    columns = line.split()
+    used_percentage = columns[4]
+    used_percentage = used_percentage.replace('%','')
+    if int(used_percentage) >= partition_usage_threshold:
+        print " partition %s used is beyond at %s" % (columns[0], columns[4])
+
+
+
+##################################################
+Dicts
+##################################################
+You are now going to learn about the Dictionary data structure in Python.
+A Dictionary (or "dict") is a way to store data just like a list, but instead of using only numbers to get the data, you can use almost anything.
+This lets you treat a dict like it's a database for storing and organizing data.
+
+traffic_signal = {}
+traffic_signal['read'] = 'stop'
+traffic_signal['yellow'] = 'about to be red'
+traffic_signal['green'] = 'go'
+#you can also do this in one line
+traffic_signal = { 'red' : 'stop', 'yellow' : 'about to be red', 'green' : 'go'}
+print traffic_signal['red']
+
+
+dicts are very useful as counters because they  can insure that all the key are unique
+
+
+import random
+
+results = {'heads' : 0, 'tails': 0}
+for i in range(0,1000):
+    toss = random.randint(0,2)
+    if toss ==  1:
+        results['heads']+=1
+    else:
+        results['tails']+=1
+
+for toss in results.keys():
+    print "Coinface %s showed up %s times" %(toss, results[toss])
+
+
+import subprocess
+
+users ={}
+ps_cmd = subprocess.check_output(['ps','-ef'])
+
+for line in ps_cmd.splitlines()[1:]:
+    user = line.split()[0]
+    if users.get(user):
+        users[user]+=1
+    else:
+        users[user]=1
+
+print "active users on the system are " + ','.join(users.keys())
+
+print users
+
+
+##################################################
+Tuples and Sets
+##################################################
+In Python, tuples are part of the standard language.
+This is a data structure very similar to the list data structure.
+The main difference being that tuple manipulation are faster than list because tuples are immutable.
+
+Sets are constructed from a sequence (or some other iterable object).
+Since sets cannot have duplicated, there are usually used to build sequence of unique items (e.g., set of identifiers).
+
+constant_vals = ()
+constant_vals = (39,)
+type(constant_vals)
+
+constant_vals = (39)
+
+tuples can contain other data structures
+
+sets are useful data structures when dealing with data analysis
+
+
+
+
+##################################################
+Functions
+##################################################
+A function is a block of organized, reusable code that is used to perform a single, related action.
+Functions provide better modularity for your application and a high degree of code reusing.
+
+Syntax
+def functionname( parameters ):
+   "function_docstring"
+   function_suite
+   return [expression]
+
+Example
+The following function takes a string as input parameter and prints it on standard screen.
+
+def printme( str ):
+    "This prints a passed string into this function"
+    print str
+    return
+
+
+Calling a Function
+
+#!/usr/bin/python
+
+# Function definition is here
+def printme( str ):
+   "This prints a passed string into this function"
+   print str
+   return;
+
+# Now you can call printme function
+printme("I'm first call to user defined function!")
+printme("Again second call to the same function")
+
+
+
+
+
+
+##################################################
+Exceptions
+##################################################
+Even if a statement or expression is syntactically correct, it may cause an error when an attempt is made to execute it.
+Errors detected during execution are called exceptions and are not unconditionally fatal: you will soon learn how to handle them in Python programs.
+https://docs.python.org/3/tutorial/errors.html
+
+
+
+##################################################
+File Processing
+##################################################
+there are modules for reading the properties of files, manipulating paths in a portable way, and creating temporary files.
+https://docs.python.org/2/library/filesys.html
+
+
+
+
+
+##################################################
+Classes
+##################################################
+Class: A user-defined prototype for an object that defines a set of attributes that characterize any object of the class. The attributes are data members (class variables and instance variables) and methods, accessed via dot notation.
+
+https://docs.python.org/2/tutorial/classes.html
+
+class Car()
+    def _init_(self):
+        self.color = ''
+        print "car started"
+    def accel(self,speed):
+        print "speeding up to %s mph" % speed
+    def turn(self, directions):
+        print "turning" + direction
+    def stop(self)
+        print "stop"
+
+car1 = Car()
+
+car1.color='red'
+car.accel(10)
+
+car1.turn('right')
+
+car1.stop()
+
+vars(car1)
+
+
+class RaceCar(Car):
+    def _init_(self, color):
+        self.color = color
+        self.top_speed 200
+        print "%s race car started with a top speed of %s" % (self.color, self.top_speed)
+    def accel(self, speed):
+        print "speeding up to %s mph very very fast " % speed
+
+car2 = RaceCar('blue')
+
+
+
+##################################################
+Decoraters
+##################################################
+Decorators provide a simple syntax for calling higher-order functions.
+By definition, a decorator is a function that takes another function and extends the behavior of the latter function without explicitly modifying it.
+
+like wrappers, functions wrapped inside of another function
+
+""" Decorater elapsed_time to time how long it takes to download a
+webpage"""
+
+# module for timing
+import time
+
+# module to open web pages
+import urllib2
+
+def elapsed_time(function_to_time):
+    def wrapper():
+        t0 = time.time()
+        function_to_time()
+        t1 = time.time()
+        print "Elapsed time: %s\n" % (t1 - t0)
+    return wrapper
+
+@elapsed_time
+
+def download_webpage():
+    url = 'http://linuxacademy-static-blogpost.s3-website-us-east-1.amazonaws.com/'
+    response = urllib2.urlopen(url, timeout = 60)
+    return response.read()
+
+webpage = download_webpage()
+
+@elapsed_time
+def another_function():
+    print "Doing something else"
+    for i in range(1,1000000):
+        pass
+
+
+
+##################################################
+Generators
+##################################################
+Generators are a simple and powerful tool for creating iterators.
+They are written like regular functions but use the yield statement whenever they want to return data.
+generators maintain state, this is called lazy evaluation
+
+def counter():
+i=0
+while True:
+i+=1
+return i
+a = counter()
+print a
+type(a)
+### Instead of returning a value, you generate a series of values (using
+the yield statement)
+def counter():
+i=0
+while True:
+i+=1
+yield i
+a = counter()
+type(a)
+print next(a)
+print next(a)
+print next(a)
+
+
+##################################################
+Python - 201
+##################################################
+##################################################
+Regular Expressions
+##################################################
+https://docs.python.org/2/library/re.html
+
+line = "Oct 7 17:28:59 shirazk2141 sshd[2877]: Failed password for root
+from 31.220.3.180 port 50388 ssh2"
+
+
+##################################################
+Working with JSON
+##################################################
+https://docs.python.org/2/library/json.html
+
+import urlib #for working with html
+import json #for parsing json
+
+##################################################
+Comprehension
+##################################################
+https://docs.python.org/2/tutorial/datastructures.html#list-comprehensions
+
+List comprehensions provide a concise way to create lists.
+Common applications are to make new lists where each element is the result of some operations applied to each member of another sequence or iterable, or to create a subsequence of those elements that satisfy a certain condition.
+
+##################################################
+System Automation With Fabric
+##################################################
+http://www.fabfile.org/
+
+Fabric is a Python (2.5-2.7) library and command-line tool for streamlining the use of SSH for application deployment or systems administration tasks.
+It provides a basic suite of operations for executing local or remote shell commands (normally or via sudo) and uploading/downloading files, as well as auxiliary functionality such as prompting the running user for input, or aborting execution.
+
+install fabric on the server you want to connect to
+apt-get install fabric
+
+vi fabfile.py
+from fabric.api import sudo  #this is the recommended why if importing so that you only import what you need
+def UpdateServer():
+        sudo("yum -y upgrade, pty=True")
+
+
+run with fab UpdateServer
+
+
+
+##################################################
+Web scraping with BeautifulSoup
+##################################################
+http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup
+
+"Web scraping (web harvesting or web data extraction) is a computer software
+technique of extracting information from websites."
+
+HTML parsing is easy in Python, especially with help of the BeautifulSoup library.
+In this post we will scrape a website (our own) to extract all URL's.
+
+pip install bs4
+
+pip install lxml #this is a web parser used by beautiful soup
+
+vim webscraping.py
+import urlib #module used for downloading html
+
+from bs4 import BeautifulSoup #used for HTML parsing
+
+#url
+
+url = "http://***.html"
+
+#open the site and download the html into the var html_data
+html_data =urlib.urlopen(url).read()
+
+#parse the data using BeautifulSoup
+soup = BeautifulSoup(html_data, "lxml")
+
+#find the specific tags needed
+#we are using find_all since there are many
+#find returns an iterable
+seactions = soup.find_all
+
+
+##################################################
+Python - 301
+##################################################
+##################################################
+Pivot Tables using Pandas
+##################################################
+http://pandas.pydata.org/
+pandas is an open source, BSD-licensed library providing high-performance, easy-to-use data structures and data analysis tools for the Python programming language.
+
+pip install pandas
+
+wget http://labfiles.linuxacademy.com/python/pandas/temps.csv
+
+import datetime as dt #the dt aliases datetime
+import pandas as pd
+import numpy as np
+df = pd.read_csv("temps.csv")
+df.head
+
+##################################################
+Database connections
+##################################################
+
+https://docs.python.org/2/library/sqlite3.html
+
+##################################################
+Django
+##################################################
+https://www.djangoproject.com/
+
+
+create a virtual env
+
+pip install virtualenv
+
+virtualenv <name of your env>
+
+cd <name of your env>
+
+source bin/activate
+
+deactivate
+
+pip install Django #in your VE
+
+django-admin.py startproject website .
+
+python manage.py migrate
+
+python manage.py startapp <appname>
+
+vim website/settings
+edit allowed_host
+
+edit installed_apps <appname>
+
+vim website/urls.p
+
+edit from.django import url, include
+
+in url patterns
+url(r'', include('<appname>.urls', namespace='<appname>'))
+
+
+vim <appname>/urls.py
+from django.urls import curl
+from . import views
+urlpatterens = [
+    url(r'^$', views.index, name='index'),
+]
+
+mkdir <appname>/templates
+mkdir <appname>/templates/<appname>
+vim <appname>/templates/<appname>/index.html
+
+<p> my awesome simple app </p>
+
+vim <appname>/views.py
+def index(request):
+    """ First page that the user sees"""
+    return render(request, '<appname>/index.html')
+
+
+#run the application
+python manage.py runserver <ip_address> ex. 0.0.0.0:80
+
+then goto the server ip in a web browser
+
+
+##################################################
+Webservices / APIs
+##################################################
+virtualenv jsonapp
+
+cd jsonapp
+source bin/activate
+pip install bs4 lxml Flask
+
+vim myapp.py
+import urllib
+from bs4 import BeautifulSoup
+import json
+from flask import Flask, url_for, Response
+
+app = (Flask(__name__) #this is how you instantiate a application in flask
+
+def get_course_data():
+    course ={}
+    # url. Go ahead and open it in your browser
+    url = "http://labfiles.linuxacademy.com/python/scraping/courses.html"
+    # open the site and download the html into the var html_data
+    html_data = urllib.urlopen(url).read()
+    # parse the data using BeautifulSoup
+    soup = BeautifulSoup(html_data,"lxml")
+
+    # find the specific tags needed
+    # we are using find_all since there are many
+    # find returns an iterable
+    sections = soup.find_all('a', attrs={'class':'col-xs-12 p-x-0 library-content-box-container content-aws'})
+
+    # for each of the found sections
+    for section in sections:
+        # section at this point is a BeautifulSoup object
+        # but you can further parse if if needed
+        # we are using find since we know there is only one
+        # find returns a non-iterable
+        title =  section.find('span', attrs={"class":"library-content-title"})
+        # extract the length of the section too
+        length = section.find('span', attrs={"class":"library-content-length"})
+        # hyperlink from the section
+        url = section['href']
+        # open and get data from the url
+        html_data = urllib.urlopen(url).read()
+        # All we are interested in is the instructor,
+        # which has the instructor-name tag
+        instructor = BeautifulSoup(html_data,"lxml").find_all('span', attrs={"class":"instructor-name"})
+        courses[title.text]={ 'instructor' : instructor[0].text,
+                               'url' : url,
+                               'lenght' : length.txt}
+    return courses
+
+courses = get_cource_data()
+
+@app.route('/')
+def infomation():
+    return """ this application gives information """
+
+@app.route('/courses')
+def all_courses():
+    js = json.dumps(courses, sort_keys=True, indent=4,)
+    resp = Response(js , status=200, mimetype='application/json')
+    return resp
+
+
+@app.route('/course/<courcename>')
+def course_detail(courcename):
+    js = json.dumps(courses[coursename], sort_keys=True, indent=4,)
+    resp = Response(js , status=200, mimetype='application/json')
+    return resp
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
+
+
+exit the file
+
+python myapp.py #this starts the app

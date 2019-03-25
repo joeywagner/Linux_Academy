@@ -1,0 +1,3126 @@
+##################################################
+LPIC-1: System Administrator - Exam 101
+##################################################
+##################################################
+Lecture: Introduction - Getting the Most Out of Linux Academy
+##################################################
+##################################################
+Lecture: Introduction to the LPIC-1 Exam
+##################################################
+##################################################
+Lecture: Syllabus
+##################################################
+
+
+
+##################################################
+Topic 101: System Archtitecture
+##################################################
+##################################################
+Lecture: 101.1 - Determine and Configure Hardware Settings (Filesystem and Device Files)
+##################################################
+procfs is a pseudo file system
+
+df -h #this wont show use the /proc file system but if we cat /etc/fstab we can see that the file system is mounted
+
+cd /proc  #this is where our procfs is mounted
+cat mounts #mount information
+cat interrupts #
+
+cat ioports #
+
+cat dma #dmas are used to access memory directly
+
+#####another pseudo file system is sysfs
+contains information about system hardware like procfs
+
+
+##################################################
+Lecture: 101.1 - Determine and Configure Hardware Settings (Tools and Utilities to Explore System Devices)
+##################################################
+
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 101.2 - Boot the System (Boot Process - sysvinit - Power On to System Prompt)
+##################################################
+What is sysvint?
+-This is a package containing a group of processes that are responsible for controlling the basic functions of the system
+-Primarily, it includes the 'init' application, which is the very first application started by the kernel after the boot loader starts the boot process.
+-The init program then controls the startup running and shutdown of all other programs (it becomes the 'parent' of everything running on the system)
+
+
+#run levels are defined in the /etc/inittab
+id:3:initdefault   #the default runlevel is 3
+
+#you never wan to set the default runlevel to 0 or 6, halt or reboot
+
+
+##################################################
+Lecture: 101.2 - Boot the System (Boot Process - systemd and upstart - Power On to System Prompt)
+##################################################
+What is systemd?
+-this is an initialization system for bootstrapping the user space and managing all the processes subsequent to the system start
+-It was developed to replace sysvinit init system and address some of the shortcomings of it.
+Currently systemd is the default initialization and service management process of almost all modern linux distributions
+-Systemd is generally considered to be more efficient, allows parallel operations, has fewer dependencies, allows for service prioritization and precedence, and reduces start up time
+
+#the inittab file does exist on systemd systems but it is no longer used
+
+#on systemd systems the /etc/inittab contains information about
+
+cd /usr/lib/systemd/system  #this is where the available targets are located
+
+ll | grep .target #this will list just the targets
+
+#the other management type is upstart, an ubuntu system, but its no longer used
+
+
+
+##################################################
+Lecture: 101.2 - Boot the System (Init and RC Scripts - sysvinit)
+##################################################
+cd /etc #on a sysvinit system we will see the rc#.d
+
+cd rc.d  #this is where our runleve scripts will be located
+
+cd init.d #this is where the service start scripts are located
+service <service> start|stop|restart
+
+runlevel #this will show us our current runlevel
+
+cd rc5.d
+ll
+#anything that starts with a S is a startup script and anything thats starts with a K is a kill script
+
+
+##################################################
+Lecture: 101.2 - Boot the System (System Targets and systemd)
+##################################################
+cat /etc/inittab  #this is the file that has information about our targets
+
+cd /usr/lib/systemd/system/
+
+ll
+
+ll default.target
+default.target -> graphical.target   #currently our default target is graphical.target
+
+cat graphical.target  #we see a bunch of key/value paires
+[Unit]
+Description=Graphical Interface
+Documentation=man:systemd.special(7)
+Requires=multi-user.target  #in order for the graphical target to start all the dependencies for the multi-user.taget must be started
+Wants=display-manager.service
+Conflicts=rescue.service rescue.target
+After=multi-user.target rescue.service rescue.target display-manager.service
+AllowIsolate=yes
+
+cat the multi-user.target
+[Unit]
+Description=Multi-User System
+Documentation=man:systemd.special(7)
+Requires=basic.target  #we can see that it requires the basic target
+Conflicts=rescue.service rescue.target
+After=basic.target rescue.service rescue.target
+AllowIsolate=yes
+
+cat basic.target
+[Unit]
+Description=Basic System
+Documentation=man:systemd.special(7)
+Requires=sysinit.target
+After=sysinit.target
+Wants=sockets.target timers.target paths.target slices.target
+After=sockets.target paths.target slices.target
+
+cat sysinit.target  #this is the top level target, there are no requires
+[Unit]
+Description=Basic System
+Documentation=man:systemd.special(7)
+Requires=sysinit.target
+After=sysinit.target
+Wants=sockets.target timers.target paths.target slices.target
+After=sockets.target paths.target slices.target
+
+
+##################################################
+Lecture: 101.3 - Change Runlevels / Boot Targets and Shutdown or Reboot System (systemd, sysvinit, and upstart)
+##################################################
+for sysvinit system
+runlevel #this will give you the current runlevel of the system
+N 3  #what is the N, that means that the previous runlevel is unavailable
+runlevel #prints the previous and current SysV runlevel if they are known.  #give you the previous and current runlevel
+
+init
+
+telinit #exactly the same as the init command, just legacy, in some ditros the init command is a link to the telinit command
+
+init 5 #this will change the runlevel
+
+runlevel
+
+init 3
+
+runlevel
+
+cat /etc/inittab
+id:3:initdefault  #you don not want to set this to 0 or 6
+
+:q
+
+reboot #to reboot your system
+
+shutdown -r 0 #this will reboot now
+shutdown -r NOW #will reboot now
+
+wall "Hello"  #this will send hello to all logged
+
+shutdown -r 30 -k "YOU BETTER GET OFF" #the -k mean broadcast
+
+shutdown -c #you wont be able to stop the above shutdown command
+
+#to be able to stop the command
+shutdown -r 30 &  #this will run shutdown in the background
+
+halt #shuts the system down
+
+halt --verbose
+
+#####systemd
+
+systemctl get-default #Return the default target to boot into. This returns the target unit name default.target is aliased (symlinked) to.
+
+systemctl set-default graphical.target  #Set the default target to boot into. This sets (symlinks) the default.target alias to the given target unit.
+
+ll /usr/lib/sysetd/system/default.target
+
+systemctl list-units --type=target #this will list all of the available targets
+
+runlevel
+
+systemctl isolate multi-user.target   #Start the unit specified on the command line and its dependencies and stop all others. If a unit name with no extension is given, an extension of ".target" will be assumed.
+
+runlevel
+
+systemctl poweroff
+
+systemctl reboot
+
+
+##################################################
+Hands-on Lab: Change Runlevels and Boot Targets on a Sysvinit System
+##################################################
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Change Runlevels and Boot Targets on a Systemd System
+##################################################
+
+
+
+
+
+
+##################################################
+Exercise: Boot the System (System Management and Architecture)
+##################################################
+1.  Find the log file, that corresponds to the output of the command dmesg and copy it into an output file named 'file.out' in user's home directory.
+sudo cat /var/log/syslog >> /home/user/file.out
+sudo cat /var/log/dmesg >> /home/user/file.out
+
+NOTE: In some distributions the location of the log file that dmesg uses is the syslog and in others it is the /var/log/dmesg.
+
+2. Write a command that obtains the PID of any process owned by 'user'. Use that PID to look up the current envrionment variables of the process as listed in one of the special directories in this lesson.
+ps aux | grep processname
+sudo cat /proc/PID/environ >> file.out
+
+3. From a command line, list all currently enabled modules on the system. Determine if your system has a module enabled for the network filesystem. If yes, what is the name?
+lsmod >> file.out
+lsmod | grep nfs
+lsmod | grep nfs >> file.out
+4. Use the lspci command to list all the devices on your system, in verbose mode and containing all IRQ or address information.
+lspci -v -xx
+5. Use the default pci.ids file for vendor/device ID lookups and create your own version. Rewrite some of the information in that new file, passing it into the lspci command and display the output.
+cp /usr/share/hwdata/pci.ids /home/username/my.ids
+lspci -x -i /home/username/my.ids | grep MODULECHANGED
+
+6. Using some of the commands we have learned thus far, find a filesystem module that is LOADED but you know is NOT in use. Identify its module name below:
+lsmod | grep "0 $"
+
+NOTE: We can use grep to search for a 0 and a space at the end of the line, signifying that a module is not in use
+
+lsmod | grep "0 $" | grep fs
+
+NOTE: We can use grep again to look for lines that have "fs" in them.
+
+
+echo isofs >> file.out
+
+7. Now unload that module and verify it is no longer loaded in the kernel. List the steps to unload the module and how you verified it was no longer loaded.
+sudo modprobe -r (or --remove or rmmod) isofs
+lsmod | grep isofs
+
+8. Without using modprobe, reload and verify that recently removed module. List the steps to load the module and how you verified it was now loaded.
+sudo insmod /usr/lib/modules/`uname -r`/kernel/fs/isofs/isofs.ko
+
+lsmod | grep isofs
+
+NOTE: `uname -r` is a handy shortcut to lookup the version number of the kernel and insert it into the path. If you know the correct path already, you might not need the shortcut, but it also serves as a failsafe to make sure you have the correct location.
+
+
+##################################################
+Exercise: Change Runlevels / Boot Targets and Shutdown or Reboot System
+##################################################
+1. Create a new .service file named "mylogger.service" located in /etc/systemd/system directory, hint: you can copy sshd.service from /usr/lib/systemd/system if you want.
+ [root@linuxacademy]# cd /etc/systemd/system; cp /usr/lib/systemd/system/sshd.service mylogger.service
+
+2. Make sure the script executes only AFTER the sshd.service, service has been started.
+[Unit]
+Description=My logger service
+After=sshd.service
+
+3. In the [Service] section you can remove all settings except for ExecStart.
+[Service]
+ExecStart
+
+4. Using the ExecStart option make it so that whenever the script is started it adds the following line "logger -f /var/log/messages "Hello world!".
+ExecStart=/usr/bin/logger -f /var/log/messages "Hello world! $(date)"
+
+5. In the [Install] section make it so that the WantedBy option starts the service, if the service is enabled, when the system enters the multi-user.target, once completed, save and exit.
+[Install]
+WantedBy=multi-user.target
+The complete file contents should look like this:
+[Unit]
+Description=My logger service
+After=sshd.service
+
+[Service]
+ExecStart=/usr/bin/logger -f /var/log/messages "Hello world! $(date)"
+
+[Install]
+WantedBy=multi-user.target
+
+6. Using systemctl enable the service.
+[root@linuxacademy]# systemctl enable mylogger
+
+7. Using systemctl start the service.
+[root@linuxacademy]# systemctl start mylogger
+
+8. View the status of the mylogger service.
+[root@linuxacademy]# systemctl status mylogger
+
+9. Using tail verify that the logger service sent a message to the /var/log/messages log file.
+[root@linuxacademy]# tail -f /var/log/messages
+
+10. Reboot your system.
+[root@linuxacademy]# reboot
+
+11. Log back into the system and verify the service is running and also has added another line to the /var/log/messages log file.
+[root@linuxacademy]# tail -f /var/log/messages
+
+12. Send a global message to the system stating "It worked!"
+[root@linuxacademy]# wall "It worked!"
+
+
+##################################################
+QUIZ RESULTS: TOPIC 101 - SYSTEM ARCHITECTURE (SECTION QUIZ)
+##################################################
+1) The 'procfs' filesystem is referred to as a 'pseudofilesystem'.
+Correct
+
+Correct answer
+True
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1096/lesson/1/module/125
+
+2) The 'lsmod' utilities will list which of the following when run?
+Correct
+
+Correct answer
+kernel modules that are loaded into memory
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1096/lesson/1/module/125
+
+3) Which of the following runlevel numbers translates to the 'reboot' runlevel (either in 'sysvinit' or 'systemd')?
+Correct
+
+Correct answer
+6
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1096/lesson/4/module/125
+
+4) Which of the following represents the correct boot order of a 'sysvinit' system?
+Correct
+
+Correct answer
+BIOS, MBR, boot loader, kernel, device initialization, root filesystem mount
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1096/lesson/3/module/125
+
+5) Which of the following filesystem types are referred to as a 'pseudofilesystem'?
+Correct
+
+Correct answer
+sysfs
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1096/lesson/1/module/125
+
+
+##################################################
+Topic 102: Linux Installation and Package Management
+##################################################
+##################################################
+Lecture: 102.1 - Design Hard Disk Layout (Layout and Installation Example)
+##################################################
+#one thing to consider when planning your partitioning is, what is the use case for this server?
+
+#your initial mount point is always going to be the root filesystem /
+#you can create it own partition for every directory except /etc, /etc but be with the root directory
+
+#add a new mount point
+/boot  2048
+swap 6GiB
+/home 17GiB
+
+##################################################
+Lecture: 102.1 - Design Hard Disk Layout (LVM Basics and Swap Space)
+##################################################
+What is LVM?
+
+First it stands for logical volume manager.
+
+Its a set of tools for allocating disks, striping, mirroring and resizing logical volumes.
+
+LVM allows you to work with one or more disk drives or partitions, in groups that can be dynamically assigned to pools or storage to be used as filesystems on your linux system.
+
+It provides a ton of flexibility in maintaining your operating system storage so that it can continue to crow as usage and needs demand
+
+#the parts of lvm
+-Allows the creation of 'groups' of disks or partitions that can be assembled into a single (or multiple) filesystems
+-Componants are
+  -PV (physical volumes)
+  --the basic starting point or unit of storage LVM
+  --Corresponds to a disk or partition on the system (either local to the system like /dev/sdb1 or storage area network block device)
+-VG (Volume Group)
+--A combination of one or more PVs to create a pool of available storage
+--Made up of PEs (physical extants) that break up the PVs into units that can be used in a VG
+-LV (logical volume)
+--This is the useable space that gets allocated from a VG
+--We can create multiple LVs from a single VG, using all or part of the pool space from that VG
+--Can be resized (increased or decreased) as needed and based on the available space in the VG pool
+--If the VG pool runs out of space, simply add one or more additional PVs, add them to the VG, and then to the LV
+
+LVM advantages
+-Flexibility
+--you can adjust the size of a logical volume, up or down as needed
+--Allocating additional physical volumes to a volume group when needed allows you to dynamically make more space available as your needs grow
+-Snapshots
+--make a point in time backup of your LVM
+--These can then be used for easy (no conflict) backups, restores, migrations, testing, etc.  --all without affecting the 'live' filesystems
+
+-Swap space
+--Partition
+---swap is commonly allocated in a dedicated partition during the installation processs (but can be added later as needed).
+---minimul swap partition size should be egual t0 the system memory + 50%
+--OLD RULE --system memory x2 up to 8gh system memory
+
+-File
+--A swap file can be created with the 'dd' utility it is a specially formatted file of a predetermined size that you can then activate as and use as virtual memory swap like a partition.
+--if you use a swap file rather than a swap disk it will have significant performance impact to overall system than a normal swap partition.  because it will be sharing disk IO with the file system that it shares.
+
+##################################################
+Lecture: 102.2 Install a Boot Manager (Working with GRUB Legacy)
+##################################################
+for legacy grub before centos6, and before ubuntu 14.04
+
+#when you are in the kernel select menu of the boot process if you hit 'e' you will be able to edit
+
+cd /boot  #this is called the boot volume for legacy grub
+
+cd grub  #stage boot files
+grub.conf
+
+#the changes to the grub.cfg will happen on the next boot
+
+#you cant enter the grub editor from the command prompt by typing grub
+
+#to reinstall grub
+grub-install /dev/sda1   or /dev/hd0
+
+##################################################
+Lecture: 102.2 Install a Boot Manager (Working with GRUB2)
+##################################################
+boot keyring
+
+cd /etc/default
+cat grub
+
+cd /etc/grub.d
+
+#if you want to add a custom entry add it to 40, 41, 42
+vim 40_custom
+
+which grub2-mkconfig  #grub-mkconfig — Generate a GRUB configuration file.
+#it will display what it would do to the screen
+
+cd /boot/grub2
+cp grub.cfg grub.orig
+grub2-mkconfig > /boot/grub2/grub.cfg
+
+or
+grub2-mkconfig -o /boot/grub2.cfg
+
+reboot
+
+#reinstall or backup grub
+grub2-install /dev/sda
+
+grub2-install --boot-directiory=/tmp/ /dev/sda  #this will tell the system where the rescue grub2 loader is and tell the system where to install it
+
+##################################################
+Lecture: 102.3 - Manage Shared Libraries (Shared Library Overview and Configuring Library Locations)
+##################################################
+#what are shared libraries?
+#libraries are files that contain reusable functions that other applications use by linking to them in the library file
+#any shared library file name is have a .so in it, it stands for shared object
+#the are typically in the following locations
+ll /lib/*.so
+ll /usr/lib/*.so
+ll /usr/lin64/*.so  #on 64 bit systems
+ll /usr/local/lib/*.so  #this is where applications or a 3rd party would install their libraries
+ll /usr/share/*.so
+
+####
+if you see a library thats linked to another thats usually the common name linked to a version
+
+there are 2 ways that a application links to a shared objects
+1.)  a static link, the application contains a full copy of the object that it uses
+  the reason for this is version control
+  the disadvantage is that the application foot print will be larger
+  bug fixes in the library wont be updated, unless the application distributes a  new version
+
+2.) dynamic linking, the application uses the shared object externally using what are called stubs
+
+ldd ./<name of application>  #you either have to be in the relative directory or pass the full path.
+ldd will show you all the shared objects that an application uses
+
+ldconfig #ldconfig - configure dynamic linker run-time bindings
+#ldconfig creates links and caches the most recent runtime bindings
+/lib/ld.so          run-time linker/loader
+/etc/ld.so.conf     File containing a list of colon, space, tab, newline, or comma-separated directories in which to search for libraries.
+/etc/ld.so.cache    File  containing an ordered list of libraries found in the directories specified in /etc/ld.so.conf, as well as those found in /lib and /usr/lib.
+/etc/ld.so.conf.d/
+
+#to update the ld.so.cache
+ldconfig
+
+#we can also update libraries with the env variable LD_LIBRARY_PATH
+echo $LD_LIBRARY_PATH
+
+##################################################
+Lecture: 102.4 - Use Debian Package Management (Repositories and Package Managers)
+##################################################
+#APT stands for advances package tool
+
+apt-get, aptitude, synaptic
+
+cd /etc/apt
+ll
+
+sources.list  #this will generally define the sources that come on your system
+#there are 2 types of repositories
+1.) deb, this is intended to be for binaries, thats where you're going to install libraries, applications etc.
+2.) deb-src, this is where the related source code for the packages that are identified by the deb repo
+
+#one you have your system setup you need to update the apt package caches on your system
+apt-get update  #this will pull down the package cache for each of the repo url listed in sources.list
+
+cd sources.list.d/
+#create a file
+vim archive.list
+#  adding an archive repository for partner applications
+deb http://archive.canonical.com/ubuntu trusty partner
+:wq
+
+#once you add or change a repo you have to update the apt repo cache
+apt-get update
+
+apt-get install telnet
+
+apt-get install vsftpd  #a more secure ftp program
+
+apt-get upgrade  #this will upgrade the existing system packages to the latest version
+
+apt-get dist-upgrade  #this will upgrade the distribution to the next version
+
+vim /etc/vsftpd.conf
+#another comment
+:wq
+
+apt-get remove vsftpd  #this will remove the package, but doesnt remove any config files
+
+apt-get install vsftpd
+
+apt-get purge  #this will remove the application and any configuration files
+
+## you always want to run an update before you run a apt search
+apt-get update
+
+apt-cache search vsftpd  #this will show you if the package is available
+
+apt-cache show vsftpd #this will show you more information about the package
+
+apt-cache showpkg vsftpd  #this will show you more technical information about a package, this will show dependencies and services that the package starts
+
+##################################################
+Lecture: 102.4 - Use Debian Package Management (Using the dpkg Utility)
+##################################################
+#To install 1 single package without any dependencies
+
+#download a few packages
+apt-get install -d telnet #the -d means download only, it will download the package and dependencies
+
+apt-get install -d apache2
+
+mkdir tmp
+cd tmp
+
+/var/cache/apt/archives/  #this is where apt downloads packages to
+
+cp /var/cache/apt/archives/telnet*.deb .
+cp /var/cache/apt/archives/apache2  .
+
+#lets get some info
+dpkg --info telnet
+
+dpkg --status telnet  #this will tell use if telnet is installed
+
+dpkg --contents telnet  #this will tell use whats in the deb
+
+dpkg --install telnet  #-i for shortcut
+
+##to remove the package
+dpkg --remove telnet #this will not remove the configs, -r for short
+
+dpkg --purge telnet #this will remove the configd and the package, -P for short
+
+dpkg -- install apache2  #we will see that there are dependencies, it will install but will not be configured
+
+apt-get install -f  #this will look at any incomplete or unconfigured installations that install the required dependencies, and it will complete the install of apache
+
+dpkg -L telnet  #--listfile, tells you all the files that are going to be installed
+
+dpkg --search /usr/share/doc/telnet telnet  #-S for short, this will tell you what applications provide what files, this search looks for /usr/share/doc/telnet or telnet
+
+dpkg --search /usr/share/doc/telnet
+
+#dpkg does let you force an installation
+dpkg -i --force-depends apache2 #this would install without installing dependencies
+
+dpkg -i --force-conflicts apache  #this would install the package if there was a config conflict
+
+dpkg -i --force-reinstreq apache #this will reinstall missing files from the package  #this will over write configs
+
+apt-get install postfix
+
+dpkg-reconfigure postfix
+
+##################################################
+Lecture: 102.5 - Use RPM and YUM Package Management (Working with YUM)
+##################################################
+yum is the package manager
+rpm is the package installation application
+
+vim /etc/yum.conf
+#at the bottom you will see that yum can have repositories listed in the .conf but typically they will be in the /etc/yum.repos.d
+:q
+
+cd /etc/yum.repos.d/
+cat /etc/yum.repos.d/CentOS-Base.repo
+#only one of the urls can be active at the same time, yum will test all the mirrors in the mirror list and test for the fastest/closest one, its a way to distribute the load
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+
+cat /var/log/yum
+
+#the primary difference between yum and apt, is when you issue a apt-get update, apt updates the local apt cache, yum upgrade updates the cache and upgrades the packages, yum upgrade is the same as update
+
+#there is no distribution upgrade like there is with apt
+
+yum install telnet
+
+yum install mysql-server
+
+yum install --enablerepo centosplus <packagename>  #this is how you would enable a repo for one package install
+
+yum install --downloadonly telnet#to only download the package and not install it
+
+#yum will download the package to /var/cache/yum/x86_64/6/base/packages
+ll | grep telnet
+#we can see the telnet.rpm
+
+#if you want to download to a different location use the yumdownloader
+yumdownloader --source telnet #download only the source code
+
+yumdownloader --urls telnet #to get the url where telnet would be downloaded from
+
+yumdownloader --resolve telnet #to download the packages and the dependencies
+
+yumdownloader --destdir /root telnet #to download the package to /root
+
+yum install -y telnet #to not be prompted
+
+##################################################
+Lecture: 102.5 - Use RPM and YUM Package Management (Using the rpm Utility)
+##################################################
+#an rpm is the same as a deb
+#an rpm contains either the source or the binary application file, build instructions if it source,
+name of the software,
+version information,
+build date and system build,
+description,
+locations for where all the files need to go,
+dependencies,
+and check sums.
+
+#the rpm database is like the apt-cache except rather than being just a cache file, its a number of different binary database files
+cd /var/lib/rpm  #all of these files are database or associated, the db files themselves are __db.00#
+
+rpm -ivh <packagename>  #install, verbose, hash, hash is the status bar for the install
+or
+rpm --install --verbose --hash <packagename>
+
+rpm -e <packagename>  #to erase a package
+
+rpm -q telnet  #query if the package is installed
+
+rpm -qi telnet #query, information, this give more detailed information about a package
+
+rpm -ql telnet #query, list files in a package
+
+#what is you want information about a package that isnt installed
+rpm -q telnet #nothing will be displayed with any of these because the package isnt installed
+rpm -qi telnet
+rpm -ql telnet
+#but if you include a -p on any of these commands it will provide package information, if its not installed you gave to provide the full package name
+rpm -qip telnet-0.17-60.el7.x86_64.rpm
+
+rpm -qRp rpm -qip telnet-0.17-60.el7.x86_64.rpm #-R means requires, List capabilities on which this package depends.
+
+rpm -ivh --nodeps mysql #this will install mysql without dependencies
+
+#to verify the integrity of a package with gpg keys and rpm, -K will check the signiture of the keyfile that is either installed on the system
+rpm -K telnet-0.17-60.el7.x86_64.rpm
+
+#if the package is installed
+rpm -V telnet  #no news is good news
+
+#to verify after a package has been installed
+yum install vsftpd
+vim /etc/vsftpd/ftpusers
+user
+:wq
+rpm -V vsftpd
+S.5....T.  c /etc/vsftpd/ftpusers
+
+#to verify all installed packages on a system
+rpm -Va
+
+#to verify all package configuration files
+rpm -Vac
+
+rpm -Uvh <packagename> #this will upgrade or install a package, while removing previous versions if they exist
+
+##cpio is a compressed file format
+rpm2cpio telnet #this will stream the output to our console
+rpm2cpio telnet > telnetrpm.cpio #this will redirect the output to the file
+
+mkdir tmp
+cd tmp
+cpio -idmv <../telnetrpm.cpio
+cd usr
+cd bin
+./telnet #the application is fully extracted and is available for you to run for this directory
+
+##################################################
+Hands-on Lab: Manage Shared Libraries
+##################################################
+Shared libraries are traditionally contained in the /lib, /lib64, /usr/lib, and /usr/lib64 directories.
+Occasionally they are also found in /usr/local/lib, typically when installed with a third-party application.
+
+[root@ip] ls -al /lib64/*.so
+
+which sshd
+/usr/sbin/sshd
+ldd /usr/sbin/sshd
+
+[root@ip] cd /etc/
+[root@ip] ls -al ld.so.cache
+ldconfig
+
+[root@ip] ldconfig
+[root@ip] ls -al ld.so.cache
+
+cd /etc/ld.so.conf.d
+
+[root@ip] echo $LD_LIBRARY_PATH
+##################################################
+Hands-on Lab: Use Debian Package Management - Repositories and the Apt Tools
+##################################################
+
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Use Red Hat Package Management - Yum and Repositories
+##################################################
+
+
+
+
+
+
+
+##################################################
+Exercise: Use Debian Package Management
+##################################################
+1. Running the appropriate command as 'sudo', list all of the packages currently installed on the system using the appropriate package management command and options.
+user@linuxacademy:~$ sudo dpkg -l
+(Output)
+Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name                                                 Version                                    Architecture Description
++++-====================================================-==========================================-============-========================================================
+=======================
+ii  account-plugin-aim                                   3.12.9-1ubuntu1.1                          amd64        Messaging account plugin for AIM
+ii  account-plugin-facebook                              0.12+15.04.20150415.1-0ubuntu2             all          GNOME Control Center account plugin for single signon -
+facebook
+(Output) NOTE: Your output will differ based on the packages installed on your system
+
+2. The package called 'linux-headers-generic' will be installed on your system. Using the appropriate package management command and options, list the files and directories that are installed with that package.
+user@linuxacademy:~$ sudo dpkg -L linux-headers-generic
+(Output)
+/.
+/usr
+/usr/share
+/usr/share/doc
+/usr/share/doc/linux-headers
+/usr/share/doc/linux-
+headers
+/copyright
+/usr/share/doc/linux-headers/changelog.gz
+(Output) NOTE: Your output may be slightly different depending on kernel version and distribution
+
+ 3. Using the standard Debian/Ubuntu based "advanced packaging tool", install and then remove the package called 'nano' and note the results.
+user@linuxacademy:~$ sudo apt-get install nano
+(Output)
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Suggested packages:
+  spell
+The following NEW packages will be installed:
+  nano
+0 upgraded, 1 newly installed, 0 to remove and 30 not upgraded.
+Need to get 173 kB of archives.
+(Output) NOTE: Package installation will proceed with more output, this is the first 10 lines...
+user@linuxacademy:~$ sudo apt-get remove --purge nano
+(Output)
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be REMOVED:
+  nano*
+0 upgraded, 0 newly installed, 1 to remove and 30 not upgraded.
+After this operation, 610 kB disk space will be freed.
+Do you want to continue? [Y/n] y
+(Output) NOTE: Package removal will continue with more output, this is the first 10 lines
+
+4.  Using the tool from Step #3, execute the command with the appropriate options to DOWNLOAD (but not install) the 'nano' package. Once downloaded, use the standard package management command as in Steps #1 and #2 to install the downloaded package.
+user@linuxacademy:~$ sudo apt-get download nano
+user@linuxacademy:~$ ls -al nano*
+(Output) -rw-r--r-- 1 root root 172710 Jul 16  2014 nano_2.2.6-3_amd64.deb
+user@linuxacademy:~$ sudo dpkg -i nano_2.2.6-3_amd64.deb
+(Output)
+Preparing to unpack nano_2.2.6-3_amd64.deb ...
+Unpacking nano (2.2.6-3) ...
+Setting up nano (2.2.6-3) ...
+update-alternatives: using /bin/nano to provide /usr/bin/editor (editor) in auto mode
+update-alternatives: using /bin/nano to provide /usr/bin/pico (pico) in auto mode
+Processing triggers for install-info (5.2.0.dfsg.1-6) ...
+Processing triggers for doc-base (0.10.6) ...
+Processing 2 added doc-base files...
+Registering documents with scrollkeeper...
+Processing triggers for man-db (2.7.0.2-5) ...
+(Output) NOTE: Your version and output may differ depending on the distribution and version used
+
+ 5. Using the advanced package tool (from Steps #3 and #4), completely remove the 'nano' package. Use the appropriate options to remove the package and all configuration files that may have been added or changed.
+user@linuxacademy:~$ sudo apt-get remove --purge nano
+(Output)
+The following packages will be REMOVED:
+  nano*
+0 upgraded, 0 newly installed, 1 to remove and 30 not upgraded.
+After this operation, 610 kB disk space will be freed.
+Do you want to continue? [Y/n] y
+(Output) NOTE: Your output will continue, these are just the initial lines to expect
+
+6. Clean up your workspace by issuing the appropriate options to the advanced configuration tool (will remove downloaded package files).
+user@linuxacademy:~$ sudo apt-get clean
+(Output) No output unless there are errors
+
+##################################################
+Exercise: Use RPM and YUM Package Management
+##################################################
+1. Running the appropriate command as 'sudo', list all of the packages currently installed on the system using the appropriate package management command and options.
+user@linuxacademy:~$ sudo yum list installed
+(Output)
+Loaded plugins: fastestmirror, langpacks
+Loading mirror speeds from cached hostfile
+ * base: repos.dfw.quadranet.com
+ * epel: mirror.compevo.com
+ * extras: repos.dfw.quadranet.com
+ * updates: repos.dfw.quadranet.com
+Installed Packages
+GConf2.x86_64                                                                3.2.6-8.el7                                                      @base/$releasever
+GeoIP.x86_64                                                                 1.5.0-9.el7                                                      @base
+ModemManager-glib.x86_64                                                     1.1.0-6.git20130913.el7                                          @base/$releasever
+
+NetworkManager.x86_64                                                        1:1.0.0-14.git20150121.b4ea599c.el7                              @base/$releasever
+(Output) NOTE: Your output will differ based on the packages installed on your system
+
+2. The package called 'nano' will be installed on your system. Using the appropriate package management command and options, list the files and directories that are installed with that package.
+user@linuxacademy:~$ sudo rpm -ql nano
+(Output)
+/etc/nanorc
+/usr/bin/nano
+/usr/bin/rnano
+/usr/share/doc/nano-2.3.1
+.....
+
+
+ 3. Using the standard Red Hat/CentOS based "update manager", install and then remove the package called 'nano' and note the results. Install the utilities package for the 'update manager' as discussed in the course so we can download packages.
+
+user@linuxacademy:~$ sudo yum install nano
+(Output)
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Suggested packages:
+  spell
+The following NEW packages will be installed:
+  nano
+0 upgraded, 1 newly installed, 0 to remove and 30 not upgraded.
+Need to get 173 kB of archives.
+(Output) NOTE: Package installation will proceed with more output, this is the first 10 lines...
+user@linuxacademy:~$ sudo yum autoremove nano
+(Output)
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be REMOVED:
+  nano*
+0 upgraded, 0 newly installed, 1 to remove and 30 not upgraded.
+After this operation, 610 kB disk space will be freed.
+Do you want to continue? [Y/n] y
+(Output) NOTE: Package removal will continue with more output, this is the first 10 lines
+user@linuxacademy:~$ sudo yum install yum-utils
+4.  Using the tool from Step #3, execute the command with the appropriate options to DOWNLOAD (but not install) the 'nano' package. Once downloaded, use the standard package management command as in Steps #1 and #2 to install the downloaded package.
+user@linuxacademy:~$ sudo yumdownloader nano
+user@linuxacademy:~$ ls -al nano*
+(Output) -rw-r--r-- 1 root root 172710 Jul 16  2014 nano_2.2.6-3_amd64.rpm
+user@linuxacademy:~$ sudo rpm -ivh nano_2.2.6-3_amd64.rpm
+(Output)
+Preparing to unpack nano_2.2.6-3_amd64.deb ...
+Unpacking nano (2.2.6-3) ...
+Setting up nano (2.2.6-3) ...
+update-alternatives: using /bin/nano to provide /usr/bin/editor (editor) in auto mode
+update-alternatives: using /bin/nano to provide /usr/bin/pico (pico) in auto mode
+Processing triggers for install-info (5.2.0.dfsg.1-6) ...
+Processing triggers for doc-base (0.10.6) ...
+Processing 2 added doc-base files...
+Registering documents with scrollkeeper...
+Processing triggers for man-db (2.7.0.2-5) ...
+(Output) NOTE: Your version and output may differ depending on the distribution and version used
+
+ 5. Using the 'update management' tool (from Steps #3 and #4), completely remove the 'nano' package. Use the appropriate options to remove the package and all configuration files that may have been added or changed.
+user@linuxacademy:~$ sudo yum autoremove nano
+(Output)
+The following packages will be REMOVED:
+  nano*
+0 upgraded, 0 newly installed, 1 to remove and 30 not upgraded.
+After this operation, 610 kB disk space will be freed.
+Do you want to continue? [Y/n] y
+(Output) NOTE: Your output will continue, these are just the initial lines to expect
+
+6. Clean up your workspace by issuing the appropriate options to the 'update management' tool (will remove downloaded package files).
+user@linuxacademy:~$ sudo yum clean all
+(Output) No output unless there are errors
+
+##################################################
+Topic 103: GNU and Unix Commands
+##################################################
+##################################################
+Lecture: 103.1 - Work on the Command Line (Shells, Sourcing and Special Characters)
+##################################################
+#other shells
+yum install tcsh ksh zsh
+
+#is the nologin file is in place no one will be able to login to the system, you will have to boot into rescue mode and remove the file
+touch /etc/nologin
+
+#execute 2 commands but the second will run only if the first runs
+/bin/true && "this executed"
+
+#to execute 2 commands even if the second one fails
+/bin/false || echo "This executed"
+
+#to show exit code
+echo $?
+
+##################################################
+Lecture: 103.1 - Work on the Command Line (Environment Variables - Displaying, Setting and Using)
+##################################################
+noclobber  #noclobber stops you from over writing an existing file with a redirect
+
+set  #to view all variables set for your setting for the current session
+
+#if you just want to see environment variables
+env
+
+#we can set things on or off
+set | grep SHELLOPTS
+SHELLOPTS=braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
+
+#a command is on with
+set -o
+
+#a command is off with
+set +o
+
+#turn on noclobber
+set -o noclobber
+set | grep SHELLOPTS
+SHELLOPTS=braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor:noclobber
+
+#turn off noclobber
+set +o noclobber
+set | grep SHELLOPTS
+SHELLOPTS=braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor
+
+#the path env variable, the path variable is used so that the system know where to look for binary executable files
+/usr/bin #is typically one of the places that contains executable files, thats why you can execute them with just the command name and you dont have to use the relative path or direct path to them
+
+mkdir tmpbin
+cd tmpbin
+vim test.sh
+#! /bin/bash
+
+echo "my test script"
+:wq
+
+chmod 755 test.sh
+cd
+
+#we cant just run test.sh from here because they system doesnt know where to find that executable file, we would have to run the command like this tmpdir/test.sh  if we werent in the tmpdir directory
+
+echo $PATH  #this is where your system will look for executables
+export PATH=$PATH:/root/tmpbin
+#now your system knows to look for executables in that directory and you can run the srcipt with
+export PATH=$PATH:/root/tmpdir
+test.sh
+my test script
+
+#to set new environment variables
+export MYPATH=/home/user
+echo $MYPATH
+#if you want to add something to that variable
+export MYPATH=$MYPATH:/etc
+echo $MYPATH
+
+export MYSHORTCUT=128
+echo $MYSHORTCUT
+
+###an important environment variable is the history variable, it sets how your command history is set for your user
+cat ~/.bash_history  #by default this is the last 500 commands that you have executed
+
+echo $HISTCONTROL #its set to ignoredups, that means if you enter the same command multiple times in a row it will only keep 1 in the .bash_history file
+ignoredups
+
+#there is another value that we can set in our history control that is ignore space
+#what that means is you precede a command with a blank space it will not be tracked in the .bash_history file
+export HISTCONTROL=ignorespace
+echo $HISTCONTROL
+
+#you can only set 1 of the 2 values at a time ignorespace or ignoredups
+
+echo $HISTFILESIZE  #this sets how many lines the .bash_history file will track
+
+##################################################
+Lecture: 103.2 - Process Text Streams Using Filters (Textutils Package - sort, nl, wc, expand, cut, paste, join, uniq, head, and tail)
+##################################################
+mkdir tmp
+#create the below files
+-rw-rw-r--. 1 linux linux 0 May 19 08:57 alpha.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:57 columns.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 file1.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 file2.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 numbers.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 passwordlist.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 shodowlist.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 tabs.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 unique.txt
+-rw-rw-r--. 1 linux linux 0 May 19 08:58 users.txt
+
+cat numbers.txt
+1
+5
+30
+13
+55
+511
+6
+2
+49
+
+sort numbers.txt
+1
+13
+2
+30
+49
+5
+511
+55
+6
+
+sort -n numbers.txt
+1
+2
+5
+6
+13
+30
+49
+55
+511
+
+vim numbers.txt
+1       5
+5       9
+30      32
+13      89
+55      0
+511     76
+6       4
+2       99
+49      134
+
+sort -n numbers.txt  #this will sort by the second column
+1       5
+2       99
+5       9
+6       4
+13      89
+30      32
+49      134
+55      0
+511     76
+
+sort -k2  -n numbers.txt  #this will sort by the second column
+55      0
+6       4
+1       5
+5       9
+30      32
+511     76
+13      89
+2       99
+49      134
+
+sort alpha.txt
+
+#to capture your sort
+sort alpha.txt > sortedalpha.txt
+
+#how to number lines in a file
+nl /etc/passwd #this will not assign blank lines numbers
+nl -ba /etc/passwd  #this will assign blank lines numbers
+
+wc -l #how to count the number of lines in a file
+wc -w #count the number of words
+wc -c #count the number of charaters
+
+
+#expand converts tabs to spaces, expand is valuable when you have a file that is separated by spaces
+#this is kind of useless
+
+cut #cut - remove sections from each line of files
+cut -c 5 columns.txt #this will cut the 5th character
+cut -c 1-5 columns.txt #this will cut out characters 1-5
+cut -c 7-11 columns.txt #this will cut out characters 7-11
+
+cut -d: -f 1 columns.txt #this will use the delimiter : to cut field 1
+cut -d: -f 2 columns.txt #this will use the delimiter : to cut field 2
+
+paste file1.txt file2.txt  #this will combine the 2 files but doesnt interpret any of the data
+
+[linux@localhost tmp]$ cat file1.txt file2.txt
+value1
+value2
+value3
+value4
+value1
+value2
+value3
+value4
+[linux@localhost tmp]$ paste file1.txt file2.txt
+value1	value1
+value2	value2
+value3	value3
+value4	value4
+[linux@localhost tmp]$ join file1.txt file2.txt  #join will only give you the uniq values but only if they are in both files
+value1
+value2
+value3
+value4
+
+
+uniq  #allows you to extract unique lines from a file
+uniq text.txt
+
+uniq -d unique.txt #this will print the lines that are duplicate
+uniqu -D unique.txt #this will print duplicated lines the number of times that they are duplicated
+
+head text.txt #this will print the first 10 lines of a file
+head -n 15 text.txt #this will print the top 15 lines
+
+tail text.txt #this will show you the last 10 lines of a file
+tail -n 15 #this will print the last 15 lines of a file
+tail -f var/log/messages  #this will print any new log transactions of the log
+
+##################################################
+Lecture: 103.2 - Process Text Streams Using Filters (Textutils Package - split, cat, od, pr, fmt, sed, more, and less)
+##################################################
+cat #allows us to display an entire file from top to bottom
+
+tac #will give the reverse output from cat, from bottom to top
+
+split #split - split a file into pieces
+split test.txt #split will create a number of files from the original, created a file xaa, every file will begin with xaa, xab, xac...
+split -a 4 test.txt #this will make a file xaaa, the file name will be 4 characters long
+
+split -b 512 -a 3 test.txt #this will create a number of files that are 512 bytes in size
+split -a 3 -l 10 test.txt  #this will spilt up the file into 10 line files
+
+od #ocatal dump
+reset #cat or oding a file can put the terminal in a bad state, if you enter reset, sometimes more than once it will reset the terminal
+
+od -d #desinmal format
+od -f #fload
+od -x #hexadecimal format
+
+
+pr #pr - convert text files for printing
+
+pr --columns=2 test.txt  #this will print everything into 2 columns
+
+fmt -10 test.txt
+
+tr #tr - translate or delete characters
+
+tr 'a' 'A' < test.txt  #this will replace a with A
+tr 'a-e' 'A-E' < test.txt #this will replace a range or characters
+
+sed #to replace an entire word, sed is a substitute utility
+sed 's/the/THE/g'  #this will replace globally replace the
+sed 's/the/THE/' #this will replace the first instance of the in each line
+
+sed -e 's/the/NOW/g' -e 's/NOW/NEVER/g' test.txt #this will replace multiple words
+
+sed -f sedoptions.txt test.txt   #this will read in a file that contains everything you want replaced
+
+more #more  is  a  filter for paging through text one screenful at a time.
+
+less #Less  is  a  program similar to more (1), but which allows backward movement in the file as well as forward movement.
+
+##################################################
+Lecture: 103.3 - Perform Basic File Management (Command and Terms - ls, cd, pwd, mkdir, file, globbing, touch, stat, cp, and mv)
+##################################################
+ls #ls - list directory content
+ls -l #long listing
+ls -al
+
+
+mkdir -p dir1/dir2/dir3
+
+file #file — determine file type
+file /etc/*
+
+touch #create a file
+touch -t 2017020312 file.txt #sets the time on a file
+
+stat /dev/sda1
+stat -f test.txt
+stat -t test.txt print the information in terse form
+
+pwd
+
+cp -i #this will prompt you for overwrite
+cp -f #force overwrite
+cp -ru #copy only when the SOURCE file is newer than the destination file or when the destination file is missing
+cp -x #stay on this file system
+
+##################################################
+Lecture: 103.3 - Perform Basic File Management (Commands and Terms - dd, rmdir, rm, and find)
+##################################################
+mkdir test1
+rmdir test1
+mkdir test1
+cd test1
+echo "this is a test" > test.txt
+cd ..
+rmdir test1 #you will not be able to remove this directory because it is not empty
+rmdir -p test1 #to remove a long path of empty directories
+rmdir --ignore-fail-no-non-empty test1
+
+mkdir test2
+echo "this is a test 2" test2/test2.txt
+rm mylog.log
+rm -ri   #the -i option would cause us to be prompted before every removal
+rm -rf   #to not be prompted
+
+
+find /home/user -name "mytest.txt" -print  #-print was on older systems, on newer systems it is not required
+find /home/user -name "my*.txt"
+find /home/user -iname "my.txt" #the iname means case insensitive
+
+find / -user "user"  #this will find all files and directories that are owned by the user user
+
+find /home/user -iname "my*.txt" -exec chmod 777 {} \; #{} this means run this command on every thing that the find command finds
+
+
+df -h
+dd if=dev/sr0 of=cdimagbkup.iso
+
+#you can also make a backup of your mater boot record
+dd if /dev/xvde of=mbrbkup.img count=1 bs=512  #the first 512 of the first disk is the MBR
+
+dd if=mbrbkup.img of=/dev/xvde count=1 bs=512 #to restore the mbr
+
+##################################################
+Lecture: 103.3 - Perform Basic File Management (Archiving and Compression Utilities)
+##################################################
+tar #GNU `tar' saves many files together into a single tape or disk archive, and can restore individual files from the archive.
+
+tar -cvf  etcbkup.tar /etc #-cvf create verbose file
+
+tar -tvf etcbkup.tar #-t list the contents of an archive
+
+tar -xvf etcbkup.tar #to extract a tar archive
+
+2 types for compression with tape archive, available by default is gzip
+
+tar -cvzf etcbkup.tar.gz /etc
+tar -tvzf etcbkup.tar.gz
+
+#to create a bzip2 backup
+tar -cvjf etcbkup.tar.bz2 /etc
+tar -tvjf etcbkup.tar.gz
+
+cd tmp
+tar -xcjf ../etcbkup.tar.bz2 #for gzip -xcvf
+
+#you can also use the compression utilities directly without tar
+which gzip
+which bzip2 #this is used for both compression and uncompression
+which gunzip   #to unzip gzip
+
+#xz is a newer compression utility but it may not be installed by default
+
+gzip etcbkup.tar
+gunzip etcbkup.tar.gz
+
+bzip2 etcbkup.tar
+bzip2 -d etcbkup.tar.bz2
+
+which xz
+xz --compress etcbkup.tar
+
+xz -9v etcbkup.tar #the most compact compression type
+
+xz -d etcbkup.tar.xz  #to decompress
+
+xz -l etcbkup.tar.xz #to list information about the archive
+Strms  Blocks   Compressed Uncompressed  Ratio  Check   Filename
+   1       1  7,287.6 KiB     31.4 MiB  0.227  CRC64   etcbkup.tar.xz
+
+##################################################
+Lecture: 103.4 - Use Streams, Pipes and Redirects
+##################################################
+#everything that you see is standard output
+
+#redirecting
+ls -al > file.txt
+cat /vat/log/messages | more
+
+#
+ll /dev/std*
+lrwxrwxrwx. 1 root root 15 May 18 17:19 /dev/stderr -> /proc/self/fd/2
+lrwxrwxrwx. 1 root root 15 May 18 17:19 /dev/stdin -> /proc/self/fd/0
+lrwxrwxrwx. 1 root root 15 May 18 17:19 /dev/stdout -> /proc/self/fd/1
+
+| #sending command output from one command to another
+> #redirect sending output to a file or device, overwrite, unless noclobber is on
+>> #append redirection
+
+sort numbers.txt
+sort < numbers.txt
+
+ll > etc.txt
+or
+ll 1> etc.txt #there 2 commands are the samething
+
+sort 0< numbers.txt #the redirect has to be in front of the redirect operator
+
+find / -iname "*.sh" 2> /dev/null  #there are no error messages streamed to the terminal
+
+find / -iname "*.sh" 2> /dev/null > output.txt #we cant discard error messages and sent the standard output to a file
+
+2>&1> #redirect error and output
+
+find / -iname "*.sh" > /dev/null 2>&1
+
+##
+tee  #will redirect standard output to the terminal and the screen
+find / -iname "*.sh" | tee results.log
+
+###
+find / -name "*.sh" | xargs ls -al > filelist.txt
+
+
+##################################################
+Lecture: 103.5 - Create, Monitor and Kill Processes (Terms and Utilities - PID, ps, pstree, free, uptime, signals, kill, killall, pkill, and pgrep)
+##################################################
+PID #the process id, used to refer to a running process
+
+ps #ps displays information about a selection of the active processes., this show the processes for the current user
+
+ps -a
+
+ps au
+
+ps aux
+
+#there are 2 ways of listing all of that information
+ps aux #this is the linux way
+ps -ef #this is the unix way
+
+ps aux | ps -ef
+
+pstree #pstree  shows running processes as a tree.
+
+pstree -a #Show command line arguments.
+
+pstree -a -p #this will give you the pid
+
+##to view system memory
+free
+
+free -m #megabytes
+
+free -hm #human readable
+
+free -h -c 5 -s 5 #this will run 5 times once every 5 seconds
+
+free -h -c 2 -s 3 -t #you will get totals at the end
+
+free -h -l  #this will display low and high memory statistics for the system
+
+uptime #display the amount of time that the system has been running
+09:27:52 up 18:47,  2 users,  load average: 0.00, 0.01, 0.05
+
+###
+yum install httpd
+systemctl enable httpd
+systemctl start httpd
+
+system status httpd
+
+ps aux | grep httpd
+
+sending a signal with a nice term is called a sigterm
+
+killall httpd #killall sends a signal to all processes running any of the specified commands.
+
+##
+pkill
+
+pkill -SIGHUP -U apache  #this will kill any processes that the apache user is running
+
+pkill -SIGKILL -U apache
+
+##
+pgrep -U apache
+
+pkill -SIGHUP -U apache
+
+
+##################################################
+Lecture: 103.5 - Create, Monitor and Kill Processes (Terms and Utilities - jobs, bg, fg, &, priority, nohup, and screen)
+##################################################
+vim #if we run vim it starts in the foreground
+
+ctrl+z #will stop a process thats running in the foreground, it sends the TSTP signal to the application
+
+ps -ef | grep vim
+#we can see that the vim process is still active
+jobs #tells us where we have applications have stopped
+bg #background
+bg 1 #job 1 will go to the background
+
+fg #it will operate on the process in the jobs lisat that has a + sign next to it
+fg 1
+
+##if you need to run a command that will run if you disconnect
+nohup ./test.sh
+
+##screen
+
+##################################################
+Lecture: 103.6 - Modify Process Execution Priorities (Using nice, renice, and top)
+##################################################
+nice #
+renice +19 <pid>
+
+top#
+
+
+
+##################################################
+Lecture: 103.7 - Search Text Files Using Regular Expressions (Using grep, egrep, fgrep and Regular Expressions)
+##################################################
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Packages and File Creation)
+##################################################
+vim -g #this will start a gui
+gvim #is a gui based vim
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Modes of Operation)
+##################################################
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Navigating Files)
+##################################################
+
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Add and Remove Text)
+##################################################
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Copy, Paste, Search, and Replace)
+##################################################
+
+
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Executing External Commands)
+##################################################
+
+
+
+
+
+
+
+
+##################################################
+Lecture: 103.8 - Perform Basic File Editing Operations Using Vi (Working with Files and Buffers)
+##################################################
+ZZ  #write and quit
+:saveas myfile.txt  #this will save new changes as a new file
+
+
+
+##################################################
+Exercise: Work on the Command line (Manipulate Text on the Command Line)
+##################################################
+1.From your user's home directory, create a directory called 'exercises'. Change to that directory. Using any of the commands from our videos on the subject, create two '0' byte files called 'test1.txt' and 'test2.txt'. List them with all attributes.
+user@linuxacademy:~$ mkdir exercises
+user@linuxacademy:~$ cd exercises
+user@linuxacademy:~/exercises$ touch test1.txt test2.txt
+OR
+user@linuxacademy:~/exercises$ echo "" > test1.txt (and then test2.txt)
+user@linuxacademy:~/exercises$ ls -al
+(Output)
+total 8
+drwxrwxr-x  2 user user 4096 Aug  8 18:10 .
+drwxr-xr-x 36 user user 4096 Aug  8 18:10 ..
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test1.txt
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test2.txt
+(Output) NOTE: Your output may differ slightly
+
+2. Using redirection, list the contents of the current directory and redirect that output into the test1.txt file.
+user@linuxacademy:~/exercises$ ls -al > test1.txt
+
+3. Using redirection, add the command line output message "Hello World" to the file 'test2.txt'.
+user@linuxacademy:~/exercises$ echo "Hello World" > test2.txt
+
+4. Concatenate the contents of the two files 'test1.txt' and 'test2.txt' into a single file called 'test3.txt'.
+user@linuxacademy:~/exercises$ cat test1.txt test2.txt > test3.txt
+
+5. List the contents of the resulting directory and take that output and append it to the 'test3.txt' file.
+user@linuxacademy:~/exercises$ ls -al >> test3.txt
+user@linuxacademy:~/exercises$ cat test3.txt
+(Output)
+total 8
+drwxrwxr-x  2 user user 4096 Aug  8 18:10 .
+drwxr-xr-x 36 user user 4096 Aug  8 18:10 ..
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test1.txt
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test2.txt
+Hello World
+drwxrwxr-x  2 user user 4096 Aug  8 18:10 .
+drwxr-xr-x 36 user user 4096 Aug  8 18:10 ..
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test1.txt
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test2.txt
+-rw-rw-r--  1 user user    0 Aug  8 18:10 test3.txt
+(Output)
+
+
+##################################################
+Exercise: Process Text Streams Using Filters (Using wc, split, cat, and diff Commands)
+##################################################
+1. Using the appropriate command for these exercises (see the title), display the number of files and directories within the /var filesystem (the number only).
+root@tcox1:~# ls -al /var
+total 52
+drwxr-xr-x 13 root root   4096 Aug 22 23:21 .
+drwxr-xr-x 23 root root   4096 Sep 28 17:35 ..
+drwxr-xr-x  2 root root   4096 Apr 10  2014 backups
+drwxr-xr-x 17 root root   4096 Sep  7 15:55 cache
+drwxrwxrwt  2 root root   4096 Aug  6 15:31 crash
+drwxr-xr-x 57 root root   4096 Sep  7 15:55 lib
+drwxrwsr-x  2 root staff  4096 Apr 10  2014 local
+lrwxrwxrwx  1 root root      9 Sep 27  2014 lock -> /run/lock
+drwxrwxr-x 12 root syslog 4096 Sep 28 17:35 log
+drwxrwsr-x  2 root mail   4096 Sep 27  2014 mail
+drwxr-xr-x  2 root root   4096 Sep 27  2014 opt
+lrwxrwxrwx  1 root root      4 Sep 27  2014 run -> /run
+drwxr-xr-x  7 root root   4096 Aug  6 15:52 spool
+drwxrwxrwt  2 root root   4096 Sep 28 17:36 tmp
+drwxr-xr-x  3 root root   4096 Aug 22 23:21 www
+root@tcox1:~# ls -a /var | wc -l
+15
+
+2. Display the contents of the /var/log/dmesg (or syslog depending on your distribution) and pipe that to the appropriate command to count the number of lines in the file. Repeat the command only display the number of characters in the same file.
+root@tcox1:~# cat /var/log/syslog | wc -l
+15666
+root@tcox1:~# cat /var/log/syslog | wc -m
+1600027
+
+3. Create a directory called 'tmp' in root's home directory. Change to that directory and copy the /etc/fstab file to it. Using the appropriate command, list any differences between that file and the original. Edit the file and append some text to the end and rerun the command, listing and differences between the file in this directory and the original file.
+root@tcox1:~# mkdir tmp
+root@tcox1:~# cd tmp
+root@tcox1:~/tmp# cp /etc/fstab .
+root@tcox1:~/tmp# diff fstab /etc/fstab
+root@tcox1:~/tmp# echo "Some Text" >> fstab
+root@tcox1:~/tmp# diff fstab /etc/fstab
+2d1
+< Some Text
+
+4. Add a number of new lines to the file in the ~/tmp directory created in Step #3 above. Run a command to list the differences in the original file and pipe that to the command to count the number of changed lines.
+root@tcox1:~/tmp# echo "Some Text2" >> fstab
+root@tcox1:~/tmp# echo "Some Text32" >> fstab
+root@tcox1:~/tmp# echo "Some Text432" >> fstab
+root@tcox1:~/tmp# echo "Some Text5432" >> fstab
+root@tcox1:~/tmp# diff fstab /etc/fstab
+2,6d1
+< Some Text
+< Some Text2
+< Some Text32
+< Some Text432
+< Some Text5432
+root@tcox1:~/tmp# diff fstab /etc/fstab | wc -l
+6
+
+5. Using the log file from Step #2 above, create new files from that file, each one 100 bytes in length that start with the word 'bytes'. Finally, create new files from the log file in Step #2, each one 100 lines in length that start with the word 'lines'.
+ root@tcox1:~/tmp# split -l 100 /var/log/syslog lines
+root@tcox1:~/tmp# split -b 100 /var/log/syslog bytes
+(OUTPUT WILL DIFFER BASED ON SIZE OF LOG - SAMPLE LISTING CONCATENATED FOR SPACE)
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwse
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwsf
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwsg
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwsh
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwsi
+-rw-r--r-- 1 root root    100 Sep 28 17:42 byteszwsj
+-rw-r--r-- 1 root root     27 Sep 28 17:42 byteszwsk
+-rw-r--r-- 1 root root    111 Sep 28 17:40 fstab
+-rw-r--r-- 1 root root  10407 Sep 28 17:43 linesaa
+-rw-r--r-- 1 root root  10487 Sep 28 17:43 linesab
+-rw-r--r-- 1 root root   9860 Sep 28 17:43 linesac
+-rw-r--r-- 1 root root  10113 Sep 28 17:43 linesad
+-rw-r--r-- 1 root root  14033 Sep 28 17:43 linesae
+-rw-r--r-- 1 root root  10009 Sep 28 17:43 linesaf
+-rw-r--r-- 1 root root  10075 Sep 28 17:43 linesag
+-rw-r--r-- 1 root root   9785 Sep 28 17:43 linesah
+-rw-r--r-- 1 root root  10025 Sep 28 17:43 linesai
+-rw-r--r-- 1 root root  14089 Sep 28 17:43 linesaj
+(END CONCATENATED OUTPUT)
+
+
+##################################################
+Exercise: Process Text Streams Using Filters (Using the cut Command)
+##################################################
+1. Create a file called 'test.txt' in /root/tmp containing at least five sentences of varying lengths, each sentence on its own line. List the file.
+       root@tcox1:~/# mkdir tmp
+
+       root@tcox1:~/# cd tmp/
+
+root@tcox1:~/tmp# vim test.txt
+root@tcox1:~/tmp# cat test.txt
+Now is the time for all good men to come to the aid of their country
+Sally Sell Sea Shells by the Sea Shore
+How Many Would a Wood Chuck Chuck if a Wood Chuck Could Chuck Wood
+Lorem Ipsum Salt
+HULK SMASH!
+
+2. Using the 'cut' command, display only those letters in the 2nd column of that file.
+root@tcox1:~/tmp# cut -c2 test.txt
+o
+a
+o
+o
+U
+
+3. With the appropriate options, display the 3rd through 6th characters of each line (range).
+root@tcox1:~/tmp# cut -c3-6 test.txt
+w is
+lly
+w Ma
+rem
+LK S
+
+4. Extract and display JUST the first eight characters from the beginning of each line.
+root@tcox1:~/tmp# cut -c-8 test.txt
+Now is t
+Sally Se
+How Many
+Lorem Ip
+HULK SMA
+
+5. Using the '/etc/passwd' file, display only the first full field value (username) of each line by indicating which column to cut and identifying the field delimiter in the file.
+root@tcox1:~/tmp# cut -d':' -f1 /etc/passwd
+root
+daemon
+bin
+sys
+sync
+games
+man
+lp
+(NOTE: YOUR OUTPUT MAY DIFFER)
+
+
+##################################################
+Exercise: Use Streams, Pipes and Redirects
+##################################################
+1. Create a new directory in user's home directory called 'redirection'. Change to that directory. Issue a directory listing command for the /etc directory and redirect that to a file called 'etc.list' in such a way that the file content would be overwritten if it existed.
+[user@tcox3 ~]$ mkdir redirection
+[user@tcox3 ~]$ cd redirection
+[user@tcox3 redirection]$ ls /etc > etc.list
+[user@tcox3 redirection]$ cat etc.list
+adjtime
+aliases
+alternatives
+anacrontab
+ansible
+asound.conf
+at.deny
+at-spi2
+audisp
+audit
+avahi
+bash_completion.d
+bashrc
+binfmt.d
+bluetooth
+bonobo-activation
+centos-release
+(NOTE: Sample Output - Actual output should be longer)
+
+2. Issue a full directory listing command (with all file and directory attributes) for the /etc directory. Redirect the output to a file called 'etc.full' that would append the contents if it existed. Issue another command to list the /etc/ssh directory contents, redirecting to the same file. Ensure that the contents are appended and not overwritten.
+[user@tcox3 redirection]$ ls -al /etc >> etc.full
+[user@tcox3 redirection]$ cat etc.full
+total 1424
+drwxr-xr-x. 118 root root     8192 Sep 24 09:56 .
+dr-xr-xr-x.  18 root root     4096 Jun  3 13:08 ..
+-rw-r--r--.   1 root root       16 Jun  3 10:03 adjtime
+-rw-r--r--.   1 root root     1518 Jun  7  2013 aliases
+drwxr-xr-x.   2 root root     4096 Sep 21 12:26 alternatives
+-rw-------.   1 root root      541 Jul 30  2014 anacrontab
+drwxr-xr-x    3 root root       48 Sep 21 12:23 ansible
+-rw-r--r--.   1 root root       55 Mar  5  2015 asound.conf
+-rw-r--r--.   1 root root        1 Oct  7  2014 at.deny
+drwxr-xr-x.   2 root root       31 Mar 31 03:52 at-spi2
+drwxr-x---.   3 root root       41 Mar 31 03:51 audisp
+drwxr-x---.   3 root root       79 Jun  3 10:07 audit
+(NOTE: Actual output will be longer, truncated for space purposes)
+[user@tcox3 redirection]$ ls -al /etc/ssh >> etc.full
+[user@tcox3 redirection]$ tail etc.full
+-rw-r--r--.  1 root root     242153 Mar 21  2016 moduli
+-rw-r--r--.  1 root root       2208 Mar 21  2016 ssh_config
+-rw-r--r--.  1 root root       4760 Nov  5 18:24 sshd_config
+-rw-------.  1 root root       4361 May 12  2015 sshd_config.rpmnew
+-rw-r-----.  1 root ssh_keys    227 Dec 19  2014 ssh_host_ecdsa_key
+-rw-r--r--.  1 root root        162 Dec 19  2014 ssh_host_ecdsa_key.pub
+-rw-r-----.  1 root ssh_keys    387 Aug  6  2015 ssh_host_ed25519_key
+-rw-r--r--.  1 root root         82 Aug  6  2015 ssh_host_ed25519_key.pub
+-rw-r-----.  1 root ssh_keys   1675 Dec 19  2014 ssh_host_rsa_key
+-rw-r--r--.  1 root root        382 Dec 19  2014 ssh_host_rsa_key.pub
+
+
+
+##################################################
+Exercise: Search Text Files Using Regular Expressions (Using sed)
+##################################################
+1. Using any method of creation you choose, create a text file called 'test.txt' with the following contents:
+Now is the time for all good men to come to the aid of their country
+1
+11
+111
+11
+1
+World at war
+World peace
+World domination
+user@linuxacademy:~$ vim test.txt
+>> In CMD Mode, press 'i' to insert
+>> Type or copy/paste the above text into the file
+>> Press 'ESC', then ':wq' to save and exit the file
+
+2. Using the one of the commands from our video tutorials, display the contents of this file so that the numbers in the middle will display in order from lowest number to highest number.
+user@linuxacademy:~$ cat test.txt | sort -n
+(Output)
+Now is the time for all good men to come to the aid of their country
+World at war
+World domination
+World peace
+1
+1
+11
+11
+111
+(Output)
+
+3. Using the same command from #2, add an additional command that will take the output and remove any lines that are repeated.
+user@linuxacademy:~$ cat test.txt | sort -n | uniq
+(Output)
+Now is the time for all good men to come to the aid of their country
+World at war
+World domination
+World peace
+1
+11
+111
+(Output)
+
+4. Display the contents of the 'test.txt' file to the console, but replace all occurences of the word "World" with the word "Global".
+user@linuxacademy:~$ sed 's/World/Global/g' test.txt
+(Output)
+Now is the time for all good men to come to the aid of their country
+1
+11
+111
+11
+1
+Global at war
+Global peace
+Global domination
+(Output)
+
+5. Manipulate the content of the 'test.txt' file so that all occurences of the letter 'o' are capitalized. Using redirection, take the result of that command and create a new file called 'mytest.txt'. Display that file and verify the change in case to the letters.
+user@linuxacademy:~$ sed 's/[oO]/O/g' test.txt > mytest.txt && cat mytest.txt
+NOTE: You can use two lines to accomplish the same thing (i.e. 'cat' on a separate line)
+(Output)
+NOw is the time fOr all gOOd men tO cOme tO the aid Of their cOuntry
+1
+11
+111
+11
+1
+WOrld at war
+WOrld peace
+WOrld dOminatiOn
+(Output)
+
+
+
+
+
+##################################################
+Exercise: Search Text Files Using Regular Expressions (Using grep, egrep, fgrep and Regular Expressions)
+##################################################
+1. Logged in as user, obtain a full listing of all processes running on the system and filter the results so that only processes that contain the keyword 'ssh' are included in the output results.
+[user@tcox3 redirection]$ ps aux | grep ssh
+root       621  0.0  0.0  82508  3600 ?        Ss   09:56   0:00 /usr/sbin/sshd -D
+user      2452  0.0  0.0  52836   576 ?        Ss   09:56   0:00 /usr/bin/ssh-agent /bin/sh -c exec -l /bin/bash -c "env GNOME_SHELL_SESSION_MODE=classic gnome-session --session gnome-classic"
+user      3190  0.0  0.0 112640   960 pts/0    R+   10:08   0:00 grep --color=auto ssh
+
+2. Noticing that the actual command run to display those processes is one of the results, rerun the command from Step #1, but pipe it to another command to filter out the grep command itself.
+[user@tcox3 redirection]$ ps aux | grep ssh | grep -v grep
+root       621  0.0  0.0  82508  3600 ?        Ss   09:56   0:00 /usr/sbin/sshd -D
+user      2452  0.0  0.0  52836   576 ?        Ss   09:56   0:00 /usr/bin/ssh-agent /bin/sh -c exec -l /bin/bash -c "env GNOME_SHELL_SESSION_MODE=classic gnome-session --session gnome-classic"
+
+3. Run a command to list all processes, piping the results in order to display only processes that have a '[' (open square bracket character). You want to save cpu cycles so make sure you are not using a regular expression.
+[user@tcox3 redirection]$ ps aux | fgrep [
+root         2  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+kthreadd]
+
+root         3  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+ksoftirqd/0]
+
+root         5  0.0  0.0      0     0 ?        S<   12:07   0:00
+[
+kworker/0:0H]
+
+root         6  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+kworker/u30:0]
+
+root         7  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+migration/0]
+
+root         8  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+rcu_bh]
+
+root         9  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+rcuob/0]
+
+root        10  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+rcuob/1]
+
+root        11  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+rcuob/2]
+
+root        12  0.0  0.0      0     0 ?        S    12:07   0:00
+[
+rcuob/3]
+
+...
+
+
+4. Once again, run a command listing all processes, but use a command that allows extended regular expressions to display all processes running that contain two consecutive 's' characters in them.
+[user@tcox3 redirection]$ ps aux | egrep ss
+dbus       492  0.0  0.0  29764  2840 ?        Ss   09:56   0:00 /bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+root       621  0.0  0.0  82508  3600 ?        Ss   09:56   0:00 /usr/sbin/sshd -D
+root      2259  0.0  0.1 373980  5468 ?        Sl   09:56   0:00 gdm-session-worker [pam/gdm-password]
+user      2267  0.0  0.3 860364 13240 ?        Ssl  09:56   0:00 gnome-session --session gnome-classic
+user      2275  0.0  0.0  13944   608 ?        S    09:56   0:00 dbus-launch --sh-syntax --exit-with-session
+user      2276  0.0  0.0  29732  1788 ?        Ss   09:56   0:00 /bin/dbus-daemon --fork --print-pid 4 --print-address 6 --session
+user      2436  0.0  0.0 143760   284 ?        S    09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2437  0.0  0.0 209960  1036 ?        Sl   09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2452  0.0  0.0  52836   576 ?        Ss   09:56   0:00 /usr/bin/ssh-agent /bin/sh -c exec -l /bin/bash -c "env GNOME_SHELL_SESSION_MODE=classic gnome-session --session gnome-classic"
+user      2471  0.0  0.0  28644  1568 ?        S    09:56   0:00 /bin/dbus-daemon --config-file=/etc/at-spi2/accessibility.conf --nofork --print-address 3
+user      2475  0.0  0.0 129656  3340 ?        Sl   09:56   0:00 /usr/libexec/at-spi2-registryd --use-gnome-session
+user      2707  0.0  0.3 893084 12992 ?        Sl   09:56   0:00 /usr/libexec/evolution-addressbook-factory
+user      3248  0.0  0.0 112640   960 pts/0    R+   10:11   0:00 grep -E --color=auto ss
+
+5. Try the other two methods of obtaining the same results in Step #3.
+ [user@tcox3 redirection]$ ps aux | egrep s{2}
+dbus       492  0.0  0.0  29764  2840 ?        Ss   09:56   0:00 /bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+root       621  0.0  0.0  82508  3600 ?        Ss   09:56   0:00 /usr/sbin/sshd -D
+root      2259  0.0  0.1 373980  5468 ?        Sl   09:56   0:00 gdm-session-worker [pam/gdm-password]
+user      2267  0.0  0.3 860364 13240 ?        Ssl  09:56   0:00 gnome-session --session gnome-classic
+user      2275  0.0  0.0  13944   608 ?        S    09:56   0:00 dbus-launch --sh-syntax --exit-with-session
+user      2276  0.0  0.0  29732  1788 ?        Ss   09:56   0:00 /bin/dbus-daemon --fork --print-pid 4 --print-address 6 --session
+user      2436  0.0  0.0 143760   284 ?        S    09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2437  0.0  0.0 209960  1036 ?        Sl   09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2452  0.0  0.0  52836   576 ?        Ss   09:56   0:00 /usr/bin/ssh-agent /bin/sh -c exec -l /bin/bash -c "env GNOME_SHELL_SESSION_MODE=classic gnome-session --session gnome-classic"
+user      2471  0.0  0.0  28644  1568 ?        S    09:56   0:00 /bin/dbus-daemon --config-file=/etc/at-spi2/accessibility.conf --nofork --print-address 3
+user      2475  0.0  0.0 129656  3340 ?        Sl   09:56   0:00 /usr/libexec/at-spi2-registryd --use-gnome-session
+user      2707  0.0  0.3 893084 12992 ?        Sl   09:56   0:00 /usr/libexec/evolution-addressbook-factory
+user      3248  0.0  0.0 112640   960 pts/0    R+   10:11   0:00 grep -E --color=auto ss
+[user@tcox3 redirection]$ ps aux | grep -E ss
+dbus       492  0.0  0.0  29764  2840 ?        Ss   09:56   0:00 /bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+root       621  0.0  0.0  82508  3600 ?        Ss   09:56   0:00 /usr/sbin/sshd -D
+root      2259  0.0  0.1 373980  5468 ?        Sl   09:56   0:00 gdm-session-worker [pam/gdm-password]
+user      2267  0.0  0.3 860364 13240 ?        Ssl  09:56   0:00 gnome-session --session gnome-classic
+user      2275  0.0  0.0  13944   608 ?        S    09:56   0:00 dbus-launch --sh-syntax --exit-with-session
+user      2276  0.0  0.0  29732  1788 ?        Ss   09:56   0:00 /bin/dbus-daemon --fork --print-pid 4 --print-address 6 --session
+user      2436  0.0  0.0 143760   284 ?        S    09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2437  0.0  0.0 209960  1036 ?        Sl   09:56   0:00 /usr/bin/VBoxClient --seamless
+user      2452  0.0  0.0  52836   576 ?        Ss   09:56   0:00 /usr/bin/ssh-agent /bin/sh -c exec -l /bin/bash -c "env GNOME_SHELL_SESSION_MODE=classic gnome-session --session gnome-classic"
+user      2471  0.0  0.0  28644  1568 ?        S    09:56   0:00 /bin/dbus-daemon --config-file=/etc/at-spi2/accessibility.conf --nofork --print-address 3
+user      2475  0.0  0.0 129656  3340 ?        Sl   09:56   0:00 /usr/libexec/at-spi2-registryd --use-gnome-session
+user      2707  0.0  0.3 893084 12992 ?        Sl   09:56   0:00 /usr/libexec/evolution-addressbook-factory
+user      3248  0.0  0.0 112640   960 pts/0    R+   10:11   0:00 grep -E --color=auto ss
+
+
+##################################################
+Topic 104: Devices, Linux Filesystems, Filesystem Hierarchy Standard
+##################################################
+##################################################
+Lecture: 104.1 - Create Partitions and Filesystems (Filesystem Hierarchy Standard)
+##################################################
+What is the file hierarchy standard?
+-In short it defines the directory structure and contents in unix-like operating systems
+-this standard is maintained by the linux foundation and is currently on version 3.0
+-Most distributions voluntarily choose to follow the FHS and remain in compliance as updates are released=, however, some distributions deviate slightly in some ways
+
+Directory structure
+-the primary specification is that all files and directories appear under the 'root' directory (/), even if stored on different physical or virtual devices (although some directories do not have to exist at all if the dependent subsystems do not exist, such as X windows)
+
+/         root and root directory of the FHS
+/bin      Command binaries intended for all users, must be available in single user mode
+/boot     Boot loader files (kernel, initrd, etc)
+/dev      Device files
+/etc      Host-specific configuration files, no binaries
+/etc/opt  Configuration files for packages stored in /opt
+/etc/sgml Config files for software that processes SGML (Standard Generalized Markup Language)
+/etc/X11  Host specific configuration files, no binaries
+/etc/xml  Config files for software that processes XML
+/home     Users home directories
+/lib      Libraries essential for binaries in /bin and /sbin
+/lib[qual]  Alternative formate libraries (i.e. 64bit)
+/media    mount points for removable media (CD, DVD, ...)
+/opt      optional application software (often 3rd party)
+/prc      Virtual filesystem process and kernel
+/root     the root user home directory
+/run      run-time variable data information about the running system since last boot
+/sbin     essential system binaries
+/srv      site specific data server by the local system
+/sys      contains information about the devices connected
+/tmp      temp files, not preserved between reboots
+/usr      secondary hierarchy for read-only user data
+/usr/bin  non-essential command binaries fot all users
+/usr/include  standard include files (c/c++ .h files for example)
+/usr/lib  libraries for the binaries in /usr/bin and /usr/sbin
+/usr/lib[qual]  alternative formate libraries (i.e. 64bit)
+/usr/local tertiary hierarchy for local data, specific to host
+/usr/sbin   non-essential system binaries
+/usr/share  architecture independent shared data
+/usr/src  source code
+/usr/X11R6  older X windows configuration (optional)
+/var      Variable files whose content is expected to change during normal system use and operation
+/var/cache  Application chace data used as a result of time consuming I/O or calculations.  Can be deleted without los of data
+/var/lib    State information
+/var/lock   Lock files that keep track of resources in use
+/var/log    log files
+/var/mail   mailbox files
+/var/opt    variable data from add-on packages stored in /opt
+/var/run    run time variable data (replaced by /run in 3.0)
+/var/spool  spool tasks waiting to be processes (print queues for example, /var/spool/mail for another)
+/var/tmp    temperary files to be preserved between restarts
+
+##################################################
+Lecture: 104.1 - Create Partitions and Filesystems (Using Partitioning Tools - fdisk, gdisk and parted)
+##################################################
+cd /dev
+sata are historically hd
+sas or iscsi are sd
+
+a gpt based drive will allow for up to 128 primary partitions
+
+fdisk -l #list available drives, only support up to 4 primary partitions, and only support drives up to 2 TB in size
+
+fdisk /dev/xvdj
+m
+n
+p
+1
+enter
++2G
+p #print
+if you want to add another partition
+n
+p
+2
+enter
++2G
+p
+#to change the second partition type from linux to something else
+t
+2
+l
+82 #linux swap
+p
+w
+
+fdisk -l /dev/xvdj
+
+##gdisk
+fdisk -l
+
+gdisk /dev/xvdg
+#we can see  that its checking for gpt partition tables
+?  #this will give you a list of commands
+n
+1
++2G #you could accept the default but the +2G says start at the 2G point and go to 4G
++4G
+8300
+p
+#create another partition
+2
+enter
++2G
+8200
+p
+w
+
+fdisk -l
+
+gdisk -l /dev/xvgd
+
+##parted
+which parted
+fdisk -l
+parted /dev/xvdf
+help
+mklable msdos #msdos is legacy, we can also create a gpt lable
+yes
+mkpart primary 0 2G
+ignore
+q #quiting also write the partition table information to disk
+
+
+fdisk -l /dev/xvdf
+
+##################################################
+Lecture: 104.1 - Create Partitions and Filesystems (Filesystem Types and Creating Them on Partitions)
+##################################################
+fdisk -l
+fdisk /dev/xvdg
+p
+n
+p
+1
+enter
++4G
+#create another partition
+n
+p
+2
+enter
++2G
+#cretae a thired
+n
+p
+3
+enter
++5G
+w #write the changes
+
+fdisk -l /dev/xvdg
+
+#super block,
+Portion of the disk that can be read and contains  lesystem information (size, inode stats, and last time checked)
+Typically stored on disk in the  rst sector (and exists in multiple locations to facilitate recovery)
+
+ls -i /var/log/messages
+state /var/log/messages
+
+df -i  #this will show the inodes available
+
+#to make a file system
+mkfs.<filesyetmtomake>
+mkfs.ext2
+or
+mkfs -t ext3 /dev/xvdg1
+
+#it will create the journal for the file system, the super block, indoe table
+
+vim /etc/mke2fs
+#this containes information about the defaults when using mke2fs utility to formate ext file  systems
+
+##
+mkfs -t ext4 -O sparse_super #the -O is for options and how you can change defaults
+
+mkfs -t ext4 -b 8192 -m 10 -L LargeData -O sparse_super /dev/xvdg2
+
+#the next set is to mount the file system
+
+
+#other utilitys, you dont need to know about them for the lpic but just knowledge about them
+mkswap
+mkraid
+mknode
+mkisofs
+mkvdf
+
+##################################################
+Lecture: 104.2 - Maintain the Integrity of Filesystems
+##################################################
+du #du - estimate file space usage
+du -h /home/user
+du -sh /home/user #a human readable sum total
+du -ah /home/user #all
+du -sh /home/user/.bash*
+
+df  #df - report file system disk space usage
+dh -h
+df -ah  #view all file systems
+df -h --direct
+df -h --total
+
+
+fdisk -l
+fdiskl /dev/xvdj
+n
+p
+1
+enter
+enter
+w
+
+mkfs -t ext3 /dev/xvdj1
+
+debugfs /dev/xvdj1  #debugfs - ext2/ext3/ext4 file system debugger
+stats
+
+
+fsck #generally for ext file systems, fsck - check and repair a Linux filesystem
+
+e2fsck #e2fsck - check a Linux ext2/ext3/ext4 file system
+
+fsck /dev/xvdj1
+fsck -f /dev/xvdj1 #force the check
+fsck -af /dev/xvdj1 #force and fix all
+fsck -Cf /dev/xvdj1 #-C will show a progress bar
+fsck -Nf /dev/xvdj1 #-N Don't execute, just show what would be done.
+
+tune2fs #tune2fs - adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
+
+tune2fs -c 0 /dev/xvdj1 #resets the reboot count so that the file system will get checked by e2sfck
+
+tune2fs -e continue /dev/xvdj1
+Change the behavior of the kernel code when errors are detected.  In all cases, a  filesystem  error  will  cause
+e2fsck(8) to check the filesystem on the next boot.  error-behavior can be one of the following:
+continue    Continue normal execution.
+remount-ro  Remount filesystem read-only.
+panic       Cause a kernel panic.
+
+tune2fs -g mysql /dev/xvdj1  # Set the group which can use the reserved filesystem blocks.
+
+#for xfs
+yum install xfsprogs
+
+xfsgrowfs #allows you to grow a file system
+
+##################################################
+Lecture: 104.3 - Control Mounting and Unmounting of Filesystems (Mounting Filesystems Manually and Automatically)
+##################################################
+fdisk /dev/xvdf
+
+p
+n
+1
+enter
+enter
++5G
+p
+#another partition
+n
+p
+2
+enter
+enter
++5g
+#another partition
+n
+p
+2
+enter
+enter
++5g
+p  #print out the partition information
+w
+
+fdisk -l /dev/xvdf
+
+mkfs -t ext4 /dev/xvdf1
+
+mkfs -t ext4 /dev/xvdf2
+
+mkfs -t ext3 /dev/xvdf3
+
+##To mount removeable file systems, cds, dvds, usbs
+cd /media
+
+##This is a typilcally where you mount devices that are used for backups, data drive,
+cd /mnt
+
+#mounting file systems
+#the below files both contain information about mounted file sysetms
+cat /etc/mtab  #you can not hid a mount from here, this is controlled by the kernel
+
+cat /proc/mount  #you can hide a mount from here, this is read by the mount command
+
+cat /etc/fstab
+#this file is what determines what we see when we run the dh -h command
+
+#if we have multiple files systems that are defined in /etc/fstab we can mount them all with the mount -a command
+mount -a
+
+mount -f #this will dry run a mount
+
+### mount a partition
+fdisk -l /dev/xvdf
+
+cd /mnt
+mkdir part1 part2 part3
+
+mount -t ext4 /dev/xvdf1 /mnt/part1  #its best to use the absolute path when mounting
+
+df -h  #we can see that the partition is now mounted
+lost+found is for files that have been orphand during a file system check
+
+mount -t ext3 /dev/xvdf1 /mnt/part2  #if you mount with a different files system type than the partition has been formated with you will get a error because the superblock
+#we can see the super block error
+
+mount -t ext4 /dev/xvdf1 /mnt/part2
+
+mount -t ext3 /dev/xvdf1 /mnt/part3
+
+#the best way to mount disks on a system is to use the uuid
+cd /dev/disk/uuid
+
+#and we can  use blkid to get the ids
+blkid
+
+vim /etc/fstab
+# custom disk mounts
+UUID=1234452546536734       /mnt/part1    ext4    defaults   0     1   #besides default we can use the noauto command, this will stop the partition from being mounted on boot.  the first 0 is the dump value, you dont want it to be dumpable by default. the next value order in which you want the file system to be checked
+
+:wq
+
+##
+cd /mnt/part3
+
+umount /mnt/part1
+df -h  #we can see that the partition is unmounted
+
+umount /mnt/part2  #we will get the message that the device is busy because a process or a user is using that disk
+df -h
+
+#to see who or what is using a mount
+lsof
+or
+fuser
+
+fuser -m /mnt/part2
+1374c
+ps aux | grep 1374
+#we can see that a user is using the disk
+
+mount -a  #this will try to mount everything in the /etc/fstab
+
+
+##################################################
+Lecture: 104.4 - Manage Disk Quotas
+##################################################
+fdisk -l
+
+fdisk /dev/xvdf
+n
+p
+1
+enter
++2G
+w
+
+mkfs -t ext4 /dev/xvdf1
+
+mkdir /mnt/part1
+
+mount -t ext4 /dev/xvdf1 /mnt/part1
+
+ls -al /mnt/part1
+
+df -h
+
+ls -al /dev/disk/by-uuid
+or
+blkid
+
+vim /etc/fstab
+UUID=134453465465 /mnt/part1 ext4 defaults,usrquota,grpquota    1   2
+
+:wq
+
+umount /mnt/part1
+
+mount -a  #this will pull the changes for usrquota nd grpquota
+
+
+##create a user you can assign a quota too
+adduser myuser
+passwd myuser
+
+su myuser -
+exit
+
+##
+chmod 777 /mnt/part1
+quotacheck -avugc  #all, verbose, users, groups, create
+
+ll /mnt/part1
+
+#now that the files are created we need to enter the quote
+
+edquota -u myuser
+#there are 2 settings soft and hard limit, soft they will get a warning if its exceeded.
+
+
+#now we need to turn the quota on
+quotaon -p /mnt/part1
+
+quotaon -uagv #user, all, group, verbose
+
+quota myuser
+none  #thats because the user hasnt created any files yet
+
+#become the myuser user
+cd /mnt/part1
+echo "hi" > test.txt
+
+quota
+
+mkdir bkup
+cd bkup
+cp -rf /etc/* .
+
+###to change the quota for a user
+edquota -u myuser
+
+#report on the quota for our system
+repquota -a
+edquota -t
+
+vim /etc/rc.d/rc.local
+quotaon -uagv #this is the last thing to run, where might you put this if youre not creating a custome service script
+
+##################################################
+Lecture: 104.5 - Manage File Permissions and Ownership
+##################################################
+
+
+
+
+
+##################################################
+Lecture: 104.6 - Create and Change Hard and Symbolic Links
+##################################################
+Symbilic link, this is simply a shortcut that point from one file to another,
+it creates a very small file that has its own inode and a path to the original file,
+it can span file systems and drives, remote or local because it has an independant inode
+removing the link does not effect the original file it only remove the smal link file
+removing the original file does not remove the link it only leaves the link orphaned
+
+mkdir tmp
+echo "this is my scriptfile" > myscript.sh
+cd tmp
+ln -s ../myscript.sh .
+or
+ln -s /home/user/myscript.sh herescript.sh
+ll
+ls -i  #this will give you the inode
+ls -l ../myscript
+#we will see that they are 2 different inodes
+#this is why we can have soft links that span file systems
+
+vim herescript.sh
+#we can make changes here, it will be change in the myscript
+:wq
+
+rm herescript.sh
+#myscript.sh will still exist
+
+#lets recreate the link
+ln -s /home/user/myscript herescript.sh
+
+#what happen if we remove the myscript.sh
+#we can see that the link is orphand, it is still trying to point to the myscriptt but its broken
+rm herescript.sh
+
+#whats the difference between a symbolic link and a hard link
+echo "this is a hard link" > hardlink.sh
+ln /home/user/hardlink.sh thisisme.sh
+ls -i hardlink.sh thisme.sh
+#you will see that the inodes are the same.
+#this is why you can span partitions and file systems with hardlinks, because thre is no guarentee that the inodes of the same id will be available on 2 different disks
+#if you are going to hard link something it has to be on the same drive and partition as the original file
+
+#one of the advantages of hard links although this is effectively the same file, you can delete the original file, the link will not be broken, because each link is a refference to the same inode
+#the data will still be intact
+#so the only way to purge the data off the system would be to remove both of the hard links
+
+
+
+##################################################
+Lecture: 104.7 - Find System Files and Place Files in the Correct Location
+##################################################
+updatedb #update the locate db
+locate who
+locate -i posix | more #ignore the case
+locate posix | wc -l
+locate -i posix | wc -l
+vim /etc/updatedb.conf
+PRUNENAMES =  "these are file extentions that we want to ignore"
+
+##how to find commands
+which #
+which ssh
+/usr/bin/ssh
+
+#there my be instances where you have multiple of the same command, however which will only scan as far as the first instance it finds, i looks at for files based on the order they are in your path
+
+whereis #it will fins all locations as well as their man pages
+
+whereis -m ssh #this will find just the manual entries
+whereis -s #this will find just the source code
+whereis -u ssh # Only show the command names that have unusual entries.
+
+##the type command
+type ssh
+type who
+
+ls -al --color=auto
+type ll
+type will tell you that ll is a alias for ls -al --color=auto
+
+#all of this is good to help use find files if we know the command
+
+#we can also use the find command to run commands agains what we find
+
+mkdir bkup
+find /usr/bin -perm -4000 -exec cp {} /root/bkup \; #this is going to make a copy of everything that has the suid bit set
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Using Partitioning Tools
+##################################################
+
+
+
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Creating Filesystems on Partitioned Devices
+##################################################
+
+
+
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Managing Disk Quotas
+##################################################
+
+
+
+
+
+
+
+
+
+##################################################
+Exercise: Maintain the Integrity of Filesystems
+##################################################
+1.) Using the appropriate command, display all filesystems currently mounted on your server, including special filesystems. Display the usage statistics of each in a practical and readable format.
+
+2.) Using either the fsck or e2fsck (depending on the format of your root partition), execute a filesystem check on the root partition of your server.
+
+3.) Display both the volume name and UUID of the root drive on your server and capture the results in your output file.
+
+4.) Create a file in your home directory called mytestfile.txt. List the inode of that file and note it in your output file. Remove the file you just created. Using debugfs, list the command needed to find the deleted file and capture the output of the command that shows the matching inode.
+5.) Using one of these utilities, obtain the same information for your output file as you would get using debugfs and the stat summary option.
+6.) Set the root partition of your server to the following:
+i. Volume Name: SysUtilLab4
+ii. Maximum Number of Mounts Before Check: 50
+iii. Current Number of Mounts: 55
+iv. Interval Between Checks: 2 Days
+
+Solution
+
+1.)df -h
+
+2.) This was a concept quesiton, if you were unable to successfully execute this it is because you cannot perform fsck on a partition while it is mounted (very important concept). Thus, we cannot perform one on the root device while the operating system is running. In old versions we could use the shutdown command to force a fsck on reboot. However, the most common way now is to boot using a live cd and running the fsck on the root file system.
+3.) There are a couple of ways to do this right now:
+ls -al /dev/disk/by-uuid >> file.out && ls -al /dev/disk/by-partlabel >> file.out
+lsblk -o partlabel,uuid >> file.out
+blkid >> file.out
+Any of these will give you the appropriate output to your log file.
+
+4.) touch ~/myfile.txt && debugfs (note inode), then rm myfile.txt, then debugfs again, then lsdel and undel inode.
+
+5.) dumpe2fs
+6.) sudo tune2fs -L SysUtilLab4 -c 50 -C 55 -i 2d /dev/xvda1
+
+
+
+##################################################
+Exercise: Manage Disk Quotas
+##################################################
+1. Install the linux-image-extra-virtual package to enable quota kernel requirements, if you are usoing a lab or a virtual machine.
+sudo apt-get install linux-image-extra-virtual
+2. Install the quota package and the quotatool package
+sudo apt-get install quota quotatool
+
+3. Edit your fstab file to enable quotas on your root filesystem.
+sudo vim /etc/fstab
+
+LABEL
+=
+cloudimg-rootfs
+   /
+ext4
+
+defaults
+,discard,usrquota,grpquota
+
+0 0
+
+4. Remount your root partition.
+sudo mount -o remount /
+5. Build the quota database.
+sudo quotacheck -avugm
+quotacheck: Your kernel probably supports journaled quota but you are not using it. Consider switching to journaled quota to avoid running quotacheck after an unclean shutdown.
+
+quotacheck: Scanning /dev/disk/by-uuid/a09befc1-cf11-45ac-b1f4-52736ff06125 [/] done
+
+quotacheck: Cannot stat old user quota file //aquota.user: No such file or directory. Usage will not be subtracted.
+
+quotacheck: Cannot stat old group quota file //aquota.group: No such file or directory. Usage will not be subtracted.
+
+quotacheck: Cannot stat old user quota file //aquota.user: No such file or directory. Usage will not be subtracted.
+
+quotacheck: Cannot stat old group quota file //aquota.group: No such file or directory. Usage will not be subtracted.
+
+quotacheck: Checked 17976 directories and 140172 files
+
+quotacheck: Old file not found.
+
+
+quotacheck: Old file not found.
+
+6. Display all existing user quotas for all filesystems and log the output to '/home/user/log.out'.
+sudo repquota -a >> /home/user/log.out
+7. Using the appropriate command, edit/create the quota file that use to limit their disk usage to 500k.
+sudo edquota user
+Disk quotas for user user (uid 1001):
+  Filesystem                   blocks       soft       hard     inodes     soft     hard
+
+  /dev/disk/by-uuid/a09befc1-cf11-45ac-b1f4-52736ff06125       1192          0      500        53        0        0
+
+
+8. Using the report quota command, list the new quota for that user as applied, and log the output to '/home/user/log.out'.
+sudo repquota -s / >> /home/user/log.out
+
+
+##################################################
+
+##################################################
+1) ln -s will:
+Correct
+
+Correct answer
+Create a symbolic link.
+
+2) Which command will find files modified at least 3 days ago in your current working directory?
+Correct
+
+Correct answer
+find . -mtime +3
+
+3) set -o noclobber enables noclobber on your shell. What function does this perform?
+Correct
+
+Correct answer
+Prevents accidental overwrites of existing files.
+
+4) Which file system stores files that are changed frequently?
+Correct
+
+Correct answer
+/var
+
+5) Which character sequence will redirect standard output to standard error?
+Correct
+
+Correct answer
+1>&2
+
+6) GPT-based partition tables can hold up to at least 128 primary partitions while MBR based partition tables can only hold four primary partitions.
+Correct
+
+Correct answer
+True
+
+7) You're working on a Linux system with systemd as it's primary init manager. To change into the graphical target, what would you do?
+Correct
+
+Correct answer
+systemctl isolate graphical.target
+
+8) Brackets [] when used as part of grep are known as a character class.
+Correct
+
+Correct answer
+True
+
+9) Which command would you execute to cause the mysqld service to start anytime the system is booted into the multi-user.target, assuming the unit configuration file already specifies a WantedBy=multi-user.target option?
+Correct
+
+Correct answer
+systemctl enable mysqld
+
+10) fsck -A will:
+Correct
+
+Correct answer
+Check all file systems listed in /etc/fstab
+
+11) Which file system contains information about interrupts, IRQ's, ioports, and dma addresses?
+Correct
+
+Correct answer
+/proc
+
+12) Which command allows you to view the contents of kernel messages in the kernel ring buffer?
+Correct
+
+Correct answer
+dmesg
+
+13) You need to create a shared workspace for your accounting department. Every time a user inside a directory creates a file, that file or sub-directory needs to inherit the parent directory's group ID. How would you accomplish this?
+Correct
+
+Correct answer
+Set the setgid flag on the parent directory (chmod g+s parent_directory)
+
+14) Your GRUB2 install has become corrupt; what might you do in order to resolve the issue? (Choose Two)
+Partially Correct
+
+Correct answer
+Recreate the grub.cfg configuration file grub-mkconfig > /boot/grub/grub.cfg, Reinstall the GRUB bootloader grub-install /device
+
+15) telinit is used specifically for changing runlevels.
+Correct
+
+Correct answer
+True
+
+16) Select the best answer: echo "test" >> test.txt && echo "mysheet" >> test.txt
+Correct
+
+Correct answer
+The second echo command will only execute if the first echo command is successful
+
+17) sigkill signal is:
+Incorrect
+
+Correct answer
+9
+
+18) You've created a Linux swap partition on /dev/xvdf using the mkswap command. Which command do you need to issue next to turn on swap?
+Correct
+
+Correct answer
+swapon /dev/xvdf
+
+19) id:3:initdefault sets the default runlevel for the system at 3.
+Correct
+
+Correct answer
+True
+
+20) You're running an environment that has a GUI-based interface installed on the system. Currently, the default target is the multi-user target. Which task would you execute to change the default target the system changes into at boot time?
+Correct
+
+Correct answer
+systemctl set-default graphical.target
+
+21) The sticky bit, if enabled as a permission, has what effect?
+Correct
+
+Correct answer
+Only the directory's owner or file's owner can rename or delete files (chmod +t filename or chmod 1000) instead of anybody with write permissions
+
+22) Which permission bit is used for read?
+Correct
+
+Correct answer
+4
+
+23) Which of the following options must be added to a disk mount in /etc/fstab in order to enable user disk quotas?
+Correct
+
+Correct answer
+usrquota
+
+24) DMA addresses are used as an alternative to communicating with I/O ports.
+Correct
+
+Correct answer
+True
+
+25) Which grep variant will interpret the pattern as plain text strings (interpret the pattern literally)?
+Correct
+
+Correct answer
+fgrep or grep -F
+
+26) Which of the following will verify the signature on a package to determine its integrity and origin?
+Correct
+
+Correct answer
+rpm --checksig
+
+27) You've been tasked to manage an older Linux system running GRUB/GRUB-legacy. You're attempting to make kernel changes to allow the system to boot into an alternate kernel version. Which configuration file needs to be edited?
+Correct
+
+Correct answer
+/boot/grub/menu.lst
+
+28) If a symbolic link source is removed the symbolic link becomes broken.
+Correct
+
+Correct answer
+True
+
+29) In a 'sysvinit' based distribution, the 'init' process is:
+Correct
+
+Correct answer
+Responsible for launching all other system startup processes and is the first process launched once the boot loader hands off to the system.
+
+30) /etc/ld.so.conf is used to store shared library paths.
+Correct
+
+Correct answer
+True
+
+31) The export command can be used to set a variable and make it available to other shells in the environment.
+Correct
+
+Correct answer
+True
+
+32) The command shutdown -k
+Correct
+
+Correct answer
+Only sends a warning message but does not shut down the system.
+
+33) Run level 6 can be used to:
+Correct
+
+Correct answer
+Reboot the system
+
+34) dpkg -i file.deb
+Correct
+
+Correct answer
+Will install file.deb package.
+
+35) Which command will display just the currently set environment variables for your bash session?
+Correct
+
+Correct answer
+env
+
+36) While in vi command mode you type 3yy what is the result?
+Correct
+
+Correct answer
+Will yank 3 lines starting with the line your cursor is on.
+
+37) fsck is a process that checks and repairs the Linux file system and can only be performed on unmounted file systems.
+Correct
+
+Correct answer
+True
+
+38) The term 'UID' is short for 'User Identification'.
+Correct
+
+Correct answer
+True
+
+39) When creating file permissions, the permission designated by the number '4' equates to what permission type?
+Correct
+
+Correct answer
+read
+
+40) What happens when you set the setuid on a directory?
+Incorrect
+
+Correct answer
+It is ignored
+
+41) You need to create a symbolic link with a target of /etc/passwd on /home/user/passwd. How would you do this?
+Correct
+
+Correct answer
+ln -s /etc/passwd /home/user/passwd
+
+42) You've modified your system and want to boot into the graphical target every time your system boots and completes the boot process. To make this persistent on your system so it boots into the graphical target each time the system starts, what would you do?
+Correct
+
+Correct answer
+systemctl set-default graphical.target
+
+43) How would you set read/write/execute for the owner and no permissions for group/world?
+Correct
+
+Correct answer
+chmod 700 file.txt
+
+44) If you need to see the total space used in the /home directory how would you do so?
+Correct
+
+Correct answer
+du -c /home
+
+45) After updating the timeout option in /etc/default/grub how do you apply the changes to the GRUB configuration file?
+Correct
+
+Correct answer
+grub-mkconfig > /boot/grub/grub.cfg
+
+46) You need to rerun the configuration of a deb package much like the configuration that was run during installation. How would you do this?
+Correct
+
+Correct answer
+Use the dpkg-reconfigure command.
+
+47) Which runlevel is used to shift the system from one state (running) to another (off)?
+Correct
+
+48) The nice priority ranges from:
+Correct
+
+Correct answer
+-20 (highest priority/most favorable) to 19 (lowest priority)
+
+49) While attempting to shut down the Apache service with "systemctl stop httpd" you notice that there are httpd processes that are refusing to shut down. How might you send a SIGTERM signal to try and gently stop the processes to all httpd processes?
+Correct
+
+Correct answer
+pkill httpd
+
+50) RPM -qpl will:
+Correct
+
+Correct answer
+List all files in an RPM file.
+
+51) 0x82 Typcode represents the:
+Correct
+
+Correct answer
+Linux swap space
+
+52) How would you move a systemd based system into the graphical.target from the command line?
+Correct
+
+Correct answer
+systemctl isolate graphical.target
+
+53) What directory contains all the system's primary unit configuration files?
+Correct
+
+Correct answer
+/usr/lib/systemd/system
+
+54) echo "hello" >> file.txt
+Correct
+
+Correct answer
+Will append hello at the end of file.txt
+
+55) The modprobe command is:
+Correct
+
+Correct answer
+Automatically loads any depended upon modules and is generally the preferred way of loading kernel modules
+
+56) The command 'wall "shutdown occurring in 5 minutes" ', when issued at the command line, will send all users on the system a global standard output message on their running terminal.
+Correct
+
+Correct answer
+True
+
+57) If you want a command or process to continue running after exiting the system, which of these would you add to the front of the command?
+Correct
+
+Correct answer
+nohup
+
+58) uniq -d will:
+Correct
+
+Correct answer
+Print only duplicate lines in a file.
+
+59) On a systemd-based system, you've just installed a MySQL server with no reported errors. However, after reboot, you notice the service is not running. What might be the issue?
+Correct
+
+Correct answer
+The service has not been enabled at boot time to start in the default target the system boots into
+
+60) If an executable file has the setuid octal bit of 4 applied what is the result?
+Correct
+
+Correct answer
+The file is executed with the same permissions as the user/group who owns the file
+
+61) Which command(s) are used to search and kill processes based on patterns or regular expressions instead of process ID?
+Correct
+
+Correct answer
+pkill, pgrep
+
+62) Which utility (or utilities) can be used for creating and manage GPT partition tables? (Choose Two)
+Correct
+
+Correct answer
+parted, gdisk
+
+63) The command cat /etc/passwd | grep ^root will:
+Correct
+
+Correct answer
+Display all the lines in the file that start with the pattern root.
+
+64) The -t flag when passed to mkfs requires you to:
+Correct
+
+Correct answer
+Specify the file system type.
+
+65) /etc/passwd has the following syntax: linuxacademy:x:501:10::/home/linuxacademy:/bin/bash What will cut -f1 -d: /etc/passwd send to standard output?
+Correct
+
+Correct answer
+It will display all the usernames and only the users names from /etc/passwd
+
+66) dpkg is a package manager used for installing .deb packages on Debian/Ubuntu systems.
+Correct
+
+Correct answer
+True
+
+67) chmod 755 file.txt will:
+Correct
+
+Correct answer
+Set the file permissions on file.txt to read/write/execute for the owner and read/execute for the group and everyone else.
+
+68) cat /etc/passwd | grep [a-z]ot will send what to standard output?
+Correct
+
+Correct answer
+All alphabetical three character sequences that end with the character sequence 'ot'.
+
+69) How would you extract information about the boot process?
+Correct
+
+Correct answer
+Use the 'dmesg' command
+
+70) You need to create a file full of zeros that is 1 GB in size. Which command will perform this action? Choose the "best" possible answer.
+Correct
+
+Correct answer
+dd if=/dev/zero of=filename bs=1M count=1024
+
+71) Hard links cannot exist across file systems.
+Correct
+
+Correct answer
+True

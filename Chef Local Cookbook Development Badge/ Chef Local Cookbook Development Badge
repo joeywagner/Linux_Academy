@@ -1,0 +1,3484 @@
+##################################################
+Chef Local Cookbook Development Badge
+##################################################
+##################################################
+Introduction
+##################################################
+##################################################
+Lecture: Course Introduction
+##################################################
+##################################################
+Lecture: About the Exam
+##################################################
+##################################################
+Lecture: Badge Overview
+##################################################
+
+
+
+##################################################
+Setting Up the Environment
+##################################################
+##################################################
+Lecture: Intro to ChefDK
+##################################################
+What is ChefDK?
+
+• ChefDK is also known as the Chef Development Kit • ChefDK includes:
+• A built-in Ruby runtime
+• chef-client and ohai
+• Testing tools:
+• Test Kitchen
+• ChefSpec
+• Rubocop
+• Foodcritic
+• Chef provisioning
+• Everything else needed to author cookbooks and upload them to the Chef Server
+
+The Chef Work station
+• A computer with ChefDK installed on it is called a Chef Workstation
+• Each organization is comprised of:
+• One or more workstations
+• A single server
+• Every node that will be configured and maintained by the chef-client
+• Cookbooks and recipes tell the chef-client how each node in your organization will be configured
+• The chef-client does the actual configuration
+
+
+A Closer look at the tools in ChefDK
+• The more important tools included are:
+• Berkshelf: a dependency manager for cookbooks
+• chef: a workflow tool for Chef
+• chef-client: the agent that runs Chef
+• chef-vault: tool to encrypt data bag items
+• ChefSpec: a unit testing framework that tests resources locally
+• Fauxhai: a gem for mocking Ohai data in ChefSpec tests
+• Foodcritic: a lint tool for static analysis of recipe code
+• Test Kitchen: an integration testing framework tool that tests cookbooks across platforms
+• knife-spork: a workflow plugin for knife that helps groups of people work together in the same repo
+• Ruby: the reference language for Chef
+• Rubocop ruby style checking tool
+
+
+Community Tools
+• Some of the tools in ChefDK are developed and maintained by members of the Chef community
+• Are considered to be a useful part of the Chef workflow
+• Are maintained outside of the Chef organization
+• The community tools that are included with ChefDK are:
+• Berkshelf
+• chef-vault
+• ChefSpec
+• Foodcritic
+• Test Kitchen
+• Rubocop
+
+
+Setting up a chef workstation
+• To provide a consistent environment throughout the course, we recommend taking advantage of one of the provided Linux Academy Server Labs
+• You will be able to follow along with us in most cases as we move around in a remote desktop session or in the terminal
+• You can stop these environments at any time and pick up where you left off later
+• It doesn’t cost anything extra to use these Server Labs
+• We’ll automatically shutdown the Server Labs when you’re not using Linux Academy
+• You can power one or more back up when you need them
+• Learn more by looking at the Server Labs Course Feature on the course page
+• Let’s go through the exercise of spinning up a Server Lab and installing the ChefDK
+
+#Setting up a chef work station
+choose a centos 7 instance from the lab nodes
+
+https://docs.chef.io/install_dk.html
+
+
+##################################################
+Lecture: Chef Workstation Setup
+##################################################
+Prerequisite #1: Git
+• Git is a distributed version control system
+• There are some commands in ChefDK that
+depend on git
+• (i.e.: `knife cookbook site install`)
+• Git helps teams collaborate. We’ll explore this aspect of Local Cookbook Development in an upcoming lesson
+• If you want to learn more about git, check out these courses on Linux Academy:
+• Git Quick Start
+• Git and Git lab - Start to Finish
+
+Prerequisite #2:  Docker
+• Docker is the world’s leading software containerization platform
+• Docker is great when developers and IT admins want to build, ship and run applications anywhere
+• In our context, we’ll use Docker for isolated test environments
+• (i.e.: with the Test Kitchen Driver)
+• If you want to learn more about Docker, check out
+these courses on Linux Academy:
+• Docker Quick Start
+• Docker Deep Dive
+
+#Install Git
+sudo yum install -y git yum-utils
+
+#Configure git
+git config --global user.name "Joe"
+git config --global user.email "gmail@example.com"
+git config --global core.editor vim
+git config --global color.ui auto
+
+#Install docker
+#Have to install the docker repo as well as the docker packages
+yum-config-manager --add-repo https://download.concker.com/linux/centos/docker-ce.repo
+
+yum makecache fast
+
+yum -y install docker-ce
+
+#Enable the service
+systemctl enable docker
+systemctl start docker
+
+#add your user to th edocker group
+usermod -aG docker $USER
+
+#We also need to stop systemd inside of container
+systemctl stop getty@tty1.service
+systemctl mask getty@tty1.service
+
+#to complete we need to log out and backin
+
+#Create a network within docker
+docker network create --subnet=10.1.1.0/24 testnet
+
+#We need to install the docker gem so test kitchen has the driver available
+gem install kitchen-docker
+
+
+##################################################
+Exercise: Development Environment Setup
+##################################################
+1. Install the latest stable ChefDK.
+curl -s https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chefdk
+echo 'eval "$(chef shell-init bash)"' >> ~/.bash_profile
+source ~/.bash_profile
+
+2. Install Docker
+sudo yum install -y git yum-utils
+sudo yum-config-manager --add-repo \
+https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum makecache fast
+sudo yum -y install docker-ce
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+sudo systemctl stop getty@tty1.service
+sudo systemctl mask getty@tty1.service
+logout
+Log back in, the run:
+
+docker network create --subnet=10.1.1.0/24 testnet
+gem install kitchen-docker
+
+3. Configure Git
+git config --global user.name "Your Name"
+git config --global user.email "email@example.com"
+git config --global core.editor vim
+git config --global color.ui auto
+
+
+
+##################################################
+Local Cookbook Development Basics
+##################################################
+##################################################
+Lecture: Generators
+##################################################
+Chef Generate
+
+• Generators are used to quickly generate cookbooks or components of a cookbook. Generators are invoked by using the chef generate command.
+• What can chef generate create?
+• app–An application repository
+• cookbook–A single cookbook
+• recipe–A single recipe
+• attribute–An attributes file
+• template–A file template
+• file–A cookbook file
+• lwrp–A lightweight resource/provider
+• repo–A Chef code repository
+• policyfile–A policyfile for use with the install/pushcommands
+• generator–A copy of the ChefDK generator cookbook so you can customize it
+• build-cookbook–For use with Delivery
+
+Generating with a Generator
+• Using chef generate generator <my_generator> will create a copy of the ChefDK generator which we can use to customize to our specifications.
+• Generating a generator will help enforce standards on the contents of a newly created cookbook or cookbook component to ensure it meets organizational requirements.
+
+• Use cases for generators include:
+• Boilerplate text in README or generated recipes
+• Default licensing choice
+• Commonly used code
+
+Naming conventions
+• When choosing a name for a cookbook be aware of the fact that duplicate cookbook names on Chef Supermarket are not allowed.
+• General Advice on naming cookbooks
+• If you plan to share publicly check if your desired name is available on the supermarket first.
+• Use a short organizational prefix for application cookbooks that are part of your organization. If your organization is named GiantCorp, you could use gc as a prefix: gc_postgresql or gc_httpd.
+• Uniqueness in the naming convention can help avoid internal confusion about the purpose and origin of the cookbook.
+
+#Lets see what a generator looks like
+chef generate
+
+#Generate a cookbook
+chef generate cookbook test_cookbook
+cd test_cookbook
+
+rm -rf test_cookbook
+
+#Generate a generator cookbook
+mkdir generator
+
+chef generate generator generator/lcd_origin
+
+cd generator/lcd_origin/recipies
+chef generate
+
+cat app.rb
+
+#we can see alot of the default locations and settings
+
+#lets take a look at available templates
+cd ..
+cd templates/default
+ll
+
+#we need to change the kitchen.yml.erb
+vim kitchen.yml.erb
+#change the default driver from vagrant to docker
+---
+driver:
+ name: docker
+ privileged: true
+ use_sudo: false
+
+provisioner:
+ name: chef_zero
+ # You may wish to disable always updating cookbooks in CI or     other testing environments.
+ # For example:
+ #   always_update_cookbooks: <%%= !ENV['CI'] %>
+ always_update_cookbooks: true
+
+verifier:
+ name: inspec
+
+platforms:
+ - name: centos-7.2
+   driver_config:
+     run_command: /usr/lib/systemd/systemd
+
+suites:
+ - name: default
+   run_list:
+     - recipe[<%= cookbook_name %>::default]
+   verifier:
+     inspec_tests:
+       - test/smoke/default
+   attributes:
+
+
+
+vim ../../files/default/spec_helper
+RSpec.configure do |config|
+  config.platform = 'centos'
+  config.version = '7.2.1511'
+end
+
+
+#Create a config.rb file that lets our generator to use the content that we just created
+mkdir ~/.chef
+vim ~/.chef/config.rb
+cookbook_path ['~/chef/cookbooks']
+local_mode true
+if File.basename($PROGRAM_NAME).eql?('chef') && ARGV[0].eql?('generate')
+  chefdk.generator.license = "all_rights"
+  chefdk.generator.copyright_holder = "Student Name"
+  chefdk.generator.email = "You@example.com"
+  chefdk.generator_cookbook = "~/generator/lcd_origin"
+end
+
+:wq
+
+cd ~
+
+mkdir -p chef/cookbooks
+cd chef
+chef generate cookbook cookbooks/lcd_web
+
+cd cookbooks
+ll
+
+cd lcd_web
+
+cat REDME.md
+
+cd ~/chef
+
+chef generate attribute  cookbooks/lcd_web default
+
+chef generate recipe cookbooks/lcd_web users
+
+
+
+
+##################################################
+Lecture: Test Driven Development
+##################################################
+Why Test?
+• Testing ensures that when working through a project either by yourself or with other teams that you don’t break your intended behavior.
+• Tests can become like documentation for your recipes, acting as a descriptions of the behavior you desire.
+• Thorough testing will result in better outcomes.
+
+Different Types of Testing
+• Unit testing with ChefSpec requires minimal external dependencies, testing occurs in memory and is therefore very fast. Unit testing is allows you to quickly assert your intent for the behavior the code should exhibit. Effectively you are verifying a resource collection locally in memory with Fauxhai.
+• Functional (Integration) testing is performed via Test Kitchen and Inspec. Integration testing verifies the resulting code by executing a run_list on an actual chef-client and verifying the resulting state of the convergence by examining the system. You can test things you are not able to test with unit testing.
+• When both methodologies are used very early in the development process you should have reasonably high confidence in your deployments.
+
+Workflow Without Methodical Testing
+• An example of a workflow which does not incorporate a test driven model looks like the following:
+1. Write some Chef code.
+2. Optionally review the code for correctness and completeness.
+3. Upload the code so that it becomes deployable.
+4. A chef-client runs the updated cookbook.
+5. A manual verification that the system appears to be in the desired state.
+6. Promote the cookbook to an environment.
+• By not methodically and carefully testing we are introducing risks into the process because we cannot be
+sure if we’ve tested everything.
+
+Test Driven Development Workflow
+• Test Driven Development (TDD) is a workflow that asks you to perform that act continually and repeatedly as you satisfy the requirements of the work you have chosen to perform.
+1. Define a test for the unit, the smallest testable parts of of our code.
+2. Implement the unit by writing the code that performs the operation being tested.
+3. Validate that the implementation of the unit satisfies the tests so they are passing.
+4. Refactoring as needed to improve.
+
+Summary
+• Test Driven Development is a workflow, the ChefDK provides tools to support the workflow.
+• Unit testing with ChefSpec provides the fastest means of feedback.
+• Integration testing with InSpec is a little slower but runs the tests on an actual instance.
+
+##################################################
+Lecture: ChefSpec
+##################################################
+About chefspec
+• ChefSpec is a packaged as part of the Chef development kit and is used for unit testing. ChefSpec provides the ability to quickly test the validity of Chef code with a simulated convergence locally in-memory without running a virtual machine. ChefSpec tests can simulate node attributes and operating systems and can work with search results to provide flexibility in testing scenarios.
+• ChefSpec is built on top of RSpec. This means RSpec is the core framework through which tests are executed. Syntax is similar to what we’ve seen before; you will recognize some of the syntax from InSpec.
+• RSpec is a behavior-driven development testing framework. RSpec implements a domain-specific language that reads much like natural language to describe scenarios in which systems are being tested. ChefSpec is built on top of the constructs available in RSpec, so knowing some RSpec is helpful
+
+ChefSpec Files and Directories
+• When invoked via chef generate cookbook the location where the default unit test can be found is relative to the cookbook in a directory called spec/unit/recipes. The default recipe will be in a file called default_spec.rb. By default, this file will contain a single test which will expect the simulated convergence will not produce an error.
+• There is also a file beneath the spec/unit directory called spec_helper.rb. The spec helper file exists for you to define sets of common expectations or other helpers that would be useful for all your tests. For instance, by default the spec helper will include a reference to the chefspec berkshelf library which will set up and install the necessary dependencies in a temporary directory during simulated convergences.
+
+RSpec and ChefSpec Syntax
+• ChefSpec is made available by including a require ‘chefspec’ statement which loads ChefSpec matchers. The default configuration when generating a cookbook is to include this in spec_helper.rb.
+• The describe keyword followed by a cookbook and recipe name tells ChefSpec what to run.
+• The let keyword is a block which defines how the chef-client run is simulated. SoloRunner or ServerRunner.
+• The it keyword is the opening block for a test.
+• The expect keyword sets up an expectation for a resource can be used in conjunction with to or to_not methods.
+require 'chefspec'
+describe 'example::default' do
+  let(:chef_run) { ChefSpec::SoloRunner.converge(described_recipe) }
+it 'does something' do
+  expect(chef_run).to ACTION_RESOURCE(NAME)
+  end
+end
+
+
+require 'spec_helper'
+
+describe 'lcd_web::default' do
+  context 'CentOS' do
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new(platform: 'centos', version: '7.2.1511')
+      runner.converge(described_recipe)
+    end
+
+    it 'converges successfully' do
+      expect { chef_run }.to_not raise_error
+    end
+
+    it 'installs httpd' do
+      expect(chef_run).to install_package('httpd')
+    end
+
+    it 'installs net-tools' do
+      expect(chef_run).to install_package('net-tools')
+    end
+
+    it 'enables the httpd service' do
+      expect(chef_run).to enable_service('httpd')
+    end
+
+    it 'starts the httpd service' do
+      expect(chef_run).to start_service('httpd')
+    end
+
+  end
+end
+
+
+Executing ChefSpec Tests
+
+• We can execute ChefSpec tests by running them individually or on a case-by-case basis as desired.
+• To run all available tests, from the root of a cookbook directory execute the following:
+    chef exec rspec
+• When running a single test, specify the filename when running the test:
+  chef exec rspec spec/unit/recipes/default_spec.rb
+• Running with some additional switches can enhance the output for readability:
+  chef exec rspec –-color -fd
+
+
+
+
+##################################################
+Lecture: Test Kitchen Configuration
+##################################################
+Test Kitchen Configuration
+• Test Kitchen helps automatically test your cookbooks across different platforms and test suites and offers a driver plugin architecture to ensure your code can be tested on as many platforms as you need.
+• Configuration for Test Kitchen is defined in a .kitchen.yml file, which is YAML formatted.
+• The .kitchen.yml file contains specific syntax to configure the requirements for handling your test cases: • Driver
+• Provisioner • Verifier
+• Transport
+• Platforms
+• Suites
+
+
+.kitchen.yml Structure
+driver:
+  name: driver_name
+provisioner:
+  name: provisioner_name
+verifier:
+  name: verifier_name
+transport:
+  name: transport_name
+platforms:
+  - name: platform-version
+    driver:
+      name: driver_name
+  - name: platform-version
+suites:
+  - name: suite_name
+run_list:
+- recipe[cookbook_name::recipe_name]
+    attributes: { foo: "bar" }
+    excludes:
+      - platform-version
+  - name: suite_name
+    driver:
+      name: driver_name
+run_list:
+- recipe[cookbook_name::recipe_name]
+    attributes: { foo: "bar" }
+    includes:
+      - platform-version
+
+.kitchen.yml Driver
+
+    driver:
+      name: driver_name
+
+
+• Drivers are used to create the platform instances which are used during cookbook testing. There are many driver types available for common virtualization tools and cloud infrastructures.
+• Common configurations might use something like Vagrant and VirtualBox to test locally on your workstation, or, if local resources are not available or you have a larger number of tests, you could use a cloud provider like Amazon EC2, or perhaps Docker or one of the many other driver types available.
+
+Vagrant
+driver:
+  name: vagrant
+  ...
+Amazon EC2
+driver:
+  name: ec2
+  ...
+Docker
+driver:
+  name: docker
+  ...
+
+.kitchen.yml Provisioner
+
+provisioner:
+  name: provisioner_name
+• Provisioners specify how the chef-client will be simulated during the testing process. • The most common configurations are chef-zero and chef-solo.
+Chef Zero
+provisioner:
+  name: chef_zero
+Chef Solo
+provisioner:
+  name: chef_solo
+• Key functionality of the chef_zero and chef_solo provisioner is the ability to use the require_chef_omnibus setting to install a specific chef version.
+provisioner:
+  name: chef_solo
+  require_chef_omnibus: 12.8.1
+Shell
+provisioner:
+  name: shell
+
+.kitchen.yml Verifier
+
+verifier:
+  name: verifier_name
+
+• The verifier configuration defines which test framework will perform tests. InSpec
+
+verifier:
+  name: inspec
+
+• During this course InSpec will be used to perform integration testing on instances.
+
+.kitchen.yml Transport
+
+transport:
+  name: transport_name
+
+• The transport defines the communication protocol for the execution for remote commands. Among other things, transport settings can include things like username and password, connection retries or port.
+
+SSH
+
+transport:
+  name: ssh
+
+WinRM
+
+transport:
+  name: winrm
+
+.kitchen.yml Platforms
+
+platforms:
+  name: platform_version
+
+• Platforms defines Chef server attributes that are common to the collection of test suites.
+• The platform_version defines the list of operating system and version on which Kitchen will perform cookbook testing.
+
+Multiple operating systems and versions
+
+platforms:
+  - name: ubuntu-16.04
+  - name: centos-7.2
+  - name: centos-6.8
+
+
+.kitchen.yml Suites
+
+suites:
+  - name: suite_name
+run_list:
+- recipe[cookbook_name::recipe_name]
+  attributes: { foo: "bar" }
+  excludes:
+    - platform-version
+- name: suite_name
+  driver:
+    name: driver_name
+run_list:
+- recipe[cookbook_name::recipe_name]
+  attributes: { foo: "bar" }
+  includes:
+    - platform-version
+
+Suites is a list of a group of tests which allow the granular combinations of run_lists and platforms to define what is being tested.
+Java 6 and Java 7
+
+suites:
+  - name: java6
+run_list:
+  - recipe[java::default]
+attributes: { ‘java’: { ‘jdk_version’: ‘6’ } } excludes:
+    - centos-7.2
+- name: java7
+run_list:
+  - recipe[java::default]
+attributes: { ‘java’: { ‘jdk_version’: ‘7’ } } includes:
+- centos-7.2
+
+
+.kitchen.yml Putting it together
+
+driver:
+name: vagrant
+provisioner:
+  name: chef_zero
+verifier:
+  name: inspec
+platforms
+  - name: centos-7.2
+  - name: centos-6.8
+suites:
+  - name: java6
+run_list:
+  - recipe[java::default]
+verifier:
+  inspec_tests:
+- test/smoke/default
+attributes: { ‘java’: { ‘jdk_version’: ‘6’ } } excludes:
+    - centos-7.2
+- name: java7
+run_list:
+  - recipe[java::default]
+verifier:
+  inspec_tests:
+- test/smoke/default
+attributes: { ‘java’: { ‘jdk_version’: ‘7’ } } includes:
+- centos-7.2
+
+
+
+
+
+
+
+##################################################
+Lecture: Using Test Kitchen
+##################################################
+Using test kitchen
+• Test Kitchen is part of the Test Driven Development model in which tests are written first with the expectation that they will fail. Chef code is then written to make the test instance state match our tests in order to pass. Because of this testing driven model, this means you should use Test Kitchen as early as possible in your Chef development process!
+• Test Kitchen is a part of the ChefDK and is invoked with the kitchen command.
+• Kitchen commands!
+
+Basics of using test kitchen
+• Invoking the kitchen help command outputs available kitchen commands. Kitchen commands can also be invoked with kitchen help subcommand. For example, kitchen help create will output help information about the create subcommand within kitchen.
+• How can a .kitchen.yml be created?
+• The .kitchen.yml can be created multiple ways:
+• The kitchen init command invoked from within a cookbook directory would create a .kitchen.yml with a pre-defined run_list containing the name of the cookbook and a configuraiton with its default recipe.
+• The chef generate cookbook cookbooks/my_cookbook command would create a cookbooks/my_cookbook/.kitchen.yml with a pre-defined run_list containing the my_cookbook::default recipe.
+• The .kitchen.yml can be created via chef generate app chef_app and would be located beneath the chef_app/.kitchen.yml
+• You could also create it manually, if desired.
+• When run without any arguments, most kitchen commands execute on all related items. You can specify individual instances and use regular expressions for name matching.
+
+Kitchen init
+• The kitchen init command does the following:
+• Creates a default .kitchen.yml file
+• Includes Vagrant as the default driver
+• Includes chef_solo as the default provisoner
+• Creates the test/integration/default directory
+• Adds .kitchen to chefignore
+• Appends kitchen to the RubyGems file, appends to .gitignore if the directory is under git control, and appends to .thor if necessary.
+• Installs the default Test Kitchen driver if one has not been specified.
+
+Kitchen init test directories
+• Kitchen test directories
+• When kitchen init is invoked it creates the test/integration/default directory. This directory structure can be used for integration tests
+• However, when using the Chef command to generate a cookbook, the default location for the inspec tests associated with the default tests are located in test/smoke/default because there are explicit references to this location in .kitchen.yml.
+• You can also create a directory beneath test/integration/<suite_name> and place your tests within that directory and they will be executed without having to be explicitly defined in the .kitchen.yml. Test kitchen knows to look at this location by convention.
+• The location can be explicitly referenced via the .kitchen.yml via specific verifier settings.
+• The chef generate cookbook command no longer creates tests in the ‘test/recipes/default’ directory; it was used in previous versions but has been deprecated, you should be aware of it.
+
+Kitchen init with a specific driver
+• kitchen-vagrant is the default driver, but what if you need to initialize kitchen and include a specific driver?
+• The kitchen help init command reveals that a driver can be installed with the kitchen init -D drivername
+command if we pass it a valid driver name, or we can use kitchen init –-driver=drivername
+• How to know which drivers are available to install?
+Running the kitchen driver discover command will produce a list of available drivers.
+• How to initialize your test kitchen configuration with the ec2 driver:
+     kitchen init –-driver=kitchen-ec2
+• Drivers can also be installed outside of kitchen by running: chef exec gem install kitchen-docker
+
+
+
+Kitchen list
+• The lifecycle of test kitchen instances also have a state which can be viewed by using the kitchen list command.
+• ”Instance” is a combination of your suite name(s) and platforms being tested. e.g. default-centos-72.
+• “Driver” is the configured driver in .kitchen.yml, like Vagrant.
+• “Provisioner” is the Chef client implementation. e.g. chef_zero or chef_solo.
+• “Verifier” is the testing framework; this course covers Inspec.
+• “Transport” is the means by which Test Kitchen communicates with the instances, ssh.
+• Last Action can be one of the following depending on what phase of testing the instance is in:
+• Created
+• Not Created
+• Converged
+• SetUp
+• Verified
+• Unknown
+• Last Error will record the last error. For instance: Kitchen::ShellOut::ShellCommandFailed or RuntimeError
+
+Test Kitchen lifecycle
+• The kitchen command has a number of sub-commands, which represent a phase of the lifecycle of a test instance.
+• The phases of operation are as follows:
+• The first phase is kitchen create; this creates and boots your test instance.
+• The second phase is kitchen converge which installs a Chef client and executes the run_list in .kitchen.yml
+• The third phase is kitchen setup which ensures convergence has occurred successfully and the instances are prepared for testing.
+• The fourth phase is kitchen verify which actually runs the tests which have been defined in .kitchen.yml or are implied by convention.
+• When you are finished testing, running kitchen destroy removes the test instances.
+• All of these operations can be invoked in one single command by using the kitchen test command. However, kitchen destroy is implied before kitchen test runs.
+• The intervening commands are implied if they have not yet been run; for example, converge invokes create if the instance has not yet been created
+
+
+Kitchen Create
+• The kitchen create command will get your instances into a running state. This phase leverages the kitchen driver associated to produce a running test kitchen instance.
+• You can invoke the creation of a single instance by specifying that instance name; for example, given a suite name of “prod” to create a centos 6.8 platform version instance, we could use the following command:
+  kitchen create prod-centos-68
+• The value of the instance name can be obtained with kitchen list.
+
+Kitchen converge
+• The kitchen converge command converges the instances in your .kitchen.yml file. When executed, the following occurs:
+• Installs the latest available version of the Chef client using the omnibus installer unless otherwise specified.
+• Uploads cookbooks and required configurations to the instance.
+• Executes a chef-client against the run_list defined in your test suites.
+• You can converge multiple times on one or more existing instances without having to reinstall the chef client. This helps when iteratively working on cookbooks.
+
+Kitchen setup
+• The kitchen setup command will ensure that the instance is prepared for tests which, depending on your test framework as in the case of serverspec, would require the installation and preparation of tools on the instance.
+
+Kitchen verify
+• The kitchen verify command will execute tests defined within suites on your instances. This phase invokes the inspec test framework to analyze the state based on the tests you have defined to determine if the conditions on the instance satisfy the tests.
+• The verification of a single instance can be run by running kitchen verify on the name of the instance.
+• The output associated with kitchen verify will let you know how many tests have passed or failed.
+
+Kitchen Destroy
+• The kitchen destroy command will remove your test instances by invoking their removal via their associated driver.
+• You can invoke the destruction of a single instance by specifying that instance name; for example, given a suite name of “prod”, to create a centos 6.8 platform version instance we could use the following command:
+  kitchen destroy prod-centos-68
+
+
+An Example of an iterative Development Workflow
+1. Set up test kitchen by editing on your kitchen.yml.
+2. Write the relevant tests.
+3. Run kitchen verify (implies create, converge and setup)
+4. Examine your failures.
+5. Write the Chef code to pass your tests.
+6. Run kitchen converge to apply your new cookbook code.
+7. Run kitchen verify to see that you have passed your tests.
+8. Iterate on new functionality by writing additional tests.
+9. Write Chef to code pass your additional tests.
+10. Run kitchen verify to ensure your new functionality correctly implemented.
+11. When satisfied that your work is complete run kitchen destroy.
+
+
+Test Kitchen Troubleshooting
+• Troubleshooting Test Kitchen
+• The kitchen diagnose command will show you all of the implicit settings for test kitchen’s configuration file. This exposes the computed state of .kitchen.yml and will let you examine implicit values for default and computed settings.
+• Log in to a test instance with the kitchen login command to examine its state. In the case of Vagrant the login session has full access to log in and perform whatever commands are desired.
+• Examine kitchen list, console output, and any available logs in .kitchen/logs/kitchen.log.
+• Use debug logging by running kitchen commands with for example: kitchen test -l debug.
+
+##################################################
+Lecture: InSpec
+##################################################
+About InSpec
+
+• Within Test Kitchen, InSpec functions in .kitchen.yml as a verifier and serves as the test framework for integration testing. Running InSpec tests through Test Kitchen, will allow you to verify your configuration in a test environment.
+• InSpec is an open source testing framework with a human-readable syntax that is meant to resemble natural language.
+     describe resource(’<name>’) do
+      it { <expection> }
+     end
+• In practice, a simple package verification test would appear as follows:
+     describe package(’httpd') do
+       it { should be_installed }
+      end
+
+InSpec Test Locations
+
+• By default kitchen-inspec expects tests to be in test/integration/suite_name where suite_name is a name identical to a suite listed in .kitchen.yml. The test/integration directory is the default value for test_base_path in if unset in .kitchen.yml.
+• When using the Chef generate commands to generate a cookbook the default location for the InSpec tests is test/smoke/default, and there are explicit references to this location in .kitchen.yml. By automatically including the test/smoke/default reference the default location of test/integration setting is being overidden.
+• In prior releases integration tests were located in the ‘test/recipes’, but this is no longer the case.
+
+InSpec Syntax - Resources
+
+• InSpec resources reference different types of resources and their attributes
+• package – Test if a package is installed or not.
+• file – Test file types, their attributes, permissions, file content, checksums, etc.
+• user – Test user existence or properties of a user.
+• group – Test groups and membership.
+• service – Test if a service is installed or running or enabled.
+• port – Test port properties; is a port listening?
+• os – Test platform attributes like operating system family or version.
+• These are only a few of common InSpec resource types, there are many more available and can be referenced at inspec.io.
+
+InSpec Syntax - Matchers
+• InSpec matchers are used to compare resource values to expectations
+• be – Can be followed by a numerical comparison operator.
+• cmp – Flexible comparison operator.
+• eq – Test for equality between two values of the same type.
+• include – Test if a value is included in a list.
+• match – Check if a string matches a regular expression.
+• Each resource can define additional resource specific matchers relavant to that resource.
+• For example the package resource defines a matcher called be_installed.
+• The file resource defines a matcher called be_writable.
+• Check the resource reference documentation for matcher functionality related to that resource.
+
+
+InSpec Syntax - Expectations
+
+• Expectations come in the form of should and should_not and are used in conjunction with a matcher that may be resource specific. In practice, that means a simple test to verify a package is installed would look like this:
+     describe package(’httpd') do
+       it { should be_installed }
+end
+     Describe user(‘william’) do
+       it { should_not exist }
+end
+
+
+InSpec User Resource Example
+• Common resource example with ‘its’ to compare the value of a setting with a matcher. Additional tests of a resource could look as follows:
+     describe user(‘david') do
+       it { should exist }
+       its('uid') { should eq 1234 }
+       its('gid') { should eq 1234 }
+       its('group') { should eq 'root' }
+       its('groups') { should eq [’wheel', ’users']}
+       its('home') { should eq '/home/david' }
+       its('shell') { should eq '/bin/bash' }
+      end
+
+InSpec - Example for file
+• Common resource example with ‘its’ to compare the value of a setting with a matcher. Additional tests of a resource could look as follows:
+     describe file(’/var/www/html/index.html') do
+       it { should exist }
+       it { should be_readable }
+       its(‘content’) { should match /hello world/ }
+      end
+
+InSpec – Common Resources Example
+• Common resources example
+     describe package(’httpd') do
+       it { should be_installed }
+     end
+     describe service(’httpd') do
+       it { should be_installed }
+       it { should be_enabled }
+       it { should be_running }
+     end
+     describe port(‘80’) do
+       it { should be_listening }
+     end
+
+
+
+
+##################################################
+Lecture: Static Code Analysis
+##################################################
+Static Code Analysis Tools
+• Why perform static analysis?
+• Avoid common mistakes and save time by catching errors quickly.
+• Benefit from more idiomatic code.
+• Best practices for style.
+• Can be integrated into your CI, commit process or even your text editing environment.
+• Customization to support your own specifications.
+
+
+What is Foodcritic and What Does It Do
+• Foodcritic is part of the ChefDK and is invoked with the foodcritic command. Foodcritic acts as a linting tool, a correctness checker for Chef code. Foodcritic will check for style, correctness, syntax, best practices, common mistakes and deprecations.
+• Foodcritic has built-in rules which are used to check your code. Rules can be run individually or as a group of rules defined by built-in tags. Rules can also be ignored if desired.
+• Foodcritic helps catch common cookbook code mistakes that can result in runtime failure. When integrated with a commit hooks or a CI pipeline this prevents errors from making it further than they should.
+
+
+Using Foodcritic
+• Foodcritic tags are rules which have been grouped together and classified based on what they examine. A tag can be checked by using running foodcritic <path> -t <tagname> where “tagname” is one of the available tags or individual rule numbers and path is the path to a cookbook or cookbooks. All of the tags and rules are documented at foodcritic.io.
+• For instance, running the following: foodcritic ./ -t correctness would check all of the available files in the current directory against all rules which have been classified with the “correctness” tag.
+• Multiple tags can be run by separating with a comma. For example: foodcritic ./ -t correctness,style Will include both the style and correctness tags and all the rules they contain when running food critic.
+• Tags can be listed as exceptions. To run all rules except a specific tag prefix the command with a tilde like this: foodcritic ./ -t ~FC064
+• You can place a .foodcritic file within each cookbook to define the rules that you want to have checked when foodcritic runs. You can also negate rules by prefixing them with a tilde.
+
+Foodcritic Output
+• When a problem is detected Foodcritic output will display the rule number, it’s description and the file and line number. Below is an example:
+FC064: Ensure issues_url is set in metadata: ./metadata.rb:1
+
+What is Rubocop and What Does It Do
+• Rubocop is similar to Foodcritic except that Rubocop evaluates your Ruby code for correctness and style. Out of the box it will enforce many of the guidelines outlined in the Ruby Style Guide. Rubocop does not examine your code for Chef style.
+• Rubocop contains the various checks which are referred to as “cops”. Most of the cops in RuboCop are so called style cops that check for stylistic problems in your code. There are also lint cops that check for possible errors and bad practices.
+• Rubocop will recurse directories looking for .rb files.
+• Rubocop has TODO list functionality that will help you keep track of offenses by creating and masking a list of issues it finds so they can be addressed or ignored.
+
+
+Rubocop Configuration
+• The Rubocop .rubocop.yml file might contain settings important to what checks or settings you would like to enforce. These settings will take precedence over defaults that are shipped with Rubocop.
+• It is most common to use the same set of rules on all cookbooks for consistency.
+• A typical .rubocop.yml might appear as follows:
+     AlignParameters:
+       Enabled: false
+     Encoding:
+       Enabled: false
+     LineLength:
+       Max: 200
+     StringLiterals:
+       Enabled: false
+
+Using Rubocop
+• In order to keep track of Rubocop offenses we can generate a .rubocop_todo.yml which contains entries that mask all of the offenses it finds. This can be done by executing the rubocop --auto-gen-config command.
+• The generated .rubocop_todo.yml will place the issues it finds into this TODO file and will allow you to toggle them on and off. This file will not automatically be used when running Rubocop without explicitly referencing it from the .rubocop.yml or by using rubocop –-config .rubocop_todo.yml command.
+• In order for this file to automatically be consulted when running the rubocop command, you’ll need to ensure that a .rubocop.yml exists and that the .rubocop.yml contains inherit_from: .rubocop_todo.yml within.
+• The .rubocop_todo.yml will mask the issues that are found so that they can be addressed one by one or ignored.
+
+Rubocop Workflow
+• When working with Rubocop you can use a basic workflow to help work through issues it finds.
+1. Within your cookbook run: rubocop --auto-gen-config
+2. Add inherit_from: .rubocop_todo.yml to .rubocop.yml assuming it’s in the same directory.
+3. Remove or comment out a single entry within the .rubocop_todo.yml.
+4. Run rubocop and fix the reported offense.
+5. Verify it has been fixed by running rubocop again to ensure it is no longer present.
+6. Repeat steps 3 through 5 until there are no issues left.
+7. Remove the .rubocop_todo.yml when done.
+• You might also choose to move offenses which you are not concerned about into the .rubocop.yml to ensure they are not reported in the future.
+
+
+Rubocop Output
+• Rubocop’s default output format is a progress meter mode which will display a “.” for a clean file and capital letters in the form of C for convention, W for warning, E for error or F for fatal. This shows you at a glance how many issues you have and the kinds of issues.
+• Rubocop will display some metrics, including the number of offenses and files checked. Offenses will appear with the filename, line number and character number where the issue is identified. Also included will be the category of error C,W,E or F and a description of the offense in practice this might appear as follows:
+     Inspecting 13 files
+     ...........C.
+     Offenses:
+     recipes/default.rb:7:13: C: Space missing after comma.
+     ['net-tools','httpd'].each do |pkg|
+                  ^
+     13 files inspected, 1 offense detected
+
+
+##################################################
+Lecture: Troubleshooting
+##################################################
+Troubleshooting
+• A Chef run works in two phases, which ultimately result in establishing your desired state.
+• Compile Phase
+• Execution (Convergence) Phase
+
+• You’ll need to have an understanding of:
+• What happens during the compile phase of a Chef client run?
+• What happens during the execution (Converge) phase of a Chef client run?
+• When is pure Ruby code executed?
+• When is Chef code executed?
+
+
+Chef Run – The Compile Phase
+• Each resource in the node object is identified and a resource collection is built. All recipes from the run_list are loaded, and then the actions specified within each of them are identified.
+
+• During the compile phase:
+• All cookbooks are loaded from the run list.
+• Recipes are read and used to build the resource collection.
+• Pure Ruby code is executed
+• Variables get used
+• Arrays get iterated
+• Conditionals get evaluated
+
+Chef Run – The Execution Phase
+• The chef-client configures the system based on the order of the resources in the resource collection. Each resource is mapped to a provider which then examines the node and performs the necessary steps to complete the actions.
+
+• During the execution phase:
+• Chef DSL is executed.
+• Any Ruby code inside of a ruby_block resource is executed.
+• Guards like not_if and only_if are evaluated during the execution phase.
+• Property values using lazy evaluation are executed.
+
+
+
+Chef Run – General Considerations
+• Under normal circumstances, resource parameters must be set at compile time, but sometimes a value can’t be known until the execution phase. When this is the case, a lazy block can be used to have them evaluated during execution time.
+• Avoid using pure Ruby code to check for things which haven’t yet been executed. Instead use guards like not_if and only_if which are evaluated during the execution phase.
+• There is another exception to standard behavior, the chef_gem resource runs its actions immediately, before convergence allowing a gem to be used in a recipe immediately.
+
+
+Chef run - example
+
+• What will happen?
+     file ‘/tmp/hello.txt’ do
+       content ‘Hello World’
+end
+     if File.exist?(‘/tmp/hello.txt’)
+       execute ’the-command’
+end
+• Guards happen in the execution phase where ChefDSL is also executed, thus after the file has been created.
+     file ‘/tmp/hello.txt’ do
+       content ‘Hello World’
+end
+     execute ‘the-command’ do
+       only_if { File.exist?(‘/tmp/hello.txt’) }
+end
+
+
+
+Chef Run – Notification Considerations
+• Remember that by default, notification property timer is :delayed, which specifies that a notification should be queued up, and then executed at the very end of the chef-client run.
+• Be mindful of the :before notification timer which specifies that the action on a notified resource should be run before processing the resource block in which the notification is located.
+
+
+Chef Run – Notification Considerations
+lazy_message = 'Hello World’
+file ‘lazy_message’ do
+  path ‘/tmp/lazy.txt’
+  content ”#{lazy_message}”
+end
+execute 'yum-makecache’ do
+  command 'yum makecache’
+  notifies :create, 'file[message]', :immediately
+  action :nothing
+end
+package 'bind-utils' do
+  action :install
+  notifies :run, 'execute[yum-makecache]', :before
+end
+file 'message' do
+  path '/tmp/message.txt’
+  content lazy { "#{lazy_message}" }
+end
+lazy_message = 'Goodbye World’
+
+
+Chef Run – Run Action
+• Another method to run something in the compile phase is to use the .run_action(:some_action) method at the end of a resource block to run the specified action during the compile phase.
+• Action should be set to nothing to prevent execution in the execution phase.
+     execute ‘yum-makecache’ do
+       command ’yum makecache’
+       action :nothing
+     end.run_action(:run)
+• Resources that are executed during the compile phase cannot notify other resources.
+
+##################################################
+Exercise: Generate with a Generator
+##################################################
+n this exercise, you will create a generator cookbook which can be used with Chef generator commands to produce defaults which match your requirements.
+This will help configure the environment and make it easier to work with cookbooks and cookbook components that you generate.
+
+1. Create a generator beneath ~/generator called lcd_origin
+
+cd ~
+mkdir generator
+mkdir -p chef/cookbooks
+chef generate generator generator/lcd_origin
+2. Edit ~/generator/lcd_origin/templates/default/kitchen.yml.erb to include the following test kitchen configuration file.
+
+---
+driver:
+ name: docker
+ privileged: true
+ use_sudo: false
+
+provisioner:
+ name: chef_zero
+ # You may wish to disable always updating cookbooks in CI or     other testing environments.
+ # For example:
+ #   always_update_cookbooks: <%%= !ENV['CI'] %>
+ always_update_cookbooks: true
+
+verifier:
+ name: inspec
+
+platforms:
+ - name: centos-7.2
+   driver_config:
+     run_command: /usr/lib/systemd/systemd
+
+suites:
+ - name: default
+   run_list:
+     - recipe[<%= cookbook_name %>::default]
+   verifier:
+     inspec_tests:
+       - test/smoke/default
+   attributes:
+
+3. Examine ~/generator/lcd_origin/templates/default/metadata.rb.erb.
+
+4. Edit ~/generator/lcd_origin/files/default/spec_helper.rb and append the following code to the spec_helper file.
+
+RSpec.configure do |config|
+  config.platform = 'centos'
+  config.version = '7.2.1511'
+end
+5. Edit ~/generator/lcd_origin/templates/default/README.md.erb to add some text you'd like to see in every readme file.
+
+# <%= cookbook_name %>
+
+This is some text we want in every cookbook README.md!
+6. Create ~/.chef/config.rb and add the following.
+
+The config.rb code below creates values for variables which exist within templates. This code can cause problems for other applications due to outstanding bugs so we need to only evaluate it in the context of the chef generate command.
+
+cookbook_path [ '~/chef/cookbooks/']
+local_mode true
+if File.basename($PROGRAM_NAME).eql?('chef') && ARGV[0].eql?('generate')
+  chefdk.generator.license = "all_rights"
+  chefdk.generator.copyright_holder = "Student Name"
+  chefdk.generator.email = "you@example.com"
+  chefdk.generator_cookbook = "~/generator/lcd_origin"
+end
+7. Generate a new cookbook in ~/chef/cookbooks called lcd_web and examine the results.
+
+8. Generate a new attributes file called “default” in the “lcd_web” cookbook.
+
+9. Generate a new recipe called users in the “lcd_web” cookbook.
+
+chef generate cookbook cookbooks/lcd_web
+chef generate attribute cookbooks/lcd_web default
+chef generate recipe cookbooks/lcd_web users
+Now we have a cookbook generated, ready for testing… spend some time examining the files we have changed.
+
+
+
+
+##################################################
+Exercise: Create and Run ChefSpec Tests
+##################################################
+In this exercise, you will write some ChefSpec tests for the lcd_web cookbook.
+
+Create ChefSpec tests to ensure:
+
+httpd package is installed, enabled, and running; use the default_spec.rb for this.
+net-tools package is installed.
+A group called developers exists and a user called webadmin exists that has group membership of developers. Use the users_spec.rb for this.
+Run the tests.
+
+The contents of spec/unit/recipes/default_spec.rb appear as follows:
+httpd is installed, enabled and running…
+require 'spec_helper'
+
+describe 'lcd_web::default' do
+  context 'CentOS' do
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new(platform: 'centos', version: '7.2.1511')
+      runner.converge(described_recipe)
+    end
+
+    it 'converges successfully' do
+      expect { chef_run }.to_not raise_error
+    end
+
+    it 'installs httpd' do
+      expect(chef_run).to install_package('httpd')
+    end
+
+    it 'installs net-tools' do
+      expect(chef_run).to install_package('net-tools')
+    end
+
+    it 'enables the httpd service' do
+      expect(chef_run).to enable_service('httpd')
+    end
+
+    it 'starts the httpd service' do
+      expect(chef_run).to start_service('httpd')
+    end
+
+  end
+end
+The contents of spec/unit/recipes/users_spec.rb appear as follows:
+require 'spec_helper'
+
+describe 'lcd_web::users' do
+  context 'CentOS' do
+    let(:chef_run) do
+      runner = ChefSpec::ServerRunner.new(platform: 'centos', version: '7.2.1511')
+      runner.converge(described_recipe)
+    end
+
+    it 'creates the group' do
+      expect(chef_run).to create_group('developers')
+    end
+
+    it 'creates the user' do
+      expect(chef_run).to create_user('webadmin').with(group: 'developers')
+    end
+  end
+end
+Run the tests from the lcd_web cookbook:
+
+chef exec rspec
+
+
+
+##################################################
+Exercise: Create and Run InSpec Tests
+##################################################
+Create InSpec Integration Tests
+
+1. The ~/chef/cookbooks/lcd_web/test/smoke/default/default_test.rb should look like this:
+['net-tools', 'httpd'].each do |pkg|
+  describe package(pkg) do
+    it { should be_installed }
+  end
+end
+3. The ~/chef/cookbooks/lcd_web/test/smoke/default/spec_users.rb should contain the following:
+describe user('webadmin') do
+    it { should exist }
+    its('group') { should eq 'developers' }
+end
+
+describe group('developers') do
+    it { should exist }
+end
+
+
+Create Chef Code to Satisfy the Tests
+1. Write the Chef code to install httpd and net-tools in the default recipe.
+2. Write the Chef code to ensure a group called developers exists in the users recipe.
+3. Write the Chef code ensure a user called webadmin exists and is a member of the developers group in the users recipe.
+
+Install Packages
+
+1.  The ~/chef/cookbooks/lcd_web/recipes/default.rb can look like this:
+include_recipe 'lcd_web::users'
+
+package 'net-tools' do
+  action :install
+end
+package 'httpd' do action :install end service 'httpd' do action [:enable, :start] end
+
+Create Group and User
+
+1. The ~/chef/cookbooks/lcd_web/recipes/users.rb can look like this:
+group 'developers'
+
+user 'webadmin' do
+  action :create
+  uid '1020'
+  gid 'developers'
+  home '/home/webadmin'
+  shell '/bin/bash'
+end
+
+2. Run kitchen converge to ensure your changes are converged on your test instance.
+3. Run kitchen verify to ensure the tests are passing.
+
+##################################################
+Cookbook Components
+##################################################
+##################################################
+Lecture: Cookbook Structure
+##################################################
+Cookbook Structure
+
+• Cookbooks contain a number of files and directories that represent features of that cookbook. Not all of these files and directories are created when generating a cookbook. Certain files and directories are created when using the component specific generator.
+• The following commands were used to create the structure to the left and serves only as an example for where files and directories end up being created.
+     chef generate cookbook example_cookbook
+     chef generate attribute example_attribute
+     chef generate attribute default
+     chef generate lwrp example_lwrp
+     chef generate file example_file
+     chef generate template example_template
+
+Cookbook Components
+• Attributes – Can be generated with the chef generate attribute command.
+• Recipes – Can be generated with the chef generate recipe command.
+• Definitions – Can be created manually but using custom resources is preferred.
+• Files – Can be generated with the chef generate file command.
+• Libraries – Can be created manually.
+• Resources – Can generate custom resources with the chef generate lwrp command.
+• Providers – Can be generated with the chef generate lwrp command.
+• Metadata – Can be generated with chef generate cookbook, repo or app commands.
+• Templates – Can be generated with the chef generate template command.
+• Tests – Can be generated with recipes when using a generator.
+• Other files – Some additional files are generated as well including, Berksfile, chefignore, .delivery and .gitignore.
+
+Attributes
+• The attributes directory can contain a collection of files which contain attributes or settings which can be used to configure your infrastructure. Attributes function as a way to abstract configuration setting data from the recipe code.
+• For each cookbook loaded, the default.rb attributes file gets loaded first. Any additional attribute files are loaded in lexical sort order.
+• The default.rb was generated on purpose and was not created automatically.
+
+Recipes
+• The recipe is the most fundamental configuration element. It contains your configuration instructions.
+• Recipes are Ruby code and are a collection of resource names, attribute-value pairs, and actions to which helper code can be added when necessary.
+
+Definitions
+• Starting with chef-client 12.5, it is recommended to build custom resources instead of definitions. While it is still possible to use definitions, it is recommended to migrate existing definitions to the new custom resource patterns.
+• Definitions would be found within the definitions directory within a cookbook.
+• Definitions function like a wrapper for resources and are not added to the resource collection. For this reason there are many limitations with definitions. Definitions won’t work with common resource properties like notifies, subscribes and only_if or not_if guards and they don’t support why-run mode.
+
+Files
+• Files are a collection of files which can be added to nodes with the cookbook_file resource.
+• Files can be arranged in a directory path structure which organizes them for specific host or specific platform targets. Files in the default directory would be used on any platform.
+• Specificity precedence is as follows:
+1. files/host-$fqdn/$source
+2. files/$platform-$platform_version/$source
+3. files/$platform/$source
+4. files/default/$source
+5. files/$source
+• A directory structure matching these values would place the file on the desired platform from most to least specific match.
+
+
+Libraries
+• Libraries are located in the libraries directory. A library allows arbitrary Ruby code to be included in a cookbook; therefore, anything that can be done with Ruby can be done in a library.
+• You can extend existing Chef functionality or create new functionality with a library. Libraries are commonly used to reduce repetition by creating helpers.
+• Use cases might include, connecting to a database, interacting with an LDAP provider, creating a custom class or module.
+
+Resources
+• Custom resources are a collection of files located in the resource directory which acts as an extension of Chef that allows you to create your own resources.
+• Custom resource may be used in a recipe just like the any of the resources that are built into Chef.
+• When using custom resources, a cookbook named website and a custom resource file named httpd.rb is, by default, used in a recipe with website_httpd. This behavior can be altered by using resource_name method with a value of :custom_name which matches what you want to call the resource. This allows the resource to be called using web_httpd or whatever arbitrary name you give it.
+     resource_name :web_httpd
+• You could also create one file in each resource and provider directory called default.rb and reference the name as defined.
+
+Providers
+• Providers are a collection of files located in the providers directory.
+• A provider defines the steps to create the desired state and the code necessary to
+converge the node.
+• The naming patterns of lightweight resources and providers are determined by the name of the cookbook and by the name of the files in
+the resources/ and providers/ sub-directories.
+
+Metadata
+• The metadata.rb file is created automatically upon cookbook generation and should be located at the top level of every cookbook directory structure.
+• The contents of the metadata.rb file provide hints to a Chef server to help ensure that cookbooks are deployed correctly.
+
+
+Templates
+• Templates are located in the templates directory and are in Embedded Ruby (ERB) format.
+• Templates can be arranged in a directory path structure which organizes them for specific host or specific platform targets. Files in the default directory would be used on any platform.
+• Specificity precedence is as follows:
+1. templates/host-$fqdn/$source
+2. templates/$platform-$platform_version/$source
+3. templates/$platform/$source
+4. templates/default/$source
+5. templates/$source
+
+
+Tests
+• Tests have two separate directories for unit and integration tests and are generated with recipes or during the initial cookbook generation.
+• The generated location of InSpec integration tests is within the test/smoke/default directory and is referenced within the .kitchen.yml. However, the default configuration for kitchen-inspec if no specific location is set is test/integration/<suite>. Where suite is the name defined in the .kitchen.yml.
+• ChefSpec unit tests are located within the spec/unit/recipes directory.
+
+Other Files
+• The chefignore file is used to prevent specific files being uploaded to the Chef server. It contains file and directory names to ignore when uploading.
+• A hidden .delivery directory is used for workflow capabilities in Chef Automate and defines how the Chef Automate pipeline will build, test, and deploy a project.
+• README.md is the markdown formatted documentation for the Cookbook.
+• The Berksfile describes the set of sources and dependencies needed to use a cookbook.
+
+
+
+##################################################
+Lecture: Metadata Anatomy
+##################################################
+Metadata Settings
+• Metadata settings allow you to define key information about a cookbook. Some settings are common and some are less common.
+• General author cookbook information.
+• Cookbook version numbers.
+• Supported versions of operating systems, Chef client and Ohai.
+• Dependencies for other cookbooks and gems.
+• Recipe descriptions.
+• Source and issues URLs.
+• Less common settings.
+
+
+Common Settings
+• When using a generator, common settings will be created automatically. However, each of these can be changed to suit your organization. All of this information is ideally included in a cookbook so generating it is helpful. Below is an example:
+     name ’org_web’
+     maintainer ’John Smith’
+     maintainer_email ’john@example.com’
+     license 'all_rights’
+     description 'Installs/Configures lcd_web’
+     long_description 'Installs/Configures lcd_web’
+     version ’0.1.0’
+• name–Thenameofthecookbook.
+• maintainer–Whomaintainsthecookbook.
+• maintainer_email–Theemailaddressofwhomaintainsthecookbook.
+• license–Thelicensefordistribution.
+• description–Ashortdescriptionofwhatthecookbookdoes.
+• long_description–Alongermoredetaileddescription.
+• version–Thecurrentversionofthecookbook.
+
+
+Version Setting
+• The version setting represents the current version of the cookbook in semantic versioning format. The semantic versioning format provides guidelines on when to bump versions and by how much.
+• Given a version number MAJOR.MINOR.PATCH, increment the:
+• MAJOR version when you make incompatible API changes,
+• MINOR version when you add functionality in a backwards-compatible manner, and
+• PATCH version when you make backwards-compatible bug fixes.
+• There are additional version specific metadata settings which will are covered in the versioning lesson.
+
+
+Supported Platforms and Versions
+• There are also version settings which correspond to the supported operating systems.
+• The supports setting can be configured to declare support for specific platforms and platform versions. To
+support every version of CentOS, you could declare the following in metadata.rb: supports ‘centos’
+• Alternatively you could support anything greater than or equal to CentOS 7: supports ‘centos’, ’>= 7’
+• Support can be declared multiple times for as many platforms and versions as is necessary:
+  supports ‘centos’
+  supports ‘ubuntu’
+
+
+Supported Chef and Ohai Version
+• The chef_version setting can be configured to declare support for specific Chef client versions; you could declare the following in metadata.rb:
+  chef_version ‘~> 12’
+• This indicates support for any 12.x version of the Chef client.
+• You can similarly configure support for a specific Ohai version:
+  ohai_version ”~> 8.22”
+• This indicates support for the 8.22.x version of Ohai.
+
+
+Depends
+• The depends setting requires that a cookbook with a matching name and version exists on the Chef server. The depends setting is how the chef-client knows what to download from the Chef server.
+• When using this setting you are declaring that your cookbook is dependent upon another cookbook whose name and version match or are evaluated to match what you have specified in metadata.rb.
+  depends ‘httpd’, ‘~> 0.4’
+• During the process of development this could be an internal or external dependency, meaning it could be something which is on your Chef server already or something which comes from the Supermarket or something you need to make available via berks install.
+
+
+Gem
+• The gem setting requires that gems are installed with the chef_gem resource after all the cookbooks have been synchronized but before any loading occurs. This is useful for cases where you have a library which might depend on a gem for some functionality.
+• Each gem should be listed once per dependency.
+  gem “poise”
+  gem “chef-sugar”
+  gem “chef-provisioning”
+
+Recipe
+• The recipe setting provides a description of the functionality of the recipes within the cookbook.
+  recipe ‘lcd_web::users’, ‘Sets up users’
+  recipe ‘lcd_web::webserver’, ‘Installs httpd and manages service state’
+
+
+Additional Settings
+• If you generated with a generator you will also notice the issues_url and source_url which are commented out of the metadata.rb file.
+• The issues_url setting references the URL for the location in which a cookbook’s issue tracking is maintained.
+     issues_url 'https://github.com/<insert_org_here>/org_web/issues' if respond_to?(:issues_url)
+• The source_url setting references the URL for the location in which a cookbook’s source code is maintained. source_url 'https://github.com/<insert_org_here>/org_web' if respond_to?(:source_url)
+• These settings integrate with the Supermarket to provide a means for feedback and collaboration for cookbooks.
+
+
+Less Common Settings
+• privacy-Specifies that a cookbook is private.
+• provides-Ordinarily automatically populated, this setting will allow the definition of recipes, definitions or resources.
+• You may also encounter the suggests and recommends options. These do not actually make any changes to the system. They would only provide suggestions or recommendations on additional cookbooks when used. In very recent releases these settings have been removed.
+
+##################################################
+Lecture: Versioning
+##################################################
+Versioning Cookbooks
+• Cookbookversioningisimportantbecausetheversionrepresentsfunctionalityofacookbook.By enforcing configuration with a specific version you are in control over changes to your infrastructure.
+• Acookbookversionmightbeindicativeofcompatibilityorsupportforthirdpartysoftware,correctinga bug or adding a feature.
+• Acookbookversionalwaystakestheformx.y.zwherex,yandzaredecimalnumbers.Alphanumeric combinations are not allowed. Version numbers with more than 3 digits are also not allowed.
+• Approachestohelpwithcookbookversionchangeandtheprocessofversioning.
+
+
+Semantic Versioning
+• Semantic versioning format provides guidelines on when to change versions and what digit to adjust, depending on the impact of the change.
+• Given a version number MAJOR.MINOR.PATCH, increment the:
+• MAJOR version when you make incompatible API changes,
+• MINOR version when you add functionality in a backwards-compatible manner, and
+• PATCH version when you make backwards-compatible bug fixes.
+• An example of this might be 1.1.0, which might be incompatible or have major functionality changes when compared with version 2.0.0.
+
+
+Version Constraints
+• Versionconstraintsallowtheabilitytoobtainoravoidaspecificversionorrangeofversions.These constraints are applied to a metadata function which describes the desired functionality.
+• Thesyntaxappliesanoperatortoscopetheversiontoobtainthedesiredeffect.Thesearecommon operators like equal to, greater than, less than but there are some additional optimistic and pessimistic operators.
+= equal to
+> greater than
+< less than
+>= greater than or equal to; also known as “optimistically greater than”, or “optimistic”
+<= less than or equal to
+~> approximately greater than; also known as “pessimistically greater than”, or “pessimistic”
+
+
+
+Version Constraints
+• Ifnoconstraintisspecified,thedefaultconstraintusedis>=0.0.0whichmeanstheversionusedwillbe versions greater than or equal to the specified version. That means version 1.0.0 matches, as does 2.0.0 or 2.5.0 or 5.2.1. The highest available version will match and will be used.
+• The pessimistic version constraint uses a tilde combined with one of the standard operators and appears as follows: ~> 2.5.0. This will match versions greater than 2.5.0, for example 2.5.1, 2.5.2 etc, but not 2.6.0. This same functionality applies when using only two digits of significance in the version number.
+• Another pessimistic constraint would match values less than a specific version. For instance, < 2.3.4 matches anything available below the target number.
+
+
+Metadata Functions
+• Therearefunctionswhichcaninhibitorinfluencethebehaviorwhenusedwithinmetadata.rb.
+• conflicts–Declaresacookbookisinconflict.
+• depends–Declaresadependencyonacookbook.
+• provides–Alistofrecipesordefinitionswhichwouldnotbecoveredviaauto-generation. • recommends–Addsadependencyrecommendation
+• replaces–Declaresthatthiscookbookreplacesanother.
+• suggests–Addsadependencyonanothercookbookasasuggestion.
+• supports – Declares a supported platform.
+
+
+Metadata - Conflicts
+• Theconflictsfunctionalitywilldeclarethatthecookbookyou’reworkingwithhasaconflictwithan existing cookbook or cookbook version. Any cookbooks in conflict which match the version constraint are not sent to the node by the Chef server during a chef-client run.
+  conflicts ‘mysql’, ‘> 7.1.0’
+  conflicts ’mysql’
+
+
+Metadata - Depends
+• Thedependsfunctionalitywilldeclarethecookbookyourequireforyourcookbooktosuccessfully converge. It is very important that this field is accurate. The dependency below will require that the mysql cookbook is available.
+  depends ‘mysql’, ‘> 7.1.0’
+  depends ’mysql’
+
+
+Metadata - Provides
+• Theprovidesfunctionalitywillallowyoutoaddarecipe,definition,orresourcethatisprovidedbya cookbook. This list is ordinarily automatically populated, so generally it’s not required.
+• Inthecaseofrecipes: provides ’myapp::auth’
+  provides ’myapp::web’
+• In the case of a resource: provides 'service[myappsvc]’
+
+
+Metadata - Recommends
+• Therecommendsfunctionalitywillprovidearecommendationforacookbookwhichisnotactually required. The cookbook will still work if the recommendations are not available.
+  recommends ‘mysql’, ‘> 7.1.0’
+
+
+Metadata - Replaces
+• Thereplacesfunctionalitywillindicatethiscookbookreplacesanexistingcookbook,whichindicatesit can be used in place of that cookbook.
+  replaces ‘mysql’
+  replaces ‘mysql’, ‘> 7.1.0’
+
+
+Metadata - Suggests
+• Thesuggestsfunctionalitywillindicatethiscookbooksuggests,butdoesnotrequire,anothercookbook. It is documented as being “weaker” than recommends. But remember that neither of them will cause the cookbook to fail if the defined cookbook is not available.
+  suggests ‘mysql’, ‘> 7.1.0’
+
+
+Metadata - Supports
+• Thesupportsfunctionalitywilldeclaresupportforaplatformorplatformversion. supports ‘centos’
+• AlternativelyyoucouldsupportanythinggreaterthanorequaltoCentOS7: supports ‘centos’, ’>= 7’
+• Supportcanbedeclaredmultipletimesforasmanyplatformsandversionsasisnecessary:
+  %w{ debian ubuntu redhat centos fedora amazon }.each do |os|
+    supports os
+end
+
+
+Managing and Controlling Changes to Cookbooks
+• To prevent unwanted or accidental changes to a cookbook, the cookbook version can be frozen when uploaded to the Chef server, which prevents updates from occurring on that cookbook version. The example below prevents changes to the cookbook version uploaded.
+  knife cookbook upload myco_app --freeze
+• Other versions can be still be uploaded, but none with this specific version unless forced: knife cookbook upload myco_app --force
+• Using a freezing process for cookbooks associated with an environment can help avoid accidental overwrites.
+
+
+Managing and Controlling Changes to Cookbooks
+• The Knife Spork tool was developed by Etsy and has been included with the ChefDK that help provide a workflow for multi-developer Chef environments. The knife spork command allows you to more quickly review and manipulate cookbook version information.
+• Knife Spork can be configured with a .spork-config.yml to allow the configuration of environment specific settings
+• The knife spork check command can help identify local and remote versions to determine if there are unfrozen remote versions which might clash with your version.
+• The knife spork bump command can be used to version a cookbook without updating the metadata.rb file.
+• The knife spork upload command automatically makes a cookbook frozen upon upload.
+• The knife spork promote command will set a version constraint on an environment for a cookbook.
+
+
+
+##################################################
+Lecture: Attributes
+##################################################
+What are Attributes and Where are They Defined?
+• Attributesarethedetailsaboutanode.Theyareusedbythechef-clienttounderstandnodestateover time. The chef-client must know the current state of the node, the previous state of the node after the last run, and what the node state should become at the end of the current run.
+• Candidatesforattributesareabstractionsofconfigurationinformationforanapplication,valuesfor tunable application parameters.
+• Attributes are obtained by the chef-client in the following locations:
+• Node information from Ohai
+• Attribute files from within cookbooks
+• Recipes also within cookbooks
+• Environments
+• Roles
+
+
+Attribute Behavior on Chef Run
+• Thechef-clientwillobtainthenodeobjectfromtheChefserver,whichhasalltheattributedatafrom the last chef-client run. After that is complete, all attributes except normal are reset. This implies a rebuild process in which attributes from their various sources are consolidated and evaluated for precedence.
+• Attributessupportmultiplelevelsofprecedence.Anattributemayhavemultiplevaluesinternally,but will only return the highest precedence value when read.
+• Ifanattributeisuniquelyidentifieditisconsolidatedintothenodeobject;ifthisisasingleinstance there would be no precedence to evaluate.
+• Attheconclusionofthenextchef-clientrunthenodeobjectissentbacktotheChefserverandit becomes indexed for search and is stored until the next chef-client run.
+
+
+
+Attribute Types
+• There are six attribute types which can be used to determine a value that is applied during a chef-client run. These represent the precedence of an attribute: node.<type>['attribute_name'] = 'value'
+
+default
+Default has the lowest precedence and should be used as often as possible.
+force_default
+When defined in a cookbook, takes precedence over a default value in a role or environment.
+normal
+The normal attribute takes precedence over default, it persists and isn’t reset.
+override
+Override has a higher precedence than default, force_default and normal attributes.
+force_override
+Takes precedence over an override attribute set by a role or an environment.
+automatic
+The automatic attribute is identified by Ohai
+
+
+Automatic Node Attributes
+• AutomaticnodeattributetypesthatcomefromOhaiincludevitalnodespecificinformation,themost common of which would be discoverable vital information about the system on which the chef-client has run. The attributes collected by Ohai are unmodifiable by the chef-client directly.
+  node['platform']
+  node['platform_family']
+  node['platform_version']
+  node['ipaddress']
+  node['macaddress']
+  node['fqdn']
+  node['hostname']
+  node['domain']
+  node['recipes']
+  node['roles']
+• A simple use case for these kinds of attributes is for conditional platform detection:
+  if node['platform'] == 'ubuntu'
+    # ubuntu specific work
+end
+
+
+
+Attribute Definition and Reference
+• Whenyouseeanattributedefinedinanattributesfilethereisanimpliedreferencetonodewhich precedes the the precedence type of default.
+This attribute:
+  default['java']['jdk_version'] = '6'
+Represents the same thing as:
+  node.default['java']['jdk_version'] = '6'
+• Whenreferencinganattributeyoucanusenode['java']['jdk_version']toobtainthemergedattribute
+information.
+• Whendefiningwithinarecipeusenode.default['attribute_name']='value'
+
+
+Attribute Precedence
+1. AnautomaticattributeidentifiedbyOhaiatthestartofthechef-clientrun. 2. Aforce_overrideattributelocatedinarecipe.
+3. Aforce_overrideattributelocatedinacookbookattributefile.
+4. Anoverrideattributelocatedinanenvironment.
+5. Anoverrideattributelocatedinarole.
+6. Anoverrideattributelocatedinarecipe.
+7. Anoverrideattributelocatedinacookbookattributefile.
+8. Anormalattributelocatedinarecipe.
+9. Anormalattributelocatedinacookbookattributefile.
+10. A force_default attribute located in a recipe.
+11. A force_default attribute located in a cookbook attribute file. 12. A default attribute located in a role.
+13. A default attribute located in an environment.
+14. A default attribute located in a recipe.
+15. A default attribute located in a cookbook attribute file.
+
+
+Attribute Precedence
+                    attribute_files     Node/Recipe     Environment     Role
+default                   1                 2                 3           4
+force_default             5                 6
+normal                    7                 8
+override                  9                 10                12         11
+force_override            13                14
+automatic          15
+
+
+
+Attribute Examples
+• In attributes/default.rb default['app']['language'] = 'perl'
+• In recipes/default.rb which overrides the attributes file. node.default['app']['language'] = 'ruby'
+
+• In environments/development.json which overrides the recipe.
+  {
+  "name": "development",
+  "description": "Developemnt Environment",
+  "chef_type": "environment",
+  "json_class": "Chef::Environment",
+  "default_attributes": { "app": { "language": "php-cli" } },
+  "override_attributes": {},
+  "cookbook_versions": {
+    "lcd_web": "= 0.1.0"
+  }
+}
+
+
+
+
+
+##################################################
+Lecture: Common Resources
+##################################################
+Common Resources
+• You should be familiar with some of the common resources and their functionality. • package
+• service
+• directory
+• userandgroup
+• Multiple file related resources: • file
+• cookbook_file • remote_file
+• template
+• Execution resources:
+• execute
+• script, bash, ruby, python etc.
+• shell_out
+
+
+Common Properties
+• There are properties which are a part of the common functionality available to all resources.
+• ignore_failure - Can be set true or false, continue if the resource fails for any reason.
+• provider - Provider allows for the override of the auto-detected provider for a resource.
+• retries- The number of times to catch exceptions and retry.
+• retry_delay– The delay in seconds for retry.
+• sensitive – When set to true, will ensure that sensitive resource data is not logged by the chef-client. • supports – Declares some functionality as hints to a provider about additional capabilities.
+     service 'app_service' do
+       provider Chef::Provider::Service::Upstart
+       supports :status => true, :restart => true, :reload => true
+       action [ :enable, :start ]
+     end
+
+Package
+• The package resource will leverage the package provider associated with the running platform to install a package.
+    package node['database']['name'] do
+      action :install
+     end
+    package 'Install Apache' do
+      case node['platform']
+      when 'redhat', 'centos'
+        package_name 'httpd'
+      when 'ubuntu', 'debian'
+        package_name 'apache2'
+      end
+    end
+
+
+
+Service
+• The service resource will leverage the provider associated with the running platform to manage a service.
+    service 'http_service' do
+      case node['platform']
+      when 'redhat', 'centos'
+        service_name 'httpd'
+      when 'ubuntu', 'debian'
+        service_name 'apache2'
+      end
+      action [:enable, :start]
+    end
+
+
+Directory
+• The directory resource will manage directories. Keep in mind that when using the "recurse" parameter, only the leaf directory, the last one in the tree, will have permissions and ownership set according to the recipe code.
+     app_path = "/opt/app/conf/#{node['fqdn']}"
+     directory app_path do
+       user node['app']['user']
+       group node['app']['group']
+       recurse true
+     end
+• To ensure the path has the same owner and group or permissions:
+      ['/opt/app', '/opt/app/conf', "/opt/app/conf/#{node['fqdn']}" ].each do |path|
+        directory path do
+        user node['app']['user']
+        group node['app']['group']
+       end
+      end
+
+
+User
+• The user resource manages users. The associated actions for user are create, lock, manage, modify, nothing, remove and unlock. The default action is create.
+• Like with any resource, you may often see these abstracted with configuration values derived from attributes.
+  user node['app']['user'] do
+    group node['app']['group']
+  end
+• As well as with the individual parameters you would expect to find for a user:
+  user 'jsmith' do
+    manage_home true
+    comment 'John Smith'
+    uid '1001'
+    gid '1001'
+    home '/home/jsmith'
+    shell '/bin/bash'
+    password ' $1$zP32a/HN$W2XYcPyPG839EJEUEwSHY1'
+  end
+
+
+
+Group
+• The group resource manages groups. The associated actions for user are create, manage, modify, nothing, and remove. The default action is create.
+• Like with any resource, you may often see these abstracted with configuration values derived from attributes.
+  group node['app']['group']
+• As well as with the individual parameters you would expect to find for a group:
+  group 'www-data'
+    do action :modify
+    members 'jsmith'
+    append true
+  end
+• When using the append true parameter the value of members is additive and is appended to the list of existing members. When append is set to true, any members which are also defined in excluded_members will be removed from the list. The default value of append is false, which means that it is reset exactly to the list of members.
+
+
+File Related Resources
+• File related resources have a set of common actions and most of their properties are identical since you need to be able to perform common activities like setting permissions, ownership, path information etc.
+• Use the file resource to manage files on the node.
+• Use the cookbook_file resource to copy a file from a cookbook’s /files directory to the node.
+• Use the template resource to create a file based on a template located in the cookbook /templates directory.
+• Use the remote_file resource to transfer a file to a node from a remote location.
+
+• Actions
+• Default action is to :create the file.
+• The :create_if_missing action will only create if the file does not exist.
+• File removal is invoked with :delete
+• The :nothing action will await notification.
+• The :touch action will update the atime and mtime for the file.
+
+
+
+File Related Resources – file
+• The file resource:
+file '/tmp/message' do owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+Attributes can be referenced to supply values to
+     file '/tmp/appfile' do
+       action :create_if_missing
+       owner node['app']['user']
+       mode '0400'
+     end
+
+
+
+File Related Resources – cookbook_file
+• The cookbook_file resource can be used to transfer files from the files subdirectory within a cookbook to the specified path on the server running the chef-client. All of the same functionality of file, except you're able to copy a file from the cookbook to the client. A checksum is computed for local file in the cookbook and the remote file. If the remote file does not match, the file will be uploaded.
+cookbook_file '/var/www/html/index.php' do source 'index.php'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+  action :create
+end
+
+
+File Related Resources – remote_file
+• The remote_file resource can be used to transfer files from a remote location. There are a number of protocols available which may influence the parameters required when defining the resource. These could be file, ftp, sftp, a local file path on the chef-client.
+remote_file '/var/www/html/index.html' do source 'http://www.example.com/index.html' owner 'apache'
+  group 'apache'
+  mode '0644'
+  action :create
+end
+• There are a number of additional additional properties for this resource, for example: The use of the checksum property will check if the checksum of the remote file matches the chef-client's own checksum and if they match it will not be downloaded.
+
+
+File Related Resources – template
+
+• The template resource allows for the creation of a file based on an Embedded Ruby (ERB) template file that dynamically generates static text files and places them on host where the chef-client has run. The functionality is very similar to that of the cookbook_file resource except the source file location and formatting.
+     template'/var/www/html/index.html' do
+       source 'index.html.erb'
+       owner 'apache'
+       group 'apache'
+       mode '0644'
+       variables({
+         :greeting_scope => 'World'
+       })
+     end
+• Where attribute node.default['greeting'] = 'Hello' is set and templates/index.html.erb contains: <%= node['greeting'] %> <%= @greeting_scope %> from <%= node['fqdn'] %>
+
+
+Execute
+• The execute resource allows for the execution of a single command. Execute is generally not idempotent resource but when used with only_if and not_if it can be guarded to ensure idempotence.
+  execute 'systemctl restart httpd' do
+    not_if 'curl -s http://localhost | grep "Hello World"'
+  end
+  execute 'app-installer'
+    cwd '/opt/app/install'
+    command './installer –-install'
+    user 'appuser'
+    only_if { File.exist?('/opt/app/install/prereqs-complete.log') }
+  end
+• The execute resource also supports the creates property which can be used in place of file detection guards. only_if { File.exist?('/opt/app/install/prereqs-complete.log') }
+  Could be replaced with
+    creates '/opt/app/install/prereqs-complete.log
+
+
+Script Interpreters
+• For scenarios in which you need to execute and entire multi-line script you can use common interpreter resources by referencing either the script resource or the interpreter name as the resource.
+• The script resource allows the interpreter parameter to be set, whereas with the resources named for their interpreter it is implied.
+  script 'extract_module' do
+    interpreter 'bash'
+    environment 'PATH' => "/my/path/to/bin:#{ENV['PATH']}"
+    code <<-EOH mkdir -p /opt/app/install
+      tar xzf /tmp/installer.tgz -C /opt/app/install
+      /opt/app/install/run.sh
+      EOH
+    not_if { ::File.exist?(/opt/app/install/install-complete.log) }
+  end
+
+
+
+ShellOut and shell_out
+• The Mixlib::ShellOut class provides a simplified interface to shelling out and collecting both standard out and standard error and providing full control over environment, working directory, uid, gid, etc. It will accept commands or command fragments.
+  find = Mixlib::ShellOut.new("find . -name '*.rb'")
+  find.run_command
+  puts find.stdout
+• The shell_out method runs a command on the system and will raise an error if the command fails and output to the tty when the log level is debug.
+  modules = shell_out("apachectl -t -D DUMP_MODULES")
+  puts modules.stdout
+
+##################################################
+Lecture: Templates
+##################################################
+About Templates
+• Two things need to be present for templates to function:
+• A template resource declared in a recipe.
+• A template file associated with the declared resource.
+• Templates are in Embedded Ruby (ERB) format and contain both Ruby expressions and statements in addition to the content required to model a file.
+• The template file can be in any of the following directories beneath templates. The first pattern that matches is used to identify the template which should be used. This is referred to as file specificity.
+1. /host-$fqdn/$source
+2. /$platform-$platform_version/$source 3. /$platform/$source
+4. /default/$source
+5. /$source
+
+
+Generating a Template
+• Generate a template by using a generator. Alternatively, the template can be created manually and placed in the desired location beneath the templates directory for file specificity.
+    chef generate template cookbooks/lcd_web index.html
+• This will have generated a file called templates/index.html.erb. This represents the least specific match in terms of specificity.
+
+Template Resource
+• The template resource defines the destination of the file, the source template name and properties of that file like ownership and permissions. The template resource supports common file actions like, create, create_if_missing, delete, nothing and touch.
+     template'/var/www/html/index.html' do
+       source 'index.html.erb'
+       owner 'apache'
+       group 'apache'
+       mode '0644'
+       variables({
+         :greeting_scope => 'World'
+       })
+end
+
+• Where attribute node.default['greeting'] = 'Hello' is set and templates/index.html.erb contains: <%= node['greeting'] %> <%= @greeting_scope %> from <%= node['fqdn'] %>
+
+
+Template Syntax
+•
+• •
+When the ability to print the value of a variable or Ruby expression is required, use the <%= and %> tags within the template. The "=" indicates that the resulting evaluation should be output.
+<%= @template_variable %>
+When outputing, <%= -%> can be used to trim line breaks. Note the '-'.
+To use Ruby conditional logic, use <% and %> which are non-printing tags that will execute your logic.
+<% if @webservers.each do |server| %>
+  <%= server %>
+<% end %>
+<% if @greeting == "Hello" %>
+<%= @greeting %> <%= @greeting_scope %> from <%= @fqdn %>
+<% end %>
+
+Partial Templates
+• Templates can also be independent files which are can be combined together using partial template files and specifying that they be rendered within the template file. These are invoked inside the template with the render keyword.
+• Given a resource like the following:
+template '/var/www/html/index.html' do source 'index.html.erb'
+owner 'apache'
+group 'apache'
+     variables(
+       greeting_scope: 'World',
+       greeting: node['greeting'],
+       fqdn: node['fqdn']
+) end
+• And a template file which contains the following:
+<%= render "header.html.erb" %>
+<% if @greeting == "Hello" %>
+<%= @greeting %> <%= @greeting_scope %> from <%= @fqdn %> <% end %>
+<%= render "footer.html.erb" %>
+
+
+Partial Templates Continued
+• The templates/header.html.erb contains the following:
+  <html>
+  <head>
+  <title><%= node['fqdn'] %></title>
+  <body>
+• The templates/footer.html.erb contains the following:
+  <p>Goodbye World!</p>
+  </body>
+  </html>
+
+Partial Templates Continued
+• The resulting output will combine all the template content in the order of its definition.
+  <html>
+  <head>
+  <title>cc9268dc6734</title>
+  </head>
+  <body>
+  Hello World from cc9268dc6734
+  <p>Goodbye World!</p>
+  </body>
+  </html>
+
+
+
+
+##################################################
+Lecture: Libraries
+##################################################
+About Libraries
+
+-Library code exists within the /libraries directory as a collection of files.
+-The primary use case is for reusable functionality in pure Ruby code. You could, for example, connect to a database and make an LDAP query or anything else possible within Ruby.
+
+-You can also include simple helper code for commonly used functionality.
+def index_exists? ::File.exists?("/var/www/html/index.html")
+end
+ execute 'systemctl start httpd' do
+ only_if { index_exists? }
+end
+
+-By default you can't use core Chef DSL resources in libraries.
+
+
+
+About Libraries
+• Helpers can come in many forms to make repetitive tasks easier. You could have a set of helper functions in libraries/helpers.rb. We can create a namespace which can be included and referenced elsewhere when necessary.
+   module LcdWebCookbook
+    module Helpers
+      def platform_package_httpd
+        case node['platform']
+        when 'centos' then 'httpd'
+        when 'ubuntu' then 'apache2'
+        end
+      end
+      def platform_service_httpd
+        case node['platform']
+        when 'centos' then 'httpd'
+        when 'ubuntu' then 'apache2'
+        end
+      end
+    end
+  end
+
+
+About Libraries
+• The module definitions are arbitrary but represent a way to contain within some namespace.
+   module LcdWebCookbook
+    module Helpers
+    ...
+
+• This could be included in a resource or recipe code by including them via the file within libraries or in a resource file or recipe file.
+Chef::Recipe.include(LcdWebCookbook::Helpers)
+Chef::Resource.include(LcdWebCookbook::Helpers)
+
+
+##################################################
+Lecture: Custom Resources
+##################################################
+About Custom Resources
+• Custom Resources offer the ability to extend Chef by creating your own custom reusable components in Chef. They can be used to encapsulate an entire group of resources into one simpler-named resource with custom parameters and input validation.
+• The primary benefit is reusable functionality using a simpler DSL-based syntax. Only a few key settings are needed to define a custom resource. In a basic form, a name, one or more properties and an action to accomplish the desired state is all that is required.
+• Custom resource names are automatically derived unless the resource_name property is set. Otherwise it is, by default, the name of the cookbook followed by the name of the resource file with an underscore in between. For example, if you had a cookbook called "apache" and a resource called "vhost" the default name for the custom resource would be apache_vhost.
+• Creating a dependency would be required when consuming a custom resource in another cookbook.
+
+About Custom Resources
+
+resource_name :hello_httpd property :greeting
+action :create do
+  package 'httpd' do
+  action :install
+end
+service 'httpd' do
+  action [:enable, :start]
+end
+template '/var/www/html/index.html' do source 'index.html.erb'
+owner 'apache'
+group 'apache'
+end end
+variables(
+greeting_scope: node['greeting_scope'], greeting: greeting,
+) fqdn: node['fqdn']
+
+
+Using Custom Resources in Other Cookbooks
+• To use this custom resource in another cookbook, a dependency must be configured in metadata.rb. Assuming my cookbook name is lcd_web, this would appear as follows in the metadata file of another cookbook:
+    depends 'lcd_web'
+• Additionally, I would need to configure the Berksfile with a reference to the location of the lcd_web
+cookbook.
+    cookbook 'lcd_web', path: '~/chef/cookbooks/lcd_web'
+• I also have another problem, because the resource uses a template and also uses partial templates. In order to make the resource works properly, I need to include where the template should be sourced from because, by default, they are assumed to be located within the local cookbook.
+
+
+About Custom Resources
+resource_name :hello_httpd
+property :greeting, :kind_of => String
+action :create do
+  package 'httpd' do
+  action :install
+end
+service 'httpd' do
+  action [:enable, :start]
+end
+template '/var/www/html/index.html' do
+cookbook 'lcd_web'
+source 'index.html.erb'
+owner 'apache'
+group 'apache'
+variables(
+Custom Resources
+ end end
+greeting_scope: node['greeting_scope'],
+  greeting: greeting,
+) fqdn: node['fqdn']
+
+
+About Custom Resources
+• The template content for partials must also be adjusted:
+  <%= render "header.html.erb", cookbook: 'lcd_web' %>
+  <% if @greeting == "Hello" %>
+  <%= @greeting %> <%= @greeting_scope %> from <%= @fqdn %>
+  <% end %>
+  <%= render "footer.html.erb", cookbook: 'lcd_web' %>
+• An attribute value should be also be set to ensure greeting_scope is set in attributes/default.rb, per the code.
+  default['greeting_scope'] = 'World'
+• The recipe in the new cookbook can consist of only the custom resource name:
+  hello_httpd 'greet world' do
+    greeting "Hello"
+    action :create
+end
+
+
+
+
+
+##################################################
+Exercise: Create a Template
+##################################################
+Within the lcd_web cookbook perform the following tasks:
+
+1. Create a template for a file located in /var/www/html/index.html.
+2. Ensure that its permissions are 0644.
+3. Ensure that it is owned by apache and has apache group membership.
+4. Configure a variable called greeting_scope with a value of World
+5. Edit attributes/default.rb to include the following attributes:
+default['greeting'] = 'Hello'
+default['greeting_scope'] = 'World'
+
+The template resource configuration can be placed in recipes/default.rb and can look as follows:
+
+template '/var/www/html/index.html' do
+  cookbook 'lcd_web'
+  source 'index.html.erb'
+  owner 'apache'
+  group 'apache'
+  variables(
+    greeting_scope: node['greeting_scope'],
+    greeting: node['greeting'],
+    fqdn: node['fqdn']
+  )
+end
+
+6. Within the lcd cookbook generate a template for index.html.
+
+chef generate template index.html
+
+The templates/index.html.erb content should look as follows:
+
+<%= @greeting %> <%= @greeting_scope %> from <%= @fqdn %>
+
+7. Once you have this configuration in place perform a kitchen converge to ensure the changes are converged on your instance.
+kitchen converge
+
+8. Examine the contents of /var/www/html/index.html on your test instance.
+
+kitchen login
+curl http://localhost/index.html
+cat /var/www/html/index.html
+
+
+##################################################
+Exercise: Create a Library
+##################################################
+1. Within a the lcd_web cookbook, create a small helper library in libraries/default.rb that detects the existance of
+  /var/www/html/index.html and restarts the httpd service only if the index.html file exists.
+
+libraries/default.rb would look like the following:
+
+def index_exists?
+  ::File.exists?("/var/www/html/index.html")
+end
+
+In recipes/default.rb, create a execute statement with a guard that restarts httpd.
+
+execute 'systemctl start httpd' do
+  only_if { index_exists? }
+end
+
+2. Run kitchen destroy and kitchen converge to examine the results.
+
+3. In libraries/helpers.rb create a helper that looks like the following:
+
+module LcdWebCookbook
+  module Helpers
+    def platform_package_httpd
+      case node['platform']
+      when 'centos' then 'httpd'
+      when 'ubuntu' then 'apache2'
+      end
+    end
+
+    def platform_service_httpd
+      case node['platform']
+      when 'centos' then 'httpd'
+      when 'ubuntu' then 'apache2'
+      end
+    end
+  end
+end
+
+Chef::Recipe.include(LcdWebCookbook::Helpers)
+Chef::Resource.include(LcdWebCookbook::Helpers)
+
+
+4. Use the platform_package_httpd and platform_service_httpd within the default recipe with the package and service resources to install and manage httpd.
+
+package platform_package_httpd
+
+service platform_service_httpd do
+  action [:enable, :start]
+end
+
+5. Run the kitchen destroy and kitchen converge to examine the results.
+
+
+
+##################################################
+Exercise: Use a Custom Resource
+##################################################
+In this exercise, you will use a custom resource within the lcd_web cookbook. Later on, we will use this resource from another cookbook.
+
+1. Ensure you have a resources directory and create a file called hello.rb within it.
+2. Add the following to resources/hello.rb:
+r
+esource_name :hello_httpd
+property :greeting, :kind_of => String
+
+default_action :create
+action :create do
+  package platform_package_httpd
+  service platform_service_httpd do
+    action [:enable, :start]
+  end
+
+  template '/var/www/html/index.html' do
+    cookbook 'lcd_web'
+    source 'index.html.erb'
+    owner 'apache'
+    group 'apache'
+    variables(
+      greeting_scope: node['greeting_scope'],
+      greeting: greeting,
+      fqdn: node['fqdn']
+    )
+  end
+end
+
+
+3. Remove the references to package, which uses platform_package_httpd in recipes/default.rb.
+4. Remove the references to service, which uses platform_service_httpd in recipes/default.rb.
+5. Use the hello_httpd resource in recipes/default.rb.
+
+hello_httpd 'greet world' do
+  greeting "Hello"
+  action :create
+end
+
+6. Run kitchen destroy and kitchen converge and examine the output.
+
+
+##################################################
+Design Patterns and Theory
+##################################################
+##################################################
+Lecture: Cookbook Disposition
+##################################################
+Cookbook Disposition
+• When using a generator you have the ability to generate repo, app and individual cookbooks, which take slightly different approaches to the management and organization of cookbooks. You are also free to create elements of a cookbook yourself without using a generator.
+
+• The ChefDK tools support multiple workflows and ways of arranging, maintaining and testing cookbook code. How your cookbooks and repositories are structured or generated may influence maintainability, deployment and testing.
+
+• A cookbook might represent a single piece of software but be collocated with many other cookbooks in the same Chef repository. There may be cookbooks that have little to do with each other but are within the same source control repository. You may also have external dependencies that need to be managed in addition to the constraints described already.
+
+
+Monolithic Repository
+Dependencies are branches which can be tracked for upstream modifications.
+  chef generate repo my_repo
+  chef generate my_repo/cookbooks/my_cookbook
+
+  knife cookbook site download httpd
+  knife cookbook site install httpd
+  ...
+• This methodology has the advantage of self-containment, where the application and infrastructure code are in the same place.
+
+• This is challenging longer term, when multiple people need to work on a large project, incorporating changes and testing the cookbook components. Sharing some functionality of a single cookbook might be more difficult.
+
+One Repository Per Cookbook
+• Another model asserts that all Chef cookbooks are independent from one another and that they can be built and maintained in isolation from one another.
+
+• This model assumes that dependencies can be resolved as required and don't need to be stored directly with the cookbook. Upstream changes can be incorporated with versioning providing controls over when major changes might dictate a new release.
+  chef generate cookbook my_cookbook
+
+• This methodology has the advantage of a smaller footprint and easier incorporation of upstream dependency changes. Sharing and collaboration is easier and changes to cookbooks which represent a dependency can be done independently. Automated testing may be easier.
+
+• Testing is done in isolation, additional unit tests may be required.
+
+
+##################################################
+Lecture: Wrapper Cookbooks
+##################################################
+What is a Wrapper Cookbook?
+• A wrapper cookbook is a cookbook whose functionality is encapsulated so that its settings can be adjusted for your environment.
+
+• Wrapper cookbooks allow the source cookbook to remain unmodified. You can configure attributes within the wrapper cookbook which reflect the configuration settings or tunables of the application. These attributes are specific to your environment, and if they are identical to those shipped with the source cookbook they will override those settings.
+
+• When using wrapper cookbooks it's a generally accepted practice to prefix your cookbook name with an organizational identifier of some significance so that the wrapper cookbook name is something like company_cookbook.
+  chef generate cookbook lcd_haproxy
+
+
+Wrapper Cookbook Setup
+• Wrapper cookbooks require a dependency on the cookbook you're attempting to create a wrapper for. This means that in the case of a wrapper for haproxy you'd edit lcd_haproxy/metadata.rb to include a dependency.
+  depends 'haproxy', '= 3.0.2'
+
+• This means that the haproxy cookbook will also be delivered to the chef-client in addition the wrapper cookbook.
+
+• Our next steps will be to ensure that our own settings are included to override the default values provided by the cookbook.
+
+
+Wrapper Cookbook Attributes
+• The supermarket page for haproxy documents its usage. It's always good to consult this documentation so that you know what attributes are available and how you use the cookbook recipes. Some cookbooks will automatically do things like installation upon including the default recipe, others avoid using the default recipe altogether.
+
+• By creating some default attributes in attributes/default.rb, according to the documentation, this will override the defaults and create a configuration file with the load balancer members.
+  default['haproxy']['members'] = [{
+    'hostname' => 'webserver1',
+    'ipaddress' => '10.1.1.3',
+    'port' => 80,
+    'ssl_port' => 443,
+  }, {
+    'hostname' => 'webserver2',
+    'ipaddress' => '10.1.1.4',
+    'port' => 80,
+    'ssl_port' => 443,
+}]
+
+Wrapper Cookbook Recipe
+• The default recipe of the lcd_haproxy cookbook would contain the following:
+  include_recipe 'haproxy::manual'
+
+• Technically, this is all that is needed to install and configure and deploy haproxy.
+
+
+Wrapper Cookbook Testing
+• The suites portion of the test kitchen configuration could be configured with multiple webserver instances which have different run list than the loadbalancer suite.
+suites:
+  - name: loadbalancer
+driver:
+run_options: --network=testnet --ip=10.1.1.2 forward: 80:80
+run_list:
+- recipe[lcd_haproxy::default]
+verifier:
+  inspec_tests:
+    - test/smoke/default
+attributes:
+- name: webserver1
+  driver:
+run_options: --network=testnet --ip=10.1.1.3 run_list:
+  - recipe[lcd_web::default]
+verifier:
+inspec_tests:
+  - test/smoke/default
+- name: webserver2
+  driver:
+run_options: --network=testnet --ip=10.1.1.4 run_list:
+  - recipe[lcd_web::default]
+verifier:
+inspec_tests:
+  - test/smoke/default
+
+
+Wrapper Cookbook Testing
+• Since the lcd_web cookbook is outside of the test kitchen environment we have to treat the lcd_web cookbook as an artifact that can needs to be resolved via the Berksfile. Within the lcd_haproxy cookbook the Berksfile should be modified to include:
+  cookbook 'lcd_web', path: '../lcd_web'
+
+• Now when berks is run, lcd_web will be referenced via the local filesystem. The lcd_web cookbook may not be a hard dependency in this context. This approach could suitable for integration testing, but you should have tests of both components separately as well. In this case, it may be better to generate an app and use these cookbooks with integration tests that live outside of the cookbooks themselves.
+
+• Performing a kitchen converge on all these components should produce a load balancer instance which alternates between two web servers. The name of the Docker instance should be reflected in the title and page content of the web servers.
+
+
+
+##################################################
+Lecture: Community Cookbooks
+##################################################
+What is a Community Cookbook?
+• A community cookbook is a cookbook for use by anyone and is generally available at the Chef Supermarket. The public Chef Supermarket is a searchable repository for cookbooks.
+https://supermarket.chef.io
+
+• You'll notice this URL at the top of the default Berksfile; this is how berks knows where to obtain dependencies from.
+  source 'https://supermarket.chef.io'
+
+• You'll also notice that a Berksfile also references metadata; this is so berks knows where to get the list of dependencies from.
+metadata
+
+
+Private Supermarket
+• A private supermarket is a supermarket URL within your control which provides cookbooks within your organization. You may prefer to obtain and distribute community cookbooks via a private supermarket because you have security or bandwidth concerns.
+
+• In the case of a private supermarket the Berksfile would obtain dependencies from a supermarket other than the primary chef supermarket.
+  source 'https://supermarket.example.com'
+
+
+
+Berksfile and the Supermarket
+• Berkshelf can include multiple Chef Supermarket instances for dependency resolution. A Berksfile might contain references to multiple supermarkets.
+  source 'https://supermarket.example.com'
+  source 'https://supermarket.chef.io'
+
+• Resolution happens in a top-down fashion. In this example, the private supermarket is consulted first and then the Chef Supermarket is chosen.
+
+
+Interacting with the Supermarket
+• The knife cookbook site commands can be used to interact with the Chef Supermarket and a private Supermarket.
+
+• Listing all available cookbooks from the supermarket can be done with the list sub-command. knife cookbook site list
+
+• Alternatively you could search for something you're interested in: knife cookbook site search tar
+
+• The download sub-command will download a tar.gz file containing the cookbook. knife cookbook site download tar
+
+• Assuming the cookbook_path is pointed to a location which is an initialized git repository you can install this cookbook with the install sub-command.
+   knife cookbook site install tar
+
+
+Duplicate Cookbook Names
+• If you modify a community cookbook that you downloaded you can reference the local cookbook path to override the community version from being used.
+  cookbook 'tar', path: '../tar'
+
+• When you berks install you should see:
+  Using tar (2.0.0) from source at ../tar
+
+
+
+
+
+##################################################
+Lecture: Managing Cookbook Dependencies
+##################################################
+Managing Cookbook Dependencies
+• Managing cookbook dependencies by manually downloading required cookbooks can present a number of challenges. Using Berkshelf makes handling dependencies much easier and simpler to keep up with.
+
+• Berkshelf keeps the dependencies it resolves in a central location, ~/.berkshelf/cookbooks/<cookbook- version>, which keeps your cookbooks repository free of clutter.
+
+• Berkshelf has the ability to reference cookbooks in different ways. This includes public and private supermarkets, the local filesystem, Chef server via knife.rb, git and github. Berkshelf will resolve or make reference to these locations to either find or fetch a cookbook and related dependencies.
+
+• The default source for dependencies is the Chef Supermarket, the metadata.rb file defines as dependencies which cookbooks the that Berkshelf needs to fetch.
+
+
+Berksfile Configuration
+• The default Berksfile is generated when you generate a cookbook and configured to reference the public Chef Supermarket via the source keyword. A source could be a combination of public and private supermarkets or a Chef server can be implied via the knife.rb.
+
+• Anything defined as a dependency within metadata.rb as well as the dependences of the cookbook you depend on should be fetched.
+
+• The cookbook keyword in the Berksfile allows you to define where you want a cookbook to be installed from or to set additional version constraints. In the example below, the local filesystem path is specified.
+  cookbook 'lcd_web', path: '../lcd_web'
+  cookbook 'tar', path: '../tar'
+
+• You also have the ability to load cookbooks from a git repository, and include a branch or tag for specificity.
+cookbook "my-cookbook", "~> 0.1.1", git: "https://github.com/example/my-cookbook.git", tag:"1.2.3"
+
+• Github also has a shortcut:
+  cookbook "my-cookbook", "~> 0.1.1", github: "example/my-cookbook"
+
+
+Berksfile Configuration, Continued...
+• The group keyword allows for a kind of categorization almost like tags that allows for berks to operate on the members of that group. A block would define a group:
+  group :test do
+    cookbook "mytest-cookbook", path: "testing"
+  end
+  cookbook "mytest-cookbook", path: "testing", group: :test
+• When berks install is run, a flag can be set to exclude or include this group.
+berks install --except test
+Or
+berks install --only test
+
+
+berks install and Berksfile.lock
+• To evaluate and fetch dependencies, run berks install once your metadata has been configured.
+  berks install
+
+• When berks install is run, a Berksfile.lock is created which acts like a snapshot of the versions and their dependencies. This is located with the cookbook itself and ensures that different dependent versions are not downloaded by someone else when re-evaluating the dependency tree.
+
+• To force a re-evaluation, the Berksfile.lock file can be deleted and berks install can be rerun.
+
+
+berks apply
+• The version locking mechanism can be applied to entire environments, as well, by specifying an environment’s JSON file. Given an development.json file:
+{
+  "name": "development",
+  "description": "Developemnt Environment",
+  "chef_type": "environment",
+  "json_class": "Chef::Environment",
+  "default_attributes": {
+  },
+  "override_attributes": {},
+  "cookbook_versions": {
+  "lcd_web": "= 0.1.0"
+  }
+}
+
+• The following command would introduce the versions which were captured during the initial berks
+install process and hard code them into an environments file.
+berks apply development -f /tmp/development.json
+
+
+berks apply
+•The resulting versions associated are appended to the environment JSON file as a list of cookbooks and their versions.
+ "cookbook_versions":  {
+    "build-essential": "= 8.0.0",
+    "cpu": "= 1.0.0",
+    "haproxy": "= 3.0.2",
+    "lcd_haproxy": "= 0.1.0",
+    "lcd_web": "= 0.1.0",
+    "mingw": "= 2.0.0",
+    "ohai": "= 5.0.2",
+    "poise": "= 2.7.2",
+    "poise-service": "= 1.4.2",
+    "seven_zip": "= 2.0.2",
+    "tar": "= 2.0.0",
+    "windows": "= 3.0.3"
+  }
+
+
+
+##################################################
+Lecture: Data Bags
+##################################################
+What are Data Bags?
+• Data bags are a container for information about your infrastructure that are not associated with a node. They provide an external source of information to be used in recipes and search functionality.
+
+• A data bag is a global variable that is stored as JSON data and is accessible via a Chef server. Because the data bag is on the Chef Server, it acts as a shared resource which can be referenced by Chef clients.
+
+• In addition to general purpose usage, data bags can also be used to encrypt sensitive information with a shared key; anyone with the shared key can decrypt the data in the data bag. This provides one method to keep secrets off of nodes.
+
+
+Working with Data Bags
+• Data bag commands exist to allow the management of data bags and the items they contain.
+  knife data bag create BAG [ITEM] (options)
+  knife data bag delete BAG [ITEM] (options)
+  knife data bag edit BAG ITEM (options)
+  knife data bag from file BAG FILE|FOLDER [FILE|FOLDER..] (options)
+  knife data bag list (options)
+  knife data bag show BAG [ITEM] (options)
+
+How to Create Data Bags
+• A data bag can be created with knife or manually as a json file.
+
+• When using knife to create a data bag you can use the following command. Where "admins" is the name of the data bag being created and "joe" is the name of the item within the "admins" data bag. This will invoke $EDITOR to provide an interface to edit the item.
+  knife data bag create admins joe
+
+• A data bag can be created with knife or manually as a JSON file. If you have source data it can be loaded from file.
+   knife data bag from file admins /path/to/joe.json
+
+How to Create Data Bags
+• As an example, joe.json might look as follows:
+  {
+    "id": "joe",
+    "uid": "1001",
+    "gid": "developers",
+    "shell": "/bin/bash",
+    "comment": "Joe"
+  }
+
+
+How to Edit Data Bags
+• When using knife to edit a data bag you can use the following command. This provides an interface to edit the data bag with $EDITOR. When these are locally available files they can be edited directly as well.
+  knife data bag edit admins joe
+
+
+How to Delete Data Bags
+• When using knife to delete a data bag you can use the following command. You will be prompted before deleting the item to confirm.
+  knife data bag delete admins tom
+
+• You can also delete the entire bag and everything in it by not specifying an element ID.
+  knife data bag delete admins
+
+
+How to List Available Data Bags and Items
+• Use the list sub-command to get a listing of the names of all the data bags available. knife data bag list
+
+• Use the show sub-command to list available items within a bag where "admins," in the example below, is the name of a data bag.
+  knife data bag show admins
+
+• Use the show sub-command along with an item name to output that item within a bag where "admins," in the example below, is the name of a data bag and "joe" is the name of an item within that bag.
+  knife data bag show admins joe
+
+
+How to Search Data Bags
+• Searching data bags can be accomplished with knife search. Knife search operates on an index; when searching a data bag, the name of the bag is the index you are searching.
+
+• Searches contain both a key and a pattern to search; in the example below, the key is "id" and the search pattern is "tom".
+  knife search admins "id:tom"
+
+• You can also use operators to include or exclude results:
+  knife search admins "NOT id:tom"
+  knife search admins "gid:developers OR gid:administrators"
+• Wildcards
+  knife search admins "*:*"
+  knife search admins "gid:admin*"
+
+
+Using Data Bags in Recipes
+• The recipe DSL provides methods to interact with data bags called data_bag and data_bag_item. Listed below is an example of usage for each method.
+  data_bag('admins')
+  data_bag_item('admins', 'joe')
+
+• These can be assigned as variables within recipe code to be consumed in resources.
+  admins = data_bag('admins')
+  admins.each do |login|
+    admin = data_bag_item('admins', login)
+    group admin['gid']
+  end
+
+Using Data Bags in Recipes
+• Since data bags are a kind of index that can be searched, they can also be used with the recipe DSL search method. Items returned by a search can be used as if they were a hash.
+  admins = []
+  search(:admins, "gid:administrators").each do |admin|
+    group admin['gid']
+    login = admin["id"]
+    admins << login
+    home = "/home/#{login}
+    user(login) do
+      uid       admin['uid']
+      gid       admin['gid']
+      shell     admin['shell']
+      comment   admin['comment']
+      home      home
+      manage_home true
+    end
+  end
+
+
+
+##################################################
+Lecture: Vault
+##################################################
+What is Chef Vault?
+• Vault allows the secure distribution of secrets as an alternative to encrypted data bags. Vault allows limiting which users and nodes have access to secrets.
+• Vault creates an encrypted data bag which is symmetrically encrypted using a random secret. A vault has a list of administrative users and clients. The shared secret is asymmetrically encrypted for each of the administrators and clients using their public key generating a separate copy for each user or client.
+• By comparison, encrypted data bags leave key distribution up to the user and a shared secret needs to be present on the node or available via URI.
+• The vault use case is when enhanced controls for managing secrets are needed.
+
+
+
+
+##################################################
+Lecture: Search
+##################################################
+Search
+• Using search allows you to facilitate more dynamic configurations by asking questions about aspects of your infrastructure.
+
+• Helps keep data and configuration separate.
+
+• Search works on one of the following indexes
+• client
+• environment
+• node
+• role
+• data bag name
+
+Knife Search
+• The knife search command is the ChefDK tool which can be used to search from the command line.
+
+• Searches contain the index to be searched and a key with a pattern to search. Where INDEX is one of client, environment, node, role or the name of a data bag. When the index is not specified the default is to search the node index.
+  knife search INDEX SEARCH_QUERY
+
+• The SEARCH_QUERY component is comprised of a key and pattern. Where key is a field name that is found in the JSON description of an indexable object on the Chef server (a role, node, client, environment, or data bag) and search_pattern defines what will be searched for, using one of the following search patterns: exact, wildcard, range, or fuzzy matching.
+
+
+Knife Search
+• The data being searched can be a nested JSON data structure which may be multiple layers deep. These nested fields become flattened for search. That means the nested elements become valid keys for search.
+  knife search node "mtu:1500"
+
+• Operators are also allowed in search queries AND, OR and NOT to create inclusions or exclusions in your search pattern. You can also use basic wildcards like "*" to glob and "?" to replace a single character in a search.
+  knife search admins "gid:developers AND id:j*"
+
+• The ability to search nested attributes is available via "-a" switch and the main and nested attributes value.
+  knife search node <query_to_run> -a <main_attribute>.<nested_attribute>
+  knife search role "*:*" -a override_attributes.haproxy.app_servers_role
+
+
+
+How to Search Data Bags
+• Searching data bags can be accomplished with knife search. Knife search operates on an index, when searching a data bag, the name of the bag is the index you are searching.
+
+• Searches contain both a key and a pattern to search, in the example below the key is "id" and the search pattern is "tom".
+  knife search admins "id:tom"
+
+• You can also use operators to include or exclude results:
+knife search admins "NOT id:tom"
+knife search admins "gid:developers OR gid:administrators"
+
+• Wildcards
+knife search admins "*:*"
+knife search admins "gid:admin*"
+
+
+
+Using Search in Recipes
+• Since data bags are a kind of index that can be searched, they can also be used with the recipe DSL search method. Items returned by a search can be used as if they were a hash.
+  admins = []
+  search(:admins, "gid:administrators").each do |admin|
+    group admin['gid']
+    login = admin["id"]
+    admins << login
+    home = "/home/#{login}
+    user(login) do
+      uid       admin['uid']
+      gid       admin['gid']
+      shell     admin['shell']
+      comment   admin['comment']
+      home      home
+      manage_home true
+    end
+  end
+
+
+##################################################
+Exercise: Create a Wrapper Cookbook
+##################################################
+In this lesson, we will create and use a wrapper cookbook to deploy HAProxy. We will also configure two web servers using the lcd_web cookbook we worked on in earlier exercises.
+
+1. Create a new cookbook called lcd_haproxy.
+chef generate lcd_haproxy
+
+
+2. Configure lcd_haproxy so that it will act as a wrapper for HAProxy 3.x.x and modify metadata.rb to include the following:
+depends 'haproxy', '= 3.0.2'
+
+
+3. Run berks install in the directory with the lcd_haproxy cookbook.
+berks install
+
+
+4. Configure the default recipe to include the manual recipe from the haproxy cookbook.
+include_recipe 'haproxy::manual'
+
+
+5. Adjust .kitchen.yml to include two test suites for webservers which use the cd_web cookbook and default recipe.
+---
+driver:
+  name: docker
+  privileged: true
+  use_sudo: false
+
+provisioner:
+  name: chef_zero
+  # You may wish to disable always updating cookbooks in CI or other testing nvironments.
+  # For example:
+  #   always_update_cookbooks: <%= !ENV['CI'] %>
+  always_update_cookbooks: true
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: centos-7.2
+    driver_config:
+      run_command: /usr/lib/systemd/systemd
+
+suites:
+  - name: loadbalancer
+    driver:
+      run_options: --network=testnet --ip=10.1.1.2
+      forward: 80:80
+    run_list:
+      - recipe[lcd_haproxy::default]
+    verifier:
+      inspec_tests:
+        - test/smoke/default
+    attributes:
+  - name: webserver1
+    driver:
+      run_options: --network=testnet --ip=10.1.1.3
+    run_list:
+      - recipe[lcd_web::default]
+    verifier:
+      inspec_tests:
+        - test/smoke/default
+    attributes:
+  - name: webserver2
+    driver:
+      run_options: --network=testnet --ip=10.1.1.4
+    run_list:
+      - recipe[lcd_web::default]
+    verifier:
+      inspec_tests:
+        - test/smoke/default
+    attributes:
+
+
+
+6.  Adjust the default recipe to invoke the ‘manual’ recipe from the haproxy cookbook.
+include_recipe 'haproxy::manual'
+
+
+7. Generate a default attributes file and configure the default attributes for loadbalancer members to include the configuration for the tests we’re running.
+chef generate attribute default
+
+
+8.  In lcd_haproxy/attributes/default.rb add the following:
+default['haproxy']['members'] = [{
+ 'hostname' => 'webserver1',
+ 'ipaddress' => '10.1.1.3',
+ 'port' => 80,
+ 'ssl_port' => 443,
+}, {
+ 'hostname' => 'webserver2',
+ 'ipaddress' => '10.1.1.4',
+ 'port' => 80,
+ 'ssl_port' => 443,
+}]
+
+
+
+9.  Execute kitchen converge loadbalancer to deploy the loadbalancer suite. Once deployed, you should be able to access port 80 of your lab server and see a 503 error.
+
+10.  Add the location of the lcd_web cookbook to the Berksfile.
+
+cookbook 'lcd_web', path: '../lcd_web'
+
+
+12.  Run a berks install again and examine the list for lcd_web.
+
+13.  Run a kitchen converge webserver the webserver and examine the lab server on port 80 again.
+
+
+##################################################
+Hands-on Lab: Install the ChefDK and Generate a Cookbook with Tests
+##################################################
+What is ChefDK?
+
+• ChefDK is also known as the Chef Development Kit • ChefDK includes:
+• A built-in Ruby runtime
+• chef-client and ohai
+• Testing tools:
+• Test Kitchen
+• ChefSpec
+• Rubocop
+• Foodcritic
+• Chef provisioning
+• Everything else needed to author cookbooks and upload them to the Chef Server
+
+The Chef Work station
+• A computer with ChefDK installed on it is called a Chef Workstation
+• Each organization is comprised of:
+• One or more workstations
+• A single server
+• Every node that will be configured and maintained by the chef-client
+• Cookbooks and recipes tell the chef-client how each node in your organization will be configured
+• The chef-client does the actual configuration
+
+
+A Closer look at the tools in ChefDK
+• The more important tools included are:
+• Berkshelf: a dependency manager for cookbooks
+• chef: a workflow tool for Chef
+• chef-client: the agent that runs Chef
+• chef-vault: tool to encrypt data bag items
+• ChefSpec: a unit testing framework that tests resources locally
+• Fauxhai: a gem for mocking Ohai data in ChefSpec tests
+• Foodcritic: a lint tool for static analysis of recipe code
+• Test Kitchen: an integration testing framework tool that tests cookbooks across platforms
+• knife-spork: a workflow plugin for knife that helps groups of people work together in the same repo
+• Ruby: the reference language for Chef
+• Rubocop ruby style checking tool
+
+
+Community Tools
+• Some of the tools in ChefDK are developed and maintained by members of the Chef community
+• Are considered to be a useful part of the Chef workflow
+• Are maintained outside of the Chef organization
+• The community tools that are included with ChefDK are:
+• Berkshelf
+• chef-vault
+• ChefSpec
+• Foodcritic
+• Test Kitchen
+• Rubocop
+
+
+Setting up a chef workstation
+• To provide a consistent environment throughout the course, we recommend taking advantage of one of the provided Linux Academy Server Labs
+• You will be able to follow along with us in most cases as we move around in a remote desktop session or in the terminal
+• You can stop these environments at any time and pick up where you left off later
+• It doesn’t cost anything extra to use these Server Labs
+• We’ll automatically shutdown the Server Labs when you’re not using Linux Academy
+• You can power one or more back up when you need them
+• Learn more by looking at the Server Labs Course Feature on the course page
+• Let’s go through the exercise of spinning up a Server Lab and installing the ChefDK
+
+#Setting up a chef work station
+choose a centos 7 instance from the lab nodes
+
+https://docs.chef.io/install_dk.html
+
+
+
+##################################################
+Hands-on Lab: Develop a Simple Cookbook and Create a Wrapper Cookbook
+##################################################
+
+SCENARIOS
+1. Install the ChefDK.
+2. Configure your workstation environment.
+3. Create a generator.
+4. Generate a cookbook called lcd_web using your generator.
+5. Create InSpec tests and the Chef code to pass the tests.
+6. Create a template.
+7. Create a simple library.
+8. Create a custom resource.
+9. Create a wrapper cookbook.
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Chef Local Cookbook Development Badge Practice Cookbook
+##################################################
+SCENARIOS
+Your objectives are as follows:
+
+1. Write the Chef recipe code so that all tests are passing within Test Kitchen for Ubuntu or CentOS or both.
+2. Create an attribute called greeting which contains the string: "Greetings".
+3. Place a template in /var/www/html and use the attribute within it to output the phrase "Greetings, Planet Earth!".
+4. Use the PHP cookbook from the supermarket with version 3.1.1 to install php.
+
+
+
+
+
+
+
+
+##################################################
+Quiz: Practice Exam
+##################################################
+
+1) You have created a cookbook that depends on other cookbooks and wish to include the versions in an environment called "staging"; what command can you run to accomplish this task?
+
+Correct
+
+Correct answer
+berks apply staging
+
+Explanation
+berks apply and the name of the environment is the correct syntax.
+
+2) What does "kitchen test" do?
+
+Correct
+
+Correct answer
+Runs kitchen destroy, kitchen create, kitchen converge, kitchen setup, kitchen verify, and kitchen destroy.
+
+Explanation
+kitchen test performs all actions of Test Kitchen, including starting with a destroy.
+
+3) The default location for InSpec within a cookbook is located in which relative directory?
+
+Incorrect
+
+Correct answer
+test/integration
+
+Explanation
+Test Kitchen expects tests to be located in the test/integration directory.
+
+4) How can you store your rubocop offenses in a "todo" file so that you can work on them later?
+
+Correct
+
+Correct answer
+Run rubocop --auto-gen-config and place "inherit_from: .rubocop_todo.yml" in your .rubocop.yml file.
+
+Explanation
+rubocop --auto-gen-config will create the todo file; you then need to inherit_from the todo file within the .rubocop.yml file.
+
+5) How can you include the same text automatically in every cookbook you create?
+
+Correct
+
+Correct answer
+chef generate cookbook -g /path/to/generator_cookbook
+
+Explanation
+The use of a generator cookbook can be specified when generating a cookbook with the -g switch and the path to the generator cookbook.
+
+6) The cookbooks installed with berks are placed in which directory?
+
+Correct
+
+Correct answer
+Cookbooks installed from berks are placed in the ~/.berkshelf directory.
+
+Explanation
+The .berkshelf directory will contain the cookbooks downloaded through berks.
+
+7) How can you use a community cookbook and a local cookbook if they have the same name of "httpd" but you need to depend on "httpd" in one of your cookbooks?
+
+Incorrect
+
+Correct answer
+A reference to the cookbook name and path in a Berksfile: cookbook 'httpd', path: '/path/to/httpd'.
+
+Explanation
+The Berksfile can allow you to specify the path to a local cookbook to override the default behavior of obtaining the cookbook from the supermarket.
+
+8) knife search admins "(*:*)" is an example of which of the following:
+
+Incorrect
+
+Correct answer
+A search of a data bag called admins.
+
+Explanation
+Any search that matches an index that happens to be a data bag name will search the data bag corresponding to that name.
+
+9) ChefSpec tests are located in which directory beneath the cookbook directory?
+
+Incorrect
+
+Correct answer
+spec/unit/recipes
+
+Explanation
+ChefSpec tests are located in spec/unit/recipes beneath the cookbook directory.
+
+10) Which of the following is the correct list of indexes available for search?
+
+Correct
+
+Correct answer
+client, environment, node, role, and data bag names
+
+Explanation
+client, environment, node, role, and data bag names are the types of indexes which can be searched.
+
+11) What is the difference between shell_out and the execute resource?
+
+Correct
+
+Correct answer
+stdout and stderr of a process can be captured using shell_out.
+
+Explanation
+Both stderr and stdout of a process can be captured with shell_out.
+
+12) You should use a private supermarket to:
+
+Correct
+
+Correct answer
+Distribute organization specific cookbooks on your company network.
+
+Explanation
+The primary use case for a private supermarket is so that you can provide a distribution mechanism for internally used cookbooks. Typically this will be on your corporate network behind a firewall and offers increased bandwidth.
+
+13) What command can you run to list the versions of a cookbook called "java" on the supermarket?
+
+Correct
+
+Correct answer
+knife cookbook site show java
+
+Explanation
+"knife cookbook site show java" lists available versions of java to install.
+
+14) What is the primary purpose of suites in Test Kitchen?
+
+Correct
+
+Correct answer
+The ability to mock multiple tests on one or more platforms.
+
+Explanation
+Test Kitchen suites offer the ability to run multiple platform tests concurrently and make changes in each suite to mock up various test conditions or scenarios.
+
+15) What is the primary benefit of using custom resources?
+
+Correct
+
+Correct answer
+Reusable functionality using a simple DSL-based syntax.
+
+Explanation
+Custom resources offer the ability to create reusable chef functionality with a simple DSL-based syntax.
+
+16) What is the process for performing integration tests?
+
+Correct
+
+Correct answer
+Create InSpec tests and perform "kitchen verify"
+
+Explanation
+InSpec is used for integration tests and kitchen verify will execute them.
+
+17) In order to use a custom resource from another cookbook you must do which of the following:
+
+Correct
+
+Correct answer
+Place a depdendency on the cookbook that contains the resource you want to use.
+
+Explanation
+A dependency must be added so that the cookbook which contains the custom resource is available on the chef-client.
+
+18) You have installed Test Kitchen and need to use a Docker driver; how can you install this driver?
+
+Correct
+
+Correct answer
+chef gem install kitchen-docker or chef exec gem install kitchen-docker
+
+Explanation
+If you have the ChefDK Ruby set as your system Ruby, you can perform a chef gem install kitchen-docker. You can also run chef exec gem install kitchen-docker.
+
+19) How can you ensure that an execute resource is idempotent?
+
+Correct
+
+Correct answer
+Use not_if or only_if guards.
+
+Explanation
+The execute resource can be guarded by a condition present in a not_if or only_if block that must be satisfied each time the resource runs.
+
+20) To create a wrapper cookbook you should:
+
+Incorrect
+
+Correct answer
+Create a cookbook. Add a dependency in metadata.rb for the cookbook that you are wrapping. Modify default attributes in your wrapper cookbook and include a recipe from the cookbook you are wrapping. Run "berks install".
+
+21) When defined in metadata.rb, what is issues_url for?
+
+Correct
+
+Correct answer
+The URL for the location in which a cookbook’s issue tracking is maintained.
+
+22) What will happen when running: foodcritic ./ -t ~FC011
+
+Correct
+
+Correct answer
+Files will be checked for all rules except foodcritic rule FC011.
+
+Explanation
+The tilde will negate a rule that follows it.
+
+23) If an execute resource contains the "creates /tmp/file.txt" and /tmp/file.txt exists, what will happen during the next chef-client run?
+
+Correct
+
+Correct answer
+The execute resource is not run.
+
+Explanation
+"creates" is effectively the same as a not_if guard.
+
+24) When is pure Ruby code executed during a chef-client run?
+
+Correct
+
+Correct answer
+The compile phase.
+
+Explanation
+Ruby code is executed during the compile phase to facilitate building the resource list.
+
+25) How can you overwrite a frozen cookbook?
+
+Correct
+
+Correct answer
+knife cookbook upload my_cookbook --force
+
+Explanation
+Using the --force switch will force the cookbook to be uploaded if there is a conflict.
+
+26) Which of the following statements are true about templates?
+
+Incorrect
+
+Correct answer
+Templates can be composed using multiple partial template files and can be used from another cookbook.
+
+Explanation
+Partial templates and single template files can be used within cookbooks and can also be used in other cookbooks.
+
+27) How can you declare that both CentOS 7 and the latest available version of Ubuntu are compatible with a cookbook?
+
+Incorrect
+
+Correct answer
+Use 'supports ubuntu' and 'supports centos', '= 7' each on a separate line in metadata.rb.
+
+Explanation
+Each supports statement should be on its own line in metadata.rb and can contain the version supported. If no version is specified, any versions are supported.
+
+28) What is the significance of attributes when a default.rb file exists?
+
+Incorrect
+
+Correct answer
+The attributes/default.rb file gets loaded first.
+
+Explanation
+attributes/default.rb is always loaded first, after which lexical sorting is applied to any other attribute file names.
+
+29) What ChefDK tool can be used to analyze your Chef code?
+
+Correct
+
+Correct answer
+foodcritic
+
+Explanation
+Foodcritic checks Chef code.
+
+30) What is the primary use case for data bags?
+
+Incorrect
+
+Correct answer
+They provided a shared resource for all chef-clients.
+
+Explanation
+Data bags exist on the Chef server as a source of data which all clients can use.
+
+31) What command can you run to avoid overwriting a cookbook when you upload to your chef server?
+
+Incorrect
+
+Correct answer
+knife cookbook upload my_cookbook --freeze
+
+Explanation
+knife cookbook upload my_cookbook --freeze will freeze the cookbook so that version cannot be overwritten unless another command is run to forcibly overwrite it.
+
+32) True or false, by default, you can use the Chef DSL resources in libraries?
+
+Incorrect
+
+Correct answer
+False
+
+Explanation
+You cannot by default use DSL resources in a Library.
+
+33) You are working with a cookbook whose metadata uses the "suggests" keyword and the name of a cookbook. What happens for the item suggested during the chef-client run?
+
+Incorrect
+
+Correct answer
+Nothing happens, there is no impact on the chef-client run.
+
+Explanation
+The "suggests" keyword in metadata.rb does not impact a chef-client run. Nothing extra will be downloaded.
+
+34) What is the command to create a template called index.html in a cookbook called my_cookbook, which is located in cookbooks/my_cookbook, assuming your current working directory is "cookbooks"?
+
+Correct
+
+Correct answer
+chef generate template my_cookbook index.html
+
+Explanation
+"chef generate template my_cookbook index.html" generates a templates directory if one does not exist, as well as an index.html.erb template file beneath the templates directory.
+
+35) Ruby code which is inside of a ruby_block is run during which phase of a chef-client run?
+
+Incorrect
+
+Correct answer
+During the execute (or converge) phase.
+
+Explanation
+ruby_blocks run during the execute phase of the chef-client run.
+
+36) A recipe contains Ruby code to test if a file exists using File.exist?('/opt/file.txt') outside of a ruby_block or guard. When will this be executed during a chef-client run?
+
+Incorrect
+
+Correct answer
+During the compile phase of a chef-client run.
+
+Explanation
+Pure Ruby code in a recipe is executed during the compile phase.
+
+37) What kind of attribute is node['platform'] an example of?
+
+Incorrect
+
+Correct answer
+automatic
+
+Explanation
+node['platform'] is an automatic attribute obtained from ohai during a chef-client run.
+
+38) When the checksum property of a remote_file resource matches the local file checksum value...
+
+Incorrect
+
+Correct answer
+The chef-client does not download the file.
+
+Explanation
+The chef-client detects that it should not be downloaded because if they have the same checksum, they are the same file.
+
+39) How do you select which Chef client you want to install with Test Kitchen?
+
+Correct
+
+Correct answer
+Set a value for require_chef_omnibus that corresponds to the chef version you want to install.
+
+Explanation
+The require_chef_omnibus setting can be specified with the version of chef-client you wish to install.
+
+40) Which of the following is true about ChefSpec?
+
+Correct
+
+Correct answer
+Simulates a convergence locally in memory.
+
+Explanation
+ChefSpec runs locally in memory.
+
+41) What are the most common provisioners in Test Kitchen?
+
+Incorrect
+
+Correct answer
+chef_zero and chef_solo
+
+Explanation
+The chef_zero and chef_solo provisioners are the most common and create either a chef_zero implementation of a chef server or chef solo.
+
+42) If metadata.rb contains depends ‘cookbook_name’, ‘~> 1.4.0’, what will happen?
+
+Incorrect
+
+Correct answer
+Versions up to 1.4.9 will be installed.
+
+Explanation
+Pessimistic matching will indicate that versions up to 1.4.9, but not 1.5.0 or greater, would be installed.
+
+43) What happens if you include_recipe multiple times?
+
+Correct
+
+Correct answer
+The first inclusion will update the resources and subsequent inclusions will be ignored.
+
+Explanation
+No matter the number of inclusions, the first evaluation of a recipe is the one which matters.
+
+44) How can you use a Berksfile to manage two cookbooks with the same name?
+
+Correct
+
+Correct answer
+Configure the Berksfile to include the local path to the cookbook with the same name.
+
+Explanation
+Use a Berksfile to make a local cookbook reference with the path to the cookbook you want to use.
+
+45) In addition to the main driver section, where can drivers be configured to use more than one with Test Kitchen?
+
+Incorrect
+
+Correct answer
+Plaforms or suites
+
+Explanation
+Platforms or suites can contain references to driver configurations, which are different than the global driver configuration.
+
+46) Which of the following is true about a wrapper cookbook?
+
+Correct
+
+Correct answer
+The cookbook being wrapped is also downloaded to the chef-client.
+
+Explanation
+For a wrapper to work, the cookbook which is having its functionality modified must also be available on the chef-client to be run.
+
+47) On your Chef workstation, where would you find Test Kitchen logs?
+
+Correct
+
+Correct answer
+In the same directory as the .kitchen.yml in .kitchen/logs
+
+Explanation
+The .kitchen/logs directory will contain Test Kitchen logs.
+
+48) What is the default driver within Test Kitchen?
+
+Correct
+
+Correct answer
+kitchen-vagrant
+
+Explanation
+Test Kitchen, by default, uses a Vagrant driver.
+
+49) When in your development process should you incorporate tests for your code?
+
+Correct
+
+Correct answer
+As early as possible, even before you have written Chef code to accomplish a task.
+
+Explanation
+The test driven development model is predicated on creating tests first before you write any code.
+
+50) You are using the execute resource and do not wish to log resource data; which common property and value should you include in your resource definition?
+
+Incorrect
+
+Correct answer
+senstive true
+
+Explanation
+A resource using the sensitive common property will not be logged by the chef-client.
+
+51) What is the resulting value for an attribute which is set in attributes/default.rb as default['message'] = 'Hello' and also in recipies/default.rb as node.default['message'] = 'Goodbye'?
+
+Correct
+
+Correct answer
+Goodbye
+
+52) To vendor the "tar" cookbook into your cookbooks directory, which steps would you perform?
+
+Incorrect
+
+Correct answer
+Run "knife cookbook site download tar", and if the cookbook's directory is a Git repository, then run "knife cookbook site install tar"
+
+Explanation
+knife cookbook site download tar will download the latest available version. If the cookbooks directory is a git repository then the knife cookbook site install tar command will install it, vendoring the tar cookbook.
+
+53) All Chef-related content in a single source control repository is an example of what?
+
+Correct
+
+Correct answer
+A monolithic repository.
+
+Explanation
+A monolithic repository would contain a number of cookbooks within a single source code repository.
+
+54) What does the "chef shell-init bash" command do?
+
+Correct
+
+Correct answer
+Sets the version of Ruby included in the ChefDK as the system Ruby when using the bash shell.
+
+55) What is the name of the format for templates?
+
+Incorrect
+
+Correct answer
+ERB (Embeded Ruby)
+
+Explanation
+Chef templates are ERB formatted.
+
+56) From least precedence to greatest precedence, what has a higher attribute precedence?
+
+Correct
+
+Correct answer
+default, normal, then override
+
+Explanation
+Default precedence is the lowest, normal is greater than default, and override is greater than normal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################
+##################################################
+
+##################################################

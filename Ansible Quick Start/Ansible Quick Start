@@ -1,0 +1,427 @@
+##################################################
+Ansible Quick Start
+##################################################
+##################################################
+Quick Start
+##################################################
+##################################################
+Lecture: Installation and Configuration
+##################################################
+#ansible is a completely clientless in stall
+#you do need to have ansible installed on where you are running your playbooks from, but it doesn't need to be installed on your nodes, they only need to be accessible to ssh
+
+#install
+yum install epel-release
+
+yum update #to update our local cache
+
+yum install git python python-devel python-pip openssl ansible
+
+ansible --version  #we can see that ansible is installed
+
+vim /etc/ansible/ansible.cfg
+#uncomment inventory
+#uncomment sudo_user
+
+:wq
+
+#theres no daemon running so we dont have to restart
+
+#when we run playbooks we run them against nodes, those node name are in the file /etc/ansible/hosts
+cd /etc/ansible
+
+mv hosts hosts.original
+
+vim hosts
+[local]
+localhost
+
+[centos]
+tcox2.mylabserver.com
+
+[ubuntu]
+tcox4.mylabserver.com
+
+:wq
+
+
+#to be sure that we have sudo rights
+adduser ansible
+passwd ansible
+
+visudo
+#below root in the allow root to run any commands anywhere
+ansible ALL=(ALL)   NOPASSWD: ALL
+
+:wq
+
+#go on to the second node
+adduser ansible
+passwd ansible
+
+
+visudo
+#below root in the allow root to run any commands anywhere
+ansible ALL=(ALL)   NOPASSWD: ALL
+
+su ansible
+
+sudo yum update
+
+#go on to the third node
+adduser ansible
+passwd ansible
+
+
+visudo
+#below root in the allow root to run any commands anywhere
+ansible ALL=(ALL)   NOPASSWD: ALL
+
+
+su ansible
+
+sudo apt-get update
+
+#go back to your workstation
+
+su ansible -
+
+ssh-keygen
+
+ssh-copy-id ansible@tcox2.mylabserver.com
+
+ssh ansible@tcox2.mylabserver.com
+
+ssh-copy-id ansible@tcox4.mylabserver.com
+
+ssh ansible@tcox4.mylabserver.com
+
+#now we need to copy the key to ourselves
+
+ssh-copy-id localhost
+
+
+
+
+##################################################
+Lecture: Ansible Documentation
+##################################################
+https://www.ansible.com/
+
+#There are 2 versions of ansible
+ansible and ansible tower, ansible tower is the enterprise version
+
+#on the ansible website > resources tab > ansible docs
+#Here we will see 2 different documentation paths, ansible and ansible tower
+
+#where you are going to spend most of your time is in the module index
+
+##################################################
+Lecture: Running Ansible Commands
+##################################################
+#we are not running playbooks we are running commands against individual modules
+
+ansible all -m ping #all will run a command against all hosts in out /etc/ansible/hosts file  #the -m means use the following module
+#you will get json output that will give use the status of our command
+
+ansible all -a "ls -al /home/ansible"
+
+ansible all -a "cat /var/log/messages"  #we will see a failure, because either the file did not exist or the permission was denied
+
+sudo ansible all -a "cat /var/log/messages"  #this will not work either because its trying to run this command as root on the other servers, but we havent exchanged ssh keys for the root user
+
+ansible all -s -a "cat /var/log/messages"  #the -s will run the command elevating the privileges of the ansible user, because where have exchanged keys and we have set no password the command will succeed
+
+ansible local -s -a "cat /var/log/messages" #local for the local host
+
+echo "this is a test"  > test.txt
+
+:wq
+
+ansible centos -m copy -a "src=test.txt dest=/tmp/test.txt"
+
+ansible ubuntu -s -m apt -a "name=elinks state=latest"
+
+ansible ubuntu -s -m apt -a "name=elinks state=absent"  #absent to uninstall
+
+#to add a user
+ansible centos -s -m user -a "name=test"
+
+ansible centos -s -m user -a "name=test state=absent"  #to remove the user
+
+
+
+##################################################
+Lecture: Playbook Structure with YAML
+##################################################
+mkdir -p /home/ansible/ansible/playbooks
+cd /home/ansible/ansible/playbooks
+
+vim structure.yaml
+--- # This is a structural YAML example to install HTTPD  on CENTOS
+- hosts:  centos
+  remote_user:  ansible
+  become: yes
+  become_method:  sudo
+  connection: ssh
+  gather_facts: yes
+  vars:
+    username: myuser
+  tasks:
+  - name: Install HTTPD server on CentOS 7 Nodes
+    yum:
+      name: httpd
+      state:  latest
+    notify:
+    - startservice
+  handlers:
+  - name: startservice
+    service:
+      name: httpd
+      state:  restarted
+
+:wq
+
+ansible-playbook structure.yaml
+
+
+##################################################
+Lecture: Gathering Facts
+##################################################
+ansible all --list-hosts
+
+cat /etc/ansible/hosts
+
+#to explicitly get facts about a host or a group of hosts
+ansible centos -m setup
+
+#to gather a specific fact
+ansible centos -m setup -a 'filter=*ipv4*'
+
+#to create a output file with all the facts about a particular host
+ansible centos -m setup --tree facts
+
+cd facts
+
+ansible centos -m setup -a 'filter=ansible_domain'
+
+
+##################################################
+Lecture: Variable Substitution
+##################################################
+cd playbooks
+
+vim vartest.yaml
+--- # Testing how variables work in the vars section of a playbook
+- hosts:  '{{ myhosts }}'
+  remote_user: ansible
+  become: yes
+  become_method:  sudo
+  connection: ssh
+  gather_facts: '{{ gather }}'
+  vars:
+    myhosts:  centos
+    gather:  yes
+    pkg:  telnet
+  tasks:
+  - name: Install the indicated software
+    yum:
+      name: '{{ pkg }}'
+      state: latest
+
+:wq
+
+ansible-playbook vartest.yaml
+
+
+#now to unistall telnet to clean up the node
+ansible centos -s -m yum -a "name=telnet state=absent"
+
+cp vartest.yaml varsubst.yaml
+vim varsubst.yaml
+--- # Testing how variables work in the vars section of a playbook
+- hosts:  '{{ myhosts }}'
+  remote_user: ansible
+  become: yes
+  become_method:  sudo
+  connection: ssh
+  gather_facts: '{{ gather }}'
+  tasks:
+  - name: Install the indicated software
+    yum:
+      name: '{{ pkg }}'
+      state: latest
+
+:wq
+
+ansible-playbook varsubst.yaml --extra-vars "myhosts=centos gather=yes pkg=telnet"
+
+#clean up
+ansible centos -s -m yum -a "name=telnet state=absent"
+
+##################################################
+Lecture: Debug Statement
+##################################################
+cd playbooks
+
+vim debug.yaml
+--- # Playbook demo of a debug and register statement
+- hosts:  centos
+  remote_user:  ansible
+  become: yes
+  become_method:  sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: Installing telnet package
+    yum:
+      name: telnet
+      state:  latest
+
+:wq
+
+ansible-playbook debug.yaml
+
+ansible centos -s -m yum -a "name=telnet state=absent"
+
+vim debug.yaml
+--- # Playbook demo of a debug and register statement
+- hosts:  centos
+  remote_user:  ansible
+  become: yes
+  become_method:  sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: Installing telnet package
+    yum:
+      name: telnet
+      state:  latest
+    register: result
+  -debug: var=result
+
+:wq
+
+ansible-playbook debug.yaml
+
+##################################################
+Lecture: Notifications and Handlers
+##################################################
+vim notify.yaml
+--- # Notification and handling events
+- hosts:  centos
+  remote_user: ansible
+  become: yes
+  become_method:  sudo
+  gather_facts: yes
+  connection: ssh
+  tasks:
+  - name: install nginx web server
+    yum:
+      name: nginx
+      state:  latest
+  - name: enable and start the nginx service
+    service:
+      name: nginx
+      enabled: yes
+      state: restarted
+:wq
+
+
+ansible-playbook notify.yaml
+
+#we need to install th eepel-release on the node
+
+sudo yum install epel-release
+
+#now re-run the playbook
+ansible-playbook notify.yaml
+
+#you can see that evrtime you run the playbook it will restart the service, this might not be optimal
+vim notify.yaml
+--- # Notification and handling events
+- hosts:  centos
+  remote_user: ansible
+  become: yes
+  become_method:  sudo
+  gather_facts: yes
+  connection: ssh
+  tasks:
+  - name: install nginx web server
+    yum:
+      name: nginx
+      state:  latest
+    notify:
+    - anable and start the nginx service
+  handlers:
+  - name: enable and start the nginx service
+    service:
+      name: nginx
+      enabled: yes
+      state: restarted
+:wq
+
+ansible centos -s -m yum -a "name=nginx state=absent"
+
+ansible-playbook notify.yaml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################

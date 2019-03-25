@@ -1,0 +1,53 @@
+##################################################
+Apache and SSL Self Signed Certificates
+##################################################
+##################################################
+Apache Install and SSL Certificate Creation
+##################################################
+#test if apache is installed
+telnet localhost 80
+
+#install apache
+sudo apt-get install apache2 apache2-doc apache2-utils openssl -y
+
+#If you in stall openssl with apache it will install the the ssl-cert module which will enable us turn on ssl support inside of apache
+#if you install open ssl before apache it will not pull the ssl-cert module down and you wont be able to  enable mod ssl
+
+#now we are going to create the certificate
+#this directory will house out key file and our cert
+sudo mkdir /etc/apache2/ssl
+
+#generating a self signed cert, we are the ones that signed it, not intrust or verasign
+#you will get a browser warning when you access a self signed cert website
+#if we were getting the cert from a 3rd party we would only generate the key
+
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache2.cert
+#the -out is the part we wouldnt do if we were getting the cert from a 3rd party
+
+joeywagner-gmail-com-apache-self-signed-ssl.linuxacademylabs.com
+
+
+cd ssl
+
+
+#now we need to enable the apache ssl module
+cd /etc/apache2/mods-available
+
+sudo a2enmod ssl
+
+cd ../sites-available/
+
+sudo vim default-ssl.conf
+#SSLCertificateFile     /etc/ssl/certs/ssl-cert-snakeoil.pem
+#SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+SSLCertificateFile /etc/apache2/ssl/apache2.cert
+SSLCertificateKeyFile /etc/apache2/ssl/apache.key
+
+:wq
+
+sudo a2ensite default-ssl.conf
+
+sudo service apache2 restart
+
+
+telnet localhost 80

@@ -1,0 +1,976 @@
+##################################################
+Mastering Systemd
+##################################################
+##################################################
+Course Introduction
+##################################################
+##################################################
+Lecture: Course Introduction
+##################################################
+##################################################
+Lecture: About the Course Author
+##################################################
+##################################################
+Lecture: Connect with Us!
+##################################################
+
+
+
+
+
+
+
+##################################################
+Linux Daemon History
+##################################################
+##################################################
+Previous Service Management Tools
+##################################################
+##################################################
+Lecture: The Linux Boot Process
+##################################################
+#What happens when a linux system boots?
+The linux boot process(simplified)
+-BIOS
+-Boot Loader
+-The linux Kernel
+-Initial RAM disk
+-Initialization System
+
+
+
+##################################################
+Lecture: init
+##################################################
+-init - short for initialization
+-Based off of the System V init used in UNIX systems
+-sysvinit - Written by Miquelvan Smoorenburg
+-Services are started one after the other, in a serial fashion
+
+
+inital startup
+-> /sbin/init -> /etc/inittab
+
+#The init process run the inittab to determine what run level the system should be operating in
+#A run level is a pre defined configuration that the computer will operate in
+#The system can only operate in 1 run level at a time
+
+Runlevel
+0 Halt
+1 Single user mode
+2 multi-user mode (no networking)
+3 multi-user mode (with networking)
+4 unused
+5 multi-user with networking and a graphical desktop
+6 reboot
+
+
+cat /etc/inittab
+id:3:initdefault: <identifier>:<runlevel>:<action>:<process>  #as you can see there is no process, thats because this line is for the init default line and there is no process for init to act on
+
+
+#another example
+si::sysinit:/etc/rc.d/rc.sysinit
+
+
+#init scripts location
+Red hat based: /etc/rc.d
+Debian based: /etc/init.d
+
+rc = run commands
+
+#the scripts for run level 3 are located in /etc/rc.d/rc3.d
+
+# /etc/init.d - contains the scripts for the services on the system
+
+# /etc/init.d/rc - scripts that orchestrates how the runlevel scripts run and what occurs when a runlevel changes
+
+
+##################################################
+Lecture: Red Hat Service Tools
+##################################################
+chckconfig #can be used to enable or disable a services ability to start up when the system boots.  it can also be used to see what runlevel a service will automatically start in
+chckconfig httpd --level 3 on
+
+chckconfig --list | less  #to see all services and their runlevels
+
+# Use chckconfig to preven the bluetooth service from starting
+chckconfig --level 3 bluetooth off  #this will prevent the bluetooth service from starting only in run level 3
+
+# verify blutooth is deisable for runlevel 3
+chckconfg --list bluetooth
+
+# check the link for bluetooth
+ll /etc/rc.d/rc3.d
+
+# The service command
+service bluetooth status
+
+runlevel
+
+service bluetooth stop
+
+service bluetooth status
+
+# another tool is the ntsysv utility, this will configure services only in the current runlevel
+
+
+##################################################
+Lecture: upstart
+##################################################
+# upstart background
+# first developed for ubuntu in 2006 by scott remnant
+# first used in ubuntu 6.10
+# eventually used in red hat enterprise linux 6, debian and fedora 9
+# unlike init, upstart offers asynchronous starting of services - decreasing bootup times
+# Works off real-time events, which init was not designed to understand
+## upstart not only start and stop services but monitors their availability as well
+
+
+init vs upstart boot sequence
+=init=
+login
+/etc/rc.d/rcX.d (in sequential order)
+/etc/rc.d/rc/sysinit
+/etc/inittab
+/sbin/init
+
+=upstart=
+                login
+/etc/init/rc.conf         runlevel(7)
+                          telinit(8)
+mountall(8)       /etc/init/rc-sysinit.conf
+startup(7)
+/sbin/init
+
+
+upstart service monitoring
+# init is static; it does not natively respond to changes on a system
+# upstart is dynamic, it can respond to changes on a system
+# a changes on a linux system is an event
+# events trigger jobs
+# jobs have two categories
+## tasks
+## services
+
+# waiting is the inital start of a job, it isnt doing anything yet but it is waiting to do something
+# starting means that the job itself is about to start
+# running means that the job is running
+# stopping is an interm start where the job has processed a section of its configuration known as pre-stop, the job is not actually stopping at this point
+# killed the killed state is where the job is actually stopping
+# post-stop state is where the job has completely stopped, once it is done here it goes back to waiting
+# respawning occurs when something goes wrong with while a job is running and it quits unexpected, upstart will attempt to respawn a job up to 10 times at 5 second intervals until the job is dropped entirely
+
+
+##################################################
+systemd Introduction
+##################################################
+##################################################
+Lecture: The Purpose of systemd
+##################################################
+A bried history of systemd
+# Lennart Poettering and kay Sievers started systemd while Poettering was working at red hat and Sievers was at novell
+# systemd started as a personal side project of Poetterings
+# Work on systemd was inspired by apples launchd and ubuntus upstart
+# initally released on march 30. 2010 in fedora 15
+
+The inspirations for systemd - Upstart
+# upstart - an attempt by linux developers to speed up the boot process by providing parallel starting of services and the monitoring of services
+# So why not just add to upstart
+## upstart didnt really get away from the "a before b" dependency tree too well
+## Potentially any service that could start would start - whether it was needed or not
+
+
+The inspirations of systemd - launchd
+# launchd - listens for a socket so that each individual daemon doesnt have to
+# sockets
+## Traditional init daemon(services) will require a socket from another daemon that they depend on before it can start
+
+Less Dependency Problems
+
+Improved system troubleshooting
+# With systemd, everything thats happens on a system is logged
+## including information lost during system reboots
+## the systemd journal collects all information, including data not logged in traditional syslog
+# The idea that nothing should be lost anymore
+
+The purpose of systemd review
+# less interdependency of services through socket based activation
+# faster boot times
+# improved robustness
+# improved system troubleshooting through comprehensive logging
+
+
+
+##################################################
+Lecture: systemd Architecture
+##################################################
+Process Management
+# All processes are now managed in cgroups
+# This is a feature of the linux kernel
+# cgroups (short for control groups) are collections of services that are grouped together in a hierachal manner
+# Each cgroup can have its resources limited, such as RAM,  CPU, ect.
+## This is the primary purpose for using cgroups
+## systemd makes it so that each process is contained to its own slice of system resources
+
+# The slices can be found in /sys/fs/cgroup/systemd:
+## Slices can be looked at as a partitioning scheme for services
+
+Slices are groups of services, such as:
+# system.slices-contains the system services that are running on a system, along with systemd's own services
+## tmp.mount
+## crond.service
+## httpd.service
+
+# User.slices - user specific services that are running, such as the desktop session.  Each user logged into the system gets their own slice
+## In keeping with the hierarchal approach, user.slice contains the slices for each individual logged into the system
+
+Process Management - scopes
+Systemd scopes are sets of processes:
+#  Thses are processses that are started by other processes, and they register with systemd for management
+## systemd does not directly start these processes
+## something that systemd start will fork their processes off into scopes
+
+# Scopes contain runtime parameters, not execution parameters:
+## these are created by the processes themselves, and are dynamic
+## A system administrator can not create a scope, since thses are generated at runtime
+### As an example, you can not tell a process what its PID will be, as that is generated at run time based on what the system is doing
+
+systmd-cgls
+The systemd-cgls command show the breakdown of all the processes and how the system's resources are split up:
+# All of this is printed out in an inverted tree structure, indicative of how the system has it divided up:
+## The root of the tree is. -.slice, which indicates the root slice (or the complete pie) for a whole system
+## everything else is a slice of this 'pie'
+
+# Output is sent to the default system pager (usually the less command)
+
+systemd-cgtop command #cgroup top
+
+Bringing up File Systems in Parallel
+# Traditional init would bring up each file system listed in /etc/fstab one at a time, and a file system check (fsck) is run on each one
+# All file systems would have to be loaded before a service could be started
+# systemd uses an approach based on autofs
+## autofs is a file system service that only mounts a file system when it is needed
+## systemd sets up a autofs-like mount point to allow a service to get queued to start, then when the file system that the service needs is actually ready, systemd removes the autofs style mount point and replaces it with a real one
+
+Review
+# systemd uses the kernel functionality of cgroups to 'slice up' a system's resources
+# the system.slice contains all of the processes that are running for the system
+# Every use that logs in gets their own slice of user.slice
+# Every process that is spawned by another process gets lumped into scopes
+# We can use the systemd-cgls and systemd-cgtop commands to see the divisions of our system resources
+# systemd uses autofs to create fake mount points for services, then adds the real mount points when the service is ready
+# man 5 system.resource-control
+
+##################################################
+Lecture: Alternatives to systemd
+##################################################
+Controversy Surrounding systemd
+# Letting go of init
+# Appears to violate the UNIX principle of keeping things simple
+## "Not UNIX"
+
+# Binary log file
+# Perception of feature creep
+# Not portable
+
+Debian Switches to sysetmd
+# Some Debian developers announce their initentions to fork the Debian project should the distribution adopt systemd in 2014
+# Debian switched to systemd as the default init daemon in April 2015
+## This move affected the Ubuntu derivative of Debian, so Upstart was replaced by systemd at the same time
+# The dissenting developers left Debian and forked the project, naming their distribution Devuan GNU+Linux
+## First released in MAY of 2017
+## It is a compatable fork of Debian, using sysvinit instead of systemd
+## Also offers openrc, runit, and sinit as alternatives
+
+OpenRC
+# Began in 2007
+# A dependancy-based init implamentation
+# Not a replacement for init, meant to work with it
+# Utilizes cgroups from the kernel to limit the resources used by the processes
+# Default on:
+## Gentoo Linux
+## Alpine Linux
+# Can be used on:
+## Arch Linux
+## Devuan
+## FreeBSD
+## NetBSD
+
+
+GNU Shepherd
+# Developed for the GuixSD Linux Distribution
+# Some elements inspired by systemd where a service can be dynamically started depending on another services needs
+# Still considered beta software
+
+runit
+# init replacement that can run on Linux, Solaris, MacOSX, and the BSD operating system
+## Also can be used with regular sysvinit as its parent process
+# Operates in three stages:
+## Stage 1 - one-time initalization of system services
+## Stage 2 - the actual running system, process supervision
+## Stage 3 - halting or rebooting the system
+# Default on Void Limux
+
+The future?
+
+##################################################
+Systemd Components
+##################################################
+##################################################
+Systemd Tools
+##################################################
+##################################################
+Lecture: systemctl
+##################################################
+Intro to Unit Files
+# systemd deals with everything as units
+# A unit is denoted as: something.unit
+# Example units:
+## session-3.scope
+## user.slice
+## dbus.socket
+
+systemcil
+status - shows the status information on a unit.  If used by itself, shows the system status
+enable - Set a service to start when the system boots
+disable - Prevents a service from starting when the system boots
+
+Examples:
+yum install -y httpd
+
+# to view the service units files for httpd
+rpm -ql httpd | grep system
+
+sysetmctl status httpd
+
+systemctl enable httpd.service
+
+systemctl status httpd.service
+
+systemctl status  #complete status of your system
+
+systemctl # show you the status of all the units on your system
+
+systemctl start httpd.service  # to start a service
+
+systemctl status httpd.service
+
+systemctl stop httpd.service
+
+systemctl help httpd.service
+
+systemctl -H <remote_ip> status httpd.service  # run sysemctl commands on remote systems.  For this to work you will need to have ssh keys setup between the hosts
+
+
+##################################################
+Lecture: Introduction to the systemd Journal
+##################################################
+systemd Journal
+# the systemd journal is a binary files that records all the events on the system, everything
+
+What the journal collects
+# Kernel log messages
+# system log messages, the same as what syslog would collect
+# System services that send output to standard output and standard error
+# Audit records SELinux messages
+
+The default location for the journal is /run/log/journal/.  This information would be lost on reboot (as it collects a lot of data)
+# To permanently keep the journal:
+## mkdir -p /var/log/journal
+## systemd-tmpfiles --create --prefix /var/log/journal
+
+Journal Configuration
+# man 5 journald.conf
+# /etc/systemd/journald.conf
+[Journal]
+Storage=
+  - auto - the default.  Will store data to var/log/journal(if it exists) and to /run/log/journal
+  - persistand - data is stored to the /var/log/journal hierarchy
+  - volatile - data is only sent to /run/log/journal, resides in memory
+  - none - no data is kept, all log data is dropped
+Compress=
+  - Takes a boolean value
+  - yes - the default, any data objects above a certain threshold are compressed before they are written to disk
+  - non - no data objects are compressed
+SystemMaxUse=, RuntimeMaxUse=
+  - SysetmMaxUse pertains to the physical disk space the journal can use, the default is 10%
+  - RuntimeMaxUse pertains to the amount of RAM the journal can use, the default is 10%
+SystemMaxFileSize=, RuntimeMaxFileSize=
+  - SystemMaxFileSize pertains how large individual journal files may get.  Note that you could have more than one journal file on a system
+  - RuntimeMaxFileSize pertains to how large individual journal files can get while in RAM
+  - Size can be specified by bytes or by using the suffixes K,M,G,T,P, or E
+MaxRetentionSec=
+ - The maximum amount of time to store journal entries
+ - Typically, size based deletions (such as SystemMaxUse) are enough to handle this
+ - Default isd 0 (meaning that it is off)
+ - Time can be set to a number, followed by 'years', 'month', 'week', 'day', 'h', or 'm'.  The default time unit is seconds
+
+
+##################################################
+Lecture: journalctl
+##################################################
+journalctl
+-r # shows the newest entries first
+-e # jumps to the end of the page
+-n # shows only the most recent entries and limits the amount of lines specified
+-f # Shows the most recent log entries, and follows the journal as new entries are created.  Much like the tail -f /var/
+-u # shows only the entries for the unit specified
+-o # Formats the output of the journal control command
+verbose # displays the journal will all of the entry items with their fields
+json-pretty # formates the output in multi-line json format.  Very useful for data analysis tools
+man 7 systemd.journal-fields for explanation of the fields in this output
+systemd-cat # sends output of a command to the journal
+
+
+echo "Hi there" | systemd-cat
+
+journalctl -r  # here we can see the output of our echo command
+
+-x # shows log lines with some text that comes from the message catalog.  Not all log entries will have explanatory text available
+--catalog # This is also a correct option to view entries from the service catalog.
+-k # Only shows the journal entries that have been collewcted since the most recent system boot up
+-b # Shows all of the journal entries that have been colected since the most recent system boot ups
+--list-boots # shows a listing of recorded boot sessions ( the journal must be persistently saved to disk for this to be useful)
+--since, --until # shows only the entries newer than a specified date and time or until a specified date and time
+--disk-usage # displays the amount of disk space that the journal is consuming
+--rotate # rotates the journal files
+
+##################################################
+Lecture: More systemd Tools
+##################################################
+More systemd tools
+systemd-analyze # Prints out how long it takes for the system to boot up, or output to a graph image file
+localectl # view or change a systems locale and keyboard settings
+timedatectl # View and set time zone and system time.
+
+timedatectl list-timezones  # to list timezones
+
+timedatectl set-timezone "America/New_York" # to set the timezone
+
+hostnamectl # View or set the system's host name
+sysemd-resolve # Available in newer versions of systemd, it allows a system to resolve hostnames
+systemd-inhibit # Prevents the system from sleeping or shutting down while a command is running
+
+
+hostnamectl set-location "Rack1, shelf 14"
+
+##################################################
+Unit Files
+##################################################
+##################################################
+Lecture: Basics of a Unit File
+##################################################
+Getting Rid of Shell Scripts
+# init and parts of upstart rely on Bash shell scripts
+# Systemd replaces the functionality of the shell scripts with compiled C code
+# Still compatible with older System V init scripts
+## Note: the creators of systemd have emphasized that it is not fully 100% compatible (more like 99%) since the old init system was quite extensible, and that they may not have developed compatibility for every possible scenario
+
+
+Unit File Locations
+# Provided by package installations ( Do not edit these unit files)
+  /usr/lib/systemd/system
+
+# Unit file location for system administrators ( these take precedence over those in /usr):
+  /etc/systemd/system
+
+# Runtime unit files:
+  /run/systemd/system
+
+# View all unit files on a system:
+  systemctl list-unit-files
+
+
+Components of the Unit File
+# Unit files follow the INI style format first seen in MS-DOS
+[Unit]
+Description=Multi-user System
+Documentation=man:systemd.special (7)
+Requires=basic.target
+  #or Wants=(more robust)
+Conflicts=rescue.service rescue.target
+After=basic.target rescue.service rescue.target
+
+man 5 system.unit  # This is where you can find more documentation
+
+system cat something.unit # This will printout the contents of the unit file specified
+
+
+
+Modifying Unit Files
+# Modifications must be in /etc/systemd/system
+# Two main methods of using custom unit files:
+## Copying an existing unit from /usr/lib64/systemd/system to /etc/systemd/system and edit this file
+## Or create a drop-in unit within /etc/systemd/system
+
+Drop-in Units Files
+# Systemd drop-in unit files:
+## Create a directory named in the format of <unit>.d within the /etc/systemd/system directory
+## e.g. Modify the HTTP service: /etc/systemd/system/httpd.service.d/
+# Create a .conf file that contains your change, and place it in this directory
+## e.g. Add a ExecStart= line to your new way of starting httpd into /etc/systemd/system/http.service.d/my-httpd.conf
+# The best way to create drop-in units is to use the systemctl edit command
+## This command will create the necessary directory structure and conf file for you
+## To create full replacement (not just a snippet of a unit file) use:
+systemctl edit --full <unit>
+
+# Run the systemd-delta command to view modified unit files
+
+Reloading systemd Unit Files
+# After any modifications to a unit file (whether using a copied unit file or a drop-in), you must run the following command systemctl daemon-reload
+#  daemon-reload will re-run all of the systemd's dependency generators on all of the unit files on the computer
+
+
+Review
+# Unit files follow the INI file format
+# Located in /usr/lib64/systemd/system, /etc/systemd/syystem, and /run/systemd/system
+# sysetmctl list-unit-files
+# systemctl cat
+# Copy an original unit file or create a drop-in to override part of a unit file
+# systemctl edit (--full to override a complete unit file)
+# systemd-delta
+# systemctl daemon-reload
+
+
+
+##################################################
+Lecture: Target Unit Files
+##################################################
+Purpose of a systemd Target
+# A target is a unit that syncs up other units when the computer boots or changes states
+# Often used to bring the system to a new start
+## I.E., a state with just a command line: multi-user.target
+## i.e., a state with a desktop environment: graphical.target
+# Other units associate themselves with a target for an operational environment
+
+
+Types of Targets
+# multi-user.target - multi-user system, similar to what runlevel 3 provided
+# graphical.target - multi-user system with a desktop environment, similar to what runlevel 5 provided
+# rescue.target - pulls in a basic system and file system mounts and provides a rescue shell
+# basic.target - basic system, used during the boot process before another target takes over
+# sysinit.target - system initialization.  the sysinit.target is what gets started right after systemd takes over for the kernel
+# man 5 systemd.target - defines the target unit configuration
+# man7 sytemd.special - listing of all units and definitions
+
+
+Target Units
+systemctl list-unit-files -t target # Show all unit files for available targets
+systemctl list-units -t target # show all loaded and active unit files
+systemctl get-default # List out the default target
+systemctl set-default # Change the default target to a different target
+
+systemctl cat graphical.target
+
+systemctl isolate <target> # Will change the running target state of the system from the current target to a different target
+systemctl rescue # Almost identical to the System V init single-user mode, allows the root user to repair a system
+systemctl reboot # Will run the reboot.target.  Same thing as just typing 'reboot' at the prompt
+systemctl poweroff # Will perform a complete shutdown of the system by isolating the system to the power off.target.  Same thing as just typing 'poweroff' at the prompt
+
+
+
+##################################################
+Lecture: Service Unit Files
+##################################################
+Service Unit Files
+# Service unit files have the following sections:
+## [Service] - Denotes that this is a service and contains information for the service itself
+### Type= -specifies what type of service this is
+### ExecStart= - commands, along with any arguments, that will start when this service is activated
+## [Install] - Contains information about the service's installation, only read during enable and disable operations
+### WanterBy=  -lists out units that will 'want' this unit.  Creates a symlink (when enabled) of this service to the targets units *.wans directory
+### e.g. when httpd.service is enabled, a symbolic link to this service unit file is created in multi-user.target.wants directory, so that when multi-user.target is activated, then the httpd.service unit is also started
+# man 5 systemd.service
+
+Types of Service
+The Type= section can be any of the following:
+# simple - the process started by ExecStart= is the main process, the default Type= is absent from the unit file
+# forking - the process is started by ExecStart= will be a parent process that will fork into other children processes and will exit when the starting of the child processes are complete:
+## Use the PIDFile= option so that systemd can keep track of what the parent process is
+# oneshot - this process will have to exit before sysetmd will start other follow-up units, the default if both
+## ExecStart= and Type= are not in the service unit file
+# dbus - indicates that the service will have a name for it on the D-Bus bus, the name can be specified by
+## BusName=
+# notify - will send a notify signal to systemd after it has finished starting up, then systemd will start follow up units after this notification has been received
+# idle - delayed startup ( up  to 5 seconds ) until other activations have been completed
+
+
+Service Unit States
+# Active - started, bound, plugged in, the service is running
+# Inactive - stopped, unbound, unplugged, service is not running
+# Failed - process is inactive and has failed, and/or the process has returned with an error code
+
+Service Units
+# systemctl list-units -t service # Lists out all active service units, along with their status of active or inactive
+# sysetmctl enable <daemon.service> # enables a service unit to start at system boot up
+# systemctl disable <daemon.service> # Prevents a service unit from starting at system boot up
+# sysetmctl is-enabled <daemon.service> # Checks to see if a service unit is enabled start at boot up
+# systemctl start <daemon.service> # starts a specified service unit
+# sysetmctl stop <daemon.service> # Stops a specified service unit
+# systemctl restart <daemon.service> # Stops then starts a specified unit file
+# systemctl reload <daemon.service> # Instructs the service to reload its configuration file for the service ( not the service unit file )
+# systemctl status <daemon.service> # Shows the status of a specified service, along with the most recent journal entries
+# systemctl is-active <daemon.service> # Checks to see if the specified service unit is running ( or active )
+# systemctl mask <daemon.service> # Links the service unit file to /dev/null so that it will not start.  Even if systemctl start is run on the service unit, the service unit will not start
+# systemctl unmask <daemon.service> # Removes the symbolic link of the service unit from /dev/null so that the service can be activated again
+
+##################################################
+Lecture: Timer Unit Files
+##################################################
+Timer Units
+# Purpose is that this is a timer controlled by systemd
+# Each .timer unit file will have a matching .service unit file
+## if you have a foo.timer unit file, you must also have a foo.service unit file
+# Two types of times:
+## Montonic - OnBootSec=, OnActiveSec=
+## Realtime - OnCalendar=
+# Why not just use cron/at?
+## Simpler syntax
+# Transient Timers:
+## Setup by systemd-run command, do not require a service file
+
+Timer Unit Files
+# [Timer]
+# Monotonic OnBootSec=, OnUnitActiveSec=
+# Realtime OnCalendar=
+# Unit=  # you might find that the unit time does not have this line, thats because systemd expects the timer and the service to be named the same
+# [Install]
+# WantedBy=timers.target
+# man 5 systemd.timer
+# man 7 systemd.time
+
+Timer Units
+# systemctl list-timers --all  # Lists out all timers on a system
+# systemctl cat <foo.timer> # Use the systemctl cat command to review the contents of a timer unit file
+# systemd-run --on-active= # Can be used to create a transient timer, one that does not require a service file
+
+
+Example Realtime Timer:
+cat web-backup.service
+[Unit]
+Description=Backup the web site, everyday
+
+[Service]
+Type=Simple
+ExecStart=/usr/local/sbin/web-backup.sh
+
+[Install]
+WantedBy=multi-user.target
+
+vim /etc/systemd/system/web-backup.timer
+[Unit]
+Description=Fire off web backup
+
+[Timer]
+OnCalendar=*-*-* 21:06:00
+Persistent=true
+Unit=web-backup.service
+
+[Install]
+WantedBy=multi-user.target
+
+:wq
+
+# Now we need to enable and start the timer
+systemctl enable web-backup.timer
+systemctl start web-backup.timer
+
+# Verify the timer
+systemctl list-timers --all
+
+
+Example Transient Timer:
+systemd-run --on-active=1m /bin/touch /root/hello
+
+
+
+##################################################
+Containers with systemd
+##################################################
+##################################################
+systemd and Containers
+##################################################
+##################################################
+Lecture: systemd and Containers
+##################################################
+Container - systemd Style
+# Not meant to compete with other container technologies, primarily provided for different use cases
+# Sysetmd containers - containers that can have an init system ( systemd ) within them:
+## This provides the ability to run more than one service within a container, instead of spinning up multiple containers
+## The idea is to have a full OS in a container, but it is much faster
+### As their is no need for separate file system, BIOS, device drivers, etc
+## These containers run as a system service:
+### So a container named 'bar' would show up as sysetmd-nspawn@bar.service
+
+nspawn
+# systemd-nspawn - works as a container manager for containers running in systemd
+## It is a minimal container manger, built into systemd
+## Originally developed during the creation of systemd, as the creators of systemd were annoyed with rebooting their systems all the time for testing things out.  The built this as a means to test things in containers to save time, and it gave them better debugging capabilities ( using tools suck as strace, gdb, etc)
+
+How to Build a sytemd Container - Overview
+# Place a OS tree within /var/lib/machines/<container_name>
+## For example, /var/lib/machines/testing
+# Start up with systemd-nspawn -M testing
+# To keep the container around permanently, it can be enabled with: machinectl enable <container_name>
+## machinectl enable testing
+# Containers can be started as a background service with: machinectl start <container_name>
+
+
+Getting OS Tree Images
+# You can use the machinectl command to pull down an image:
+## Image formats can be raw disk images, btrfs subvolumes, and compressed tarballs, or pre-built directory structure that mimicas an OS installation
+## machinectl pull-raw --verify-checksum https://example.com/example-os.raw.gz
+# fedora installations can pull down an image using the dnf command, such as Fedora 27, and install packages into the container:
+## dnf -y --releasever=27 --installroot=/var/lib/machine/f27 install systemd passwd dnf vim-minimal
+# RHEL installations can use the yum command, and install some packages into the container with
+## yum -y --releasever=7Server. --installroot=/var/lib/machiner/rhel7 install systemd passwd yum vim-minimal redhat-release
+# Tools for Debian, Ubuntu, and Arch Linux are available
+
+Managing Containers
+# After a container is installed, enable it:
+## systemctl enable systemd-nspawn@<container-name>
+# Start the container and set the root password:
+## systemd-nspawn -D /var/lib/machines/<container-name>
+## Caveats:
+### On Red Hat based-systems (RHEL, CentOS, Fedora) SELinux will need to be temporarily put into permissive mode, i.e. setenforce 0
+### On Debian systems, dbus will need to be installed
+### /etc/securetty needs to be removed or renamed in the container
+
+Managing Container
+# Containers in systemd are managed with the machinectl command:
+## machinectl list - list out the containers on the system
+## machinectl login <container-name> - login to a running container
+## machinectl status <container-name> - check the syatus of a container
+## machinectl reboot <container-name> - reboot a running container
+## machinectl poweroff <container-name> - power off a running container
+## machinectl start <container-name> -  power on a running container
+## machinectl enable <container-name> - enable a container to start when the host system starts
+## machinectl remove <container-name> - removed a container from the system
+
+
+##################################################
+Lecture: systemd Container Demo
+##################################################
+systemd Container
+
+install your files for the container
+yum -y --releasever=y --installroot=/var/lib/machines/centos7 install sysetmd passwd yum vim-minimal redhat-release
+
+disable SELinux
+setenforce 0
+
+have systemd spawn our container
+systemd-nspawn -D /var/lib/machines/centos7
+
+set a passwd for the root user
+
+rename securetty directory
+mv /etc/securetty /etc/securetty.disable
+
+exit the container
+CTRL + ] + ] + ]   # CTRL plus the closing square bracket 3 times
+
+enable the container
+systemctl enable systemd-nspawn@centos7
+
+start the container
+machinectl start centos7
+
+get the status of container
+machinectl status centos7
+
+list running containers
+machinectl list
+
+login to the container
+machinectl login centos7
+
+if you want to keep the container running first
+logout
+
+exit the container
+CTRL + ] + ] + ]   # CTRL plus the closing square bracket 3 times
+
+if you want just exit and shutdown
+poweroff
+
+
+
+##################################################
+Debian example
+##################################################
+yum -y install debootstrap
+
+debootstrap --arch=amd64 stretch /var/lib/machines/test
+
+setenforce 0
+
+systemd-nspawn -D /var/lib/machines/test
+
+passwd
+
+apt install dbus -y
+
+mv /etc/securetty /etc/securetty.disable
+
+CTRL + ] + ] + ]
+
+systemctl enable systemd-nspawn@test.service
+
+machinectl start test
+
+machine login test
+
+useradd -m -c "Jon Riker" jriker
+useradd -m -c "Dee Troy" dtroy
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+Lecture: Networking in systemd Containers
+##################################################
+Network Interfaces for systemd Containers
+# systemd-nspawn
+## --private-network =local, loopback interface only
+## --network-veth = a shared virtual ethernet interface between the container and the guest
+## --network-bridge =bridge the hosts connection to the container
+### Specify a bridge to attach to (the bridge must already exist on the host)
+### e.g. --network-bridge=container-br attaches the network interface of the container to the container-br bridge on the host
+## --network-interface =gives a network interface to the container
+#### As long as the container is running the host can not use it
+### Once the container has been shut down, the interface returns to th ehost
+### e.g. --network-interface=eno3
+
+Enabling systend-networks
+# Install systemd-networkd (necessary for veth connections)
+## systemctl enable systemd-networkd.service
+## systemctl start systemd-networkd.service
+# Configuration files must be located in /etc/systemd/network:
+## Network connection settings end with a .network extension
+## Network device settings (for bridges, bonds, etc) end with a .netdev extension
+# Man pages pertaining to  systemd-networkd:
+## systemd.link(5)
+## sysetmd.netdev(5)
+## systemd.network(5)
+
+Networking with systemd Container
+Pre-build .network files
+Go to https://github.com/linuxacademy/mastering-systemd and download ve-container.network and ve-host.network
+ve-container.network
+
+[Match]
+Name=deb9
+Virtualization=systemd-nspawn
+
+[Network]
+DHCP=yes
+LinkLocalAddressing=yes
+
+ve-host.network
+
+[Match]
+Name=ve-*
+Driver=veth
+
+[Network]
+Address=0.0.0.0/28
+LinkLocalAddressing=yes
+DHCPServer=yes
+IPMasquerade=yes
+
+systemd-nspawn -b -M debian9
+
+# we have http running in the container
+elinks http://localhost
+
+# shut down the container and start it up normally
+poweroff
+
+machinectl start debian9
+machinectl status debian9
+
+elinks http://localhost  # we can see that we no longer have access to the web page
+
+# lets take a look at the unit file for the container
+systemctl cat systemd-nspawn@debian9.service
+# the --network-veth # is the reason we lost connectivity
+# On the host
+cat /etc/systemd/network/ve.network
+
+[Match]
+Name=ve-*
+Driver=veth
+
+[Network]
+Address=0.0.0.0/28
+LinkLocalAddressing=yes
+DHCPServer=yes
+IPForward=yes
+
+ip addr show
+
+machinectl start debian9
+
+ip addr show
+# We see that we have one named ve-debian9 at 10.0.0.1
+
+# login to the container
+machinectl login debian9
+
+ip addr show
+10.0.0.2
+
+# The configuration file for the container
+cat /etc/systemd/network/ve.network
+[Match]
+Name=deb9
+Virtualization=systemd-nspawn
+
+[Network]
+DHCP=yes
+LinkLocalAddressing=yes
+
+# now logout of the container and verify that we can access the webpage that it is hosting
+logout
+
+elinks http://10.0.0.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################
+
+
+##################################################
+
+##################################################
+
+##################################################
+
+##################################################
+##################################################
+
+##################################################

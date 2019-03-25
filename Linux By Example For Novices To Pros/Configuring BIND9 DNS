@@ -1,0 +1,173 @@
+##################################################
+Linux By Example For Novices To Pros
+##################################################
+##################################################
+Configuring BIND9 DNS
+##################################################
+##################################################
+Setup
+##################################################
+http://www.bind9.org/
+
+The Domain Name System, or DNS, is one of the Internet's fundamental building blocks.
+It is the global, hierarchical, and distributed host information database that's responsible for translating names into addresses and vice versa, routing mail to its proper destination, and many other services.
+
+BIND (Berkeley Internet Name Domain) is an implementation of the DNS protocols and provides an openly redistributable reference implementation of the major components of the Domain Name System, including:
+Domain Name System server
+Domain Name System resolver library
+Tools for managing and verifying the proper operation of the DNS server
+
+#there is a lab at LA
+
+if you are setting this up out side of the lab turn of selinux and any firewalls
+
+bind9
+apache2
+lynx
+
+##################################################
+Server Install and Setup: Part One
+##################################################
+install packages
+apt-get install apache2
+
+cd /var/www
+vim test.html
+<HTML>
+
+<BODY>
+   www.linuxacademy.lab
+</BODY>
+
+</HTML>
+
+
+edit host file
+ipaddress      fqdm   hostname
+
+
+apt-get install bind9 bind9utils -y
+
+/cd /etc/bind
+
+
+vim named.conf.options
+uncomment forwarders
+10.0.0.0;
+8.8.8.8;
+8.8.6.6;
+#on home network 192.168.1.1
+
+:wq
+
+vim named.conf.local
+#this is where you will addd your zone information
+
+zone "linuxacademy.lab" {
+        type master;
+        file "/etc/bind/zones/db.linuxacadamy.lab";
+
+};
+
+
+#now we have to create our revers zone and bind that appropriately this when you ping an ip and get the name back
+
+zone "0.0.10.in-addr.arpa" {
+        type master;
+        file "/etc/bind/zones/db.10"
+};
+
+##################################################
+Server Install and Setup: Part Two
+##################################################
+#create our zone configurations
+cd /etc/bind
+mkdir zones
+cd zones
+cp ../db/local db.linuxacademy.lab
+vim db.linuxacademy.lab
+
+we need to bind it to our local system
+
+change localhost to your server name
+@     in    SOA  servername  emailaddress
+
+every time you add or remove you have to change the serial number
+
+
+;
+
+<add your zone>       IN    NS      <servername>
+<add your zone>       IN    A      <ipaddress>
+<short servername>    IN    A       <ipaddress>
+www                   IN    A       <ipaddress>
+
+:wq
+
+
+#create a revers zone file
+cp ../db.126 db.10
+vim db.10
+change localhost to your server name
+@     in    SOA  servername  emailaddress
+every time you add or remove you have to change the serial number
+make sure it matches you forward zone
+
+
+
+                IN    NS      <servername>
+100             IN    PTR      FQDN
+170             IN    PTR      FQDN
+100             IN    PTR      WWW.BLABLABLA
+
+:wq
+
+
+#verify that your serial numbers match
+
+#verify configs
+named-checkzone <zonename> /etc/bind/zones/db.linuxacademy.lab
+
+named-checkzone <zonename> /etc/bind/zones/db.10
+
+#edit you local resolve file
+vim /etc/resolv.conf
+nameserver        10.0.0.100
+nameserver        10.0.0.2
+search            linuxacademy.lab
+domain            linuxacademy.lab
+
+
+#restart the bind service
+/etc/init.d/bind9 restart
+
+#check your logs
+tail -f /var/log/syslog
+
+#nslookup on your server
+nslookup <servername>
+nslookup <ip address>
+
+
+##################################################
+Client Configuration and Testing
+##################################################
+make sure that you can ping your bind9 server
+
+vim/etc/resolve.conf
+nameserver        10.0.0.100
+nameserver        10.0.0.2
+search            linuxacademy.lab
+domain            linuxacademy.lab
+
+:wq
+
+ping <bindservername>
+
+telent <url>:80
+
+
+apt-get install lynx
+
+lynx www.google.com
+lynx http://youreindex.html  to test

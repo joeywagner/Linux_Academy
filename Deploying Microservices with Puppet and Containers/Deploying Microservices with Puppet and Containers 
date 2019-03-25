@@ -1,0 +1,162 @@
+##################################################
+Deploying Microservices with Puppet and Containers
+##################################################
+##################################################
+Quick Start
+##################################################
+##################################################
+Lecture: Introduction to Linux Academy - Maximize Your Experience
+##################################################
+
+
+##################################################
+Lecture: Puppet Master/Agent vs. Puppet Standalone
+##################################################
+puppet master/agent architecture
+-managing infrastructure
+-puppet master - compiles catalog
+-puppet agent - applies catalog
+-configuration management/configuration drift
+-centralized reporting and inventory
+-benefits
+    reporting aggregation
+    redundancy and scalability
+
+
+Puppet stand-alone architecture
+no puppet master and accompanying components required         puppet apply -e <"include <class>"
+simple "puppet apply" execution                               puppet apply <file>.pp
+local catalog compilation and application                     puppet apply --hiera-config /etc/puppet/hiera.yaml
+lower setup overhead
+  ephemeral environments
+
+Puppet apply with docker                                        puppet apply --modualpath /etc/puppet/modules --hiera-config /etc/puppet/hiera.yaml
+puppet apply is invoked from the dockerfile
+docker container is ephemeral
+common infrastructural components can still be leveraged
+r10k is used to install the puppet module set required for the configuration of the docker container
+hiera contains all of the static configuration for the container
+
+##################################################
+Lecture: Setting Up the Environment
+##################################################
+https://github.com/linuxacademy/content-docker-hello-world
+
+
+
+##################################################
+Lecture: Demonstration - Download the Configuration and Build the Image
+##################################################
+git clone https://github.com/linuxacademy/content-docker-hello-world
+
+cd content-docker-hello-world
+
+docker build --no-cache -t demo/helloworld --build-arg NODE_ENV=production -f Dockerfile .
+
+docker images
+
+
+##################################################
+Lecture: Instantiate the Container - Testing Our Deployment
+##################################################
+#verify that the docker daemon is running
+systemctl status docker
+
+docker images
+
+netstat --tulpn | grep 3000 #to verify that the port is available on the host
+
+docker run --name helloworld-demo -p 3000:3000 -dit demo/helloworld /var/node/helloworld/bin/www
+
+netstat -tulpn | grep 3000
+
+docker ps #view the container running
+
+curl http://localhost:3000
+
+##################################################
+Lecture: Next Steps - Where Do I Go From Here?
+##################################################
+1) You're using Puppet Standalone with two manifest files? In which of the following cases will accidental changes be automatically reverted?
+Incorrect
+
+Correct answer
+Only when the appropriate manifest is applied.
+
+Explanation
+Changes will only be reverted when they conflict with the manifest file being compiled into the catalogue and applied.
+
+2) Modules stored in Git have to be compiled into the manifest before they are used.
+Correct
+
+Correct answer
+True
+
+Explanation
+Modules do have to be parsed and compiled into the catalogue before the catalogue can be applied.
+
+3) Why use R10K to pull info from Git?
+Incorrect
+
+Correct answer
+R10K is one deployment strategy for your Puppet Modules.
+
+4) Pick the best use for Puppet Standalone as opposed to Puppet Master/agent:
+Incorrect
+
+Correct answer
+Puppet Standalone is best suited for the configuration of ephemeral (cloud and/or containers); this because replacement (as opposed to troubleshooting and repair) is the quickest path to trouble resolution.
+
+Explanation
+It is often quicker and easier to replace a problematic instance or container by deleting it and spinning up a new one to replace it.
+
+5) Puppet Standalone is meant only for very small-scale deployments.
+Incorrect
+
+Correct answer
+False
+
+Explanation
+Puppet Standalone is best suited for short deployment pipelines, but may be used for large and small deployments with equal efficiency.
+
+6) In large environments, Puppet Master/agent setups will consume more resources, which may result in a bottleneck of other type of constraint.
+Incorrect
+
+Correct answer
+True
+
+Explanation
+The compilation masters, CA servers, and Puppet DB instances are bottlenecks and potential points of failure.
+
+7) In standalone mode, the Puppet agent runs every 30 minutes by default.
+Correct
+
+Correct answer
+False
+
+Explanation
+In Standalone mode, Puppet must be executed manually by using the "puppet apply" command.
+
+8) Which of the following are advantages of using Puppet Standalone?
+Correct
+
+Correct answer
+Typically simpler architecture overall, Lower administrative overhead
+
+Explanation
+Puppet allows for simpler organization-wide architecture, as there are no central servers to maintain. As well, this means standalone mode may provide for lower administrative overhead costs on an on-going basis.
+
+9) Which of these commands will properly execute a Puppet run in standalone mode?
+Correct
+
+Correct answer
+puppet apply site.pp
+
+10) In the context of this course's scenario, Standalone Mode is more appropriate because it is better suited for cloud (ephemeral) systems.
+Incorrect
+
+Correct answer
+True
+
+Explanation
+There is no reason to troubleshoot when you can simply replace a failing or problematic instance with little or no disruption to service.

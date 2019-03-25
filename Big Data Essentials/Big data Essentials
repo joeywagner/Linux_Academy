@@ -1,0 +1,551 @@
+################################################
+Big Data Essentials
+################################################
+################################################
+About this course
+################################################
+################################################
+Introduction to Big Data
+################################################
+################################################
+Lecture: What is Big Data?
+################################################
+What is big data?
+4 V's of big data
+-Volume: Extremely large volumes of data
+-Variety: Various forms of data, structures, semi-structured and unstructured
+-Velocity: Real time, batch, streams of data
+-Veracity or variability: inconsistent, sometimes inaccurate, varying data
+
+
+Why is big data important
+-big data gives value only when it is analyzed to gain insights
+-big data helps businesses in smart decision causing cost reduction and time reduction
+-big data is used in healthcare to fight diseases ad improve preventative care
+-innovations like self driving cars are possible due to big data
+-sports teams use big data to improve performance and prevent injuries
+-big data is changing the world
+
+Evolution of big  data
+-Big data is a result of technology advances and innovations made in the past several decades
+-Before computers were invented data was being generated and collected. but the challenge was in storing and analyzing data
+-inventions in digital storage, internet, computing models like virtualization and cloud computing have transformed the data landscape
+-reduction in costs of storage and computing power have led to the beginning of the big data era
+
+Evolution of big data timeline
+-1960s:  when computers were adopted by commercial industries, data was stored in flat files with no data structure imposed
+-1970s:  Relational data model was invented triggering the popularity of RDBMS databases and the structure query language SQL
+-1990s:  Data warehouses we commercilaized to gain insight from data using only a subset of huge volumes of transactional data
+-2000s:  Explosion of internet brought the need to store unstructured data from web including audio, video, images and metadata
+
+Evolution of big data: new technologies
+-NOSQL  databases: Not only SQL databases, enables high performance processing of large scale data
+-Hadoop: a software ecosystem that enables massively parallel computations distributed across thousands of commodity servers in a cluster
+-Cloud computing: allows massive scale complex computations without the need to maintain expensive hardware and software
+
+Sources of Big Data
+-social media:  messages and information shared between virtual communities via blogs, forums, tweets, facebook posts, linkedin posts etc
+-Machine-generated data: data generated without human interventions by hardware software, medical devices
+-Business transactions: data describing business events and relationships between different entities and businesses
+-IOT: Devices connected to the internet that communicate with each other and produce huge amounts of data and information
+-Sensors: measuring devices that capture physical quantities and change them into signals
+
+Formate of big data
+-Structured: Data has a defined length and format. examples are numbers, words, dates. easy to store and analyze, often managed using sql
+-Semi-Structured: Between structured and unstructured, does not conform to a specific formate but is self-describing simple key-value pairs.  examples are EDI, Sift and xml, electronic document interchange, society of world wide international financial transactions
+-Unstructured data that does not follow a specific formate. examples are audio, images, text messages, xray images
+
+Big Data analytics
+-Basic analyitics: reporting dashboards, simple visualizations, slicing and dicing
+-Advanced analytics: Complexs analytics using machine learning, statistics, text analytics, neural networks, data mining
+-Operationalized analytics:  Embeded big data analytics in a business process to streamline and increase efficiency
+-Analytics for business decisions:  Implemented for better decision-making that drives the revenue
+
+
+################################################
+Lecture: What is IOT?
+################################################
+What is IOT?
+-Internet of things
+-physical objects that are connected to the internet
+-Identified by an ip address
+-Communicate with each other and other internet-enabled devices and systems
+-Not just laptops, desktops, smartphones, tablets
+-Includes everyday devices that utilize embedded technology to communicate with external environment by connecting to the internet
+
+
+################################################
+Lecture: Big Data explained with Use Cases
+################################################
+Big data in banking
+-Fraud detection: using machine techniques like anomaly detection, recognize fraud real time to prevent and minimize losses
+-minimize risk and compliance issues using big data can enhance model quality and analysis of risk management/  big data provides auditors new and innivative sources to broaden and deepen the search for risk and compliance issues
+-Customer management:  using customer 360 degree view for driving sales, boosting retention, improving service and identifying needs so the right offers can be wervide up at the right time
+
+Big data in Retail
+-Customer relationship management: Getting 360 degree view of the customer that takes into account all available and meaning full information about the customer to drive better engagement, more revenue and long term loyalty
+-intelligent marketing: Recommendation engines, online targeted advertising are achieved be analyzing big data on a users online activity and purchase history
+-forecasting demand: crunching demographic data and economic indicators of geographical sales territories, spending habits can be better understood to forecast demand
+-optimizing pricing:  based on inventory market demand and competitor activity big data analytics empower responding to market changes in real time
+
+Big data in healthcare
+
+big data in education
+
+Big data to protect our planet
+
+ups big data with iot
+
+
+
+################################################
+Lecture: Big Data Trends
+################################################
+
+
+
+
+
+################################################
+Big Data Architectures and Models
+################################################
+################################################
+Lecture: Big Data Architectures
+################################################
+Cycle of big data management
+-capture data: depending on the problem to be solved, decide on the data sources and the data to be collected
+-Organize: Cleanse, organize and validate data. If data contains sensitive information, implement sufficient levels of security and governance
+-Integrate:  integrate with business rules and other relevant systems like data warehouses, CRMs etc.
+-Analyze:  Real time analysis, batch type analysis, reports, visualizations, advanced analytics
+-Act: use analysis to solve the business problems
+
+Components of a bigdata infrastructure
+-Redundant Physical Infrastructure: hardware, storage, services, networks, etc
+-Security infrastructure: Maintaining security and governance on data is extremely critial tp protect from misuse of big data
+-Data Stores:  to capture structured semi-structured, unstructured data stores that need to be fast, scalable and durable.
+-Organize and integrate data:  stage, clean, organize, normalize, transform and integrate data
+-Analytics: Traditional including Business intelligence and advanced analytics
+
+Physical infrastructure
+-physical infrastructure can make or break your big data implementation.
+Has to support high-volume, high velocity, high variety of big data and be highly available, resilient and reduntant
+-requirements to factor while designing the infrastructure include performance, availability, scalability, flexibility and costs
+-networks must be redundant and resilient and have sufficient capacity to accommodate the anticipated volume and velocity of data in addition to normal business data.  infrastructure should be elastic
+-hardware:  storage and servers must have sufficient computing power and memory to support analytics requirements
+-infrastructure operations: Managing and maintaining data centers to avoid catastrophic failures and thus preserve integrity of data and continuity of business processes
+-cloud based infrastructures allow outsourcing of building big data infrastructure and managing  the infrastructure.
+
+Security infrastructure
+-data access:  same as non-big data implementations.  data access is granted to users who have legitimate business reason to access data only
+-application access:  accessing data from applications is defined by restrictions imposed by api
+-data encryption: encrypting and decrypting data for high velocity and high variety can be expensive.  an alternative is to encrypt only certain elements of the data that are sensitive and critical.
+-Threat detection: with exposure to social media and mobile media data comes increased exposure to threats.  multiple layers of defense for the network security are required to protect from security threats
+
+Data stores capture data
+-data stores are at the core of the big data infrastructure and need to be fast, scalable and highly available
+-a number of different data stores are available and each is suitable for a set of differernt requirements
+-data stores can be
+--distributed file systems ex(HDFS)
+--NoSQL databases ex(cassandra, mongodb)
+--traditional RDBMS ex(MySQL, oracle)
+-Real time streaming data can be ingested using apache kafka, apache storm, apache spark streaming ect.
+
+Distributed file system
+a shared file system mounted on several nodes of a cluster that has the following characteristics
+-access transparency:  all clients have the same view of files
+-failure transparency:  Clients should have a correct view after server failure
+-scalability transparency:  should work for a small loads and scale for bigger loads on addition of nodes
+-Replication transparency:  to support fault tolerance and high availability, replication across multiple servers must be transparent to the client
+
+Relational database management systems
+relational databases are easy to store and query data and follow the acid principle
+-Atomicity:  a transaction is all or nothing.  if any part of the transaction fails, the entire transaction fails
+-Consistency:  Any transaction will bring a database from one valid state to another.
+-Isolation:  Ensures that the current transactions executed result in a state of the entire system similar to if transactions were executed serially
+-Durability:  ensures that once a transaction is committed, it remains so, irrespective of a database crash, power or other errors
+
+NoSQL databases:
+not only sql implies that there is more than one mechanism of storing data depending on the needs.
+mostly open source and built to handle the requirements for fast, scalable processing of unstructured data.  types of nosql databases are:
+-document-orientated data stores are mainly designed to retrieve collections of documents and support complex data forms in serveral standard formats such as json, xml, and binary forms ex(pdf and ms word) ex mongodb, couchdb
+-a column-oriented database stores it content in columns aside from rows with attribute values belonging to the same column stored contiguously.   ex cassandra, hbase
+-a graph database, such as neo4j, is designed and represented data that utilize a graph model with nodes, edges, and properties related to one another through relations
+-key-value stores data blogs referenced  by a key.  simplest form of nosql and high performing.  ex memcached, couchbase
+
+Organizing and integrate data
+organizing data includes:
+1.) cleaning data:  process of identifying missing or incomplete data
+2.)  transformation:  process of transforming data to a suitable form for analytics
+3.)  normalization:  modifying structure of database schema to minimize redundancy
+
+2 major categories of big data integration
+1.) integration of multiple data sources in the big data environment
+2.)  integration of unstructured  big data sources with structured big data
+
+ETL stands for Extract Transform Load
+1.)  Extract:  Read data from the data source
+2.) Transform:  Convert the format of the extracted data so that it conforms to the requirements of the target database
+3.)  load:  write data to the target database
+
+Apache hadoops's mapreduce and apache spark
+1.)  apache hadoops mapreduce is a popular choice for batch processing large volumes of data in a scalable and resilient style
+2.)  apache spark is more suitable for applying complex analytics using machine learning models in an interactive approach
+
+Data Warehouse
+A data warehouse is a relational database that is designed for query and analysis rather than for transaction processing.
+it usually contains historical data derived from transaction data, but it can include data from other sources.
+it separates analysis workload from transaction workload and enables an organization to consolidate data from several sources .
+
+Properties of data warehouse:
+1.)  organized by subject area, it contains an abstracted view of the business
+2.)  highly transformed and structured
+3.)  data loaded in the data warehouse is based on a strictly defined use case
+
+Data lake
+a data lake is a storage repository that holds a vast amount of raw data in its native formate, including structured, semi-structured and unstructured data.
+The data structure and requirements are not defined until the data is needed
+
+Data lakes can be built on hadoops HDFS on in the cloud using amazons S3, Azure
+
+Differences between a data lake and data warehouse
+Data lake:
+1.) retains all data.
+2.) data types consist of data sources such as web server logs, sensor data, social network activity, text and images.
+3.) processing of data follows "schema on read"
+4.) extremely agile and can adapt to changes in business requirements quickly.
+5.)  harder to secure a data lake, but a top priority for data lake providers
+6.)  hardware to support a data lake consists of commodity servers connected in a cluster
+7.)  uses for advanced analytics, typically by data scientists
+
+Data warehouse:
+1.)  only data that is required for the business use case and data that is highly modeled and structured
+2.) Consists of data extracted from transactional systems and consists of quantitative metrics and attributes.
+3.)  processing of data follows "schema-on-write"
+4.)  Due to structured modeling, time consuming to modify business processes
+5.) an older technology and mature security
+6.) hardware consists of enterprise grade servers are vender provided data warehousing software
+7.)  used for operational analysis to report on KPIs and slices of data
+
+Analyzing big data
+Examples of analytics:
+1.)  predictive analyitcs:  using statistical models and machine learning algorithms to predict the outcome of a task.
+2.) advanced analytics:  applying deep learning for applications like speech recognition, face recognition, genomics.
+3.)  Social media analytics:  analyze social media to determine markets trends, forecasts demands etc.
+4.)  text analytics:  derive insights from text using natural language processing
+5.)  alerts and recommendations:  fraud detection and recommendation engines embedded within ecommmerce applications.
+6)  reports, dashboards and visualizations:  descriptive analytics providing answers on what, when, where type questions.
+
+################################################
+Lecture: Big Data in the Cloud
+################################################
+What is cloud computing?
+-the practice of using a network of remote servers hosted on the internet rather than a local server or a personal computer
+-cloud is used to store manage and process data
+-cloud is used to access software applications and programs
+-a powerful architecture to perform range of IT functions like networks, servers, storage, databases, computation and application services
+-delivery of hosted services over the internet, where companies can just consume IT resources as a utility rather than building and managing their own infrastructure
+
+Benefits of cloud computing
+-self service provisioning:  users can spin up resources on demand for any type of service without having to wait for IT department
+-elasticity:  users can scale up their cloud resources as on demand and scape down when their demand decreases
+-pay as per usage:  users have to pay for only for the resources that they use
+-convenient access:  users can access via standard channels like a desktop, laptop, or mobile devices
+-resource pooling:  resources are pooled across multiple customers
+
+Categories of cloud service
+1.) IaaS:
+-infrastructure as a service
+-hardware and software that allows building software resources.  includes servers, storage, networks and operating systems
+
+2.) PaaS:
+-Platform as a service
+-Set of tools and services for creating and deploying software applications
+-integration with web services, databases, project, planning and communication tools.
+-Built in scalability of deployment software including failover and load balancing
+
+3.) SaaS:
+-Software as a service
+-Application hosted on the cloud, managed from a central location, and ready to be used.
+-Deployed on a one-many model, users do not have to maintain and upgrade patches
+-earliest example is Salesforce's customer relationship management tool.
+
+Types of cloud computing
+1.) Private
+-On-premise cloud services typically offered by a business's data center allowing exclusive access to the business's internal users
+-Easier to enforce access control and security
+-Offers versatility and convenience to the business
+
+2.) Public
+-a third-party provider delivers cloud services over the internet
+-cloud services are paid for as per demand measured in minutes or hours.
+-users only pay for CPU cycles, storage or bandwidth that they consume
+-leading providers include amazons aws, azure, softlayer, google compute engine
+
+3.) hybrid
+-Combination of pubic cloud services and on premise private cloud
+-private cloud is reserved for mission critical or sensitive workloads
+-public cloud is used for lesser sensative data an workloads that must scale on demand
+
+Big data analysis and cloud computing
+
+
+################################################
+Big Data Tools and Technologies
+################################################
+################################################
+Lecture: Overview of Apache Hadoop
+################################################
+what is hadoop?
+-apache hadoop is an open source software framework for distributed storage and the distributed processing of very large sets on computer clusters built from commodity hardware
+-originally built by yahoo engineer doug cutting in 2005 and named after his sons toy elephant
+-inspired by googles mapreduce and google file system papers
+-written in java to implement the mapreduce programming model for scalable, reliable and distributed computing
+
+hadoop framework
+the apache hadoop framework is composed of the following modules:
+1.) hadoop common:  contains libraries and utilities needed by other hadoop modules
+2.)  hadoop distributed file system (HDFS):  a distributed file system that stores data on the commodity machines providing very high aggregate bandwidth across cluster.
+3.)   hadoop mapreduce:  a programming model for large-scale ata processing
+4.)  hadoop yarn: a resource management platform responsible for managing resources in clusters and using them for the scheduling of users applications.
+
+
+################################################
+Lecture: HDFS
+################################################
+Hadoop distributed file sysetm (HDFS)
+1.) structured like a regular unix like file system with data storage distributed across several machines in a cluster.
+2.)  a data service that sits atop regular file systems allowing a fault tolerant, resilient, clustered approach to storing and processing data
+3.)  fault tolerant:  detection of faults and quick automatic recovery is a core architectural goal
+4.)  tuned to support large files:  typical file is a GB or more in size and can support tens of millions of files by scaling to hundreds of nodes in a cluster.
+5.)  follows the write once, read multiple times approach simplifying data coherency issues and enabling high throughput data access.  example is a web crawler application
+6.)  optimized for throughput rather than latency, hence suited for long running batch operations on large scale data rather than interactive on streaming data
+7.) moving computation near the data reduces network congestion and increases throughput.  HDFS provides interfaces or applications to move closer to where the data is stored
+
+HDFS architecture
+1.) master slave architecture, where namenode is the master and the datanodes are the slaves
+2.)  files are split into blocks, and blocks are stored on datanodes, which are generally one per node in the luster
+3.)   datanodes manage storage attached to the nodes that they run on.
+4.)  namenode controls all metadata including what blocks make up and which datanode the blocks are stored on
+5.)  namenode executes file sysetm operations like opening closing and renaming files and directories
+6.)  datanodes serve read write requests from clients
+7.)  datanodes also perform block creation, deletion, replication upon instruction from the namenode
+8.)  namenode and datanode are java software designed to run on commodity hardware that supports java
+9.)  usually a cluster contains a single namenode and multiple datanodes, one for each node in the cluster
+
+file system and replication in hdfs
+- supports traditional hierachical file system.  user or application can create directories and store files inside of directories.  can move, rename, and delete files and directories
+-  stores each file as a sequence of blocks, where blocks are replocated for fault tolerance.  block size and replication factors are configurable per file.
+-  namenode makes all decsions regarding replication of blocks periodically receives heartbeat and blockreport from each of the datanodes in the cluster.  receipt of a heartbeat implies that the datanode is functioning properly.
+
+################################################
+Lecture: MapReduce
+################################################
+What is mapReduce?
+Software framework:
+-for easily writing applications that process vast amounts of data
+-enables parallel processing on large clusters of thousands of nodes
+-Runs on clusters made of commodity hardware
+-is reliable and fault tolerant
+
+Hadoop MapReduce layer consists of two components:
+-API for writing workflows in java
+-A set of services for managing these workflows, providing scheduling, distribution and parallelizing
+
+Hadoop MapReduce Job
+A mapreduce job:
+1.)  Splits the data sets inio independent chunks
+2.)  Data sets are processed by map tasks in a parallel manner
+3.)  MapReduce framework sorts the output of map jobs and feeds them to the reduce tasks
+4.)  Both input and output of map and reduce tasks are stored on the file system
+5.)  Framework takes care of scheduling tasks, monitoring them and re-executing failed tasks
+6.)  MapReduce framework and HDFS are running on the same set of nodes. tasks are scheduled on nodes where data is already present, hence yielding high bandwidth across the cluster
+
+Inputs and outputs in a Hadoop Mapreduce Job
+-Mapreduce operates on <key, value> pairs
+-Input is a large scale data set which benefits from parallel processing and does not fit on a single machine
+-input is split into multiple independent data sets and the map function produces a <key, value> pair for each record in the data set.
+-the output of mappers is shuffled, sorted, grouped and passed to the reducers
+-the reducer function is applied to sets of <key,value> pairs that share the same key.  the reducer function often aggregates the value for the pairs with the same key
+
+Note that:
+1.)  almost all data can be mapped to a <key,value> pair by using a map function
+2.)  keys and values can be of any type:  String, numeric or a custom type.  Since they have to be serializable, custom type must implement interface
+3.)  MapReduce cannot be used if a computation of a value depends on a previously computed value.  Recursive functions like fibonacci cannot be implemented using mapreduce
+
+Applications of mapreduce
+1.)  Counting votes across the nation by processing data from each polling booth
+2.)  Aggregating electricity consumption from data points collected across a larghe geographical area.
+3.)  Word count applications used for document classification, page rank in web searches, sentiment analysis, ect
+4.)  used by google maps to calculate nearest neighbor; for example a gas station
+5.)  Performing statistical aggregate type functions on large data sets
+6.)  Distributed grep:  Grepping files across a large cluster
+7.)  Counting number of href links in web log files for clickstream analysis
+
+Writing and running mapreduce jobs
+1.)  mapreduce jobs are typically written in java but can also be written using:
+-hadoop streaming: a utility which allows users to create and run mapreduce jobs with any executable (e.g. unix sell utilites) as the mapper and/or the reducer
+-Hadoop pipes:  ASWIG-compatable C++ API to implament mapreduce applications
+2.)  A hadoop job configuration consists of :
+-input and output locations on hdfs
+-map and reduce functions via implamentations of interfaces or abstract classes
+-other job parameters
+3.)  A hadoop job client then submits the (jar/executable)  and configuration to the resource manager in YARN which distributs them to the workers and performs functions like scheduling, monitoring and providing status and diagnostic information.
+
+
+################################################
+Lecture: YARN
+################################################
+YARN (Yet Another Resource Negotiator)
+1.)  Introduces in Hadoop 2.0, YARN provides a more general processing platform that is not constrained to mapreduce
+2.)  Global resource manager:  Ultimate authority that arbitrates resources among all other applications in the system.
+3.)  Per-machine NodeManager:  Responsible for containers, monitoring their resource usage and reporting the same to the resource manager
+Note:  a container is an abstract notion in TARN platform.  It represents a collection of physical resources.  Also could mean CPU, disk and ram.
+4.)  The resource manager has 2 components Scheduler and ApplicationManager
+5.)  The scheduler is responsible for allocating resources to the various running applications
+6.)  The applicationManager is responsible for accepting job-submissions, negotiating the first container for executing the application-specific application manager and provides the service for restarting the application manager container on failure.
+7.)  The per-application applicationmaster has the responsibility of negotiating appropriate resources containers from the scheduler, tracking their status and monitoring for progress
+
+Summary:
+-Apache Hadoop is a opensource software framework for distributed storage and distributed processing of very large data sets on computer clusters built from commodity hardware
+-hadoop consistes of hadoop common hdfs, mapresuce and yarn
+-hdfs is hadoops distributed file system, follows write once read multiple times policy and designed for throughput rather than latency
+-hadoop mapreduce is a programming model to process large scale data sets on clusters of commodity hardware.
+-Yarn is hadoops resourcemanager that is responsible for resource allocation, scheduling, distributing and parallelizing tasks.
+
+
+################################################
+Lecture: Overview of the Hadoop ecosystem
+################################################
+Hadoop ecosystem
+-Apache hadoop is an open source framework for storing and processing large scale data, distributed across clusters of nodes
+-To make hadoop enterprise ready, numerous apache software foundation projects are available to integrate and deploy with hadoop.  Each project has its own comunity of developers release cycles
+-The hadoop ecosystem includes both open source apache software projects and a wide range of commercial tools and solutions that intgreate with hadoop to extend its capabilities
+-Commercial hadoop offerings include distributions from venders like hortonworks, cloudera and mapr plus a variety of tools for specific hadoop
+
+5 functions of hadoop ecosystem
+1.)  Data management using HDFS, HBase and yarn
+2.)  Data access with MapReduce, hive and pig
+3.)  Data ingestion and integration using Flume, Sqoop, Kafka, storm
+4.)  Data monitoring using Ambari, Zookeeper and Oozi
+5.)  Data governance and security using Falcon, Ranger and KNox
+
+Data management in Hadoop ecosystem
+Goal: to store and process vast quantities of data in a store layer that scales linearly.
+
+Hadoop Distributed file system (HDFS):
+-java based file system
+-provides scalability and reliable data storage
+-Spand large clusters of commodity servers
+
+Apache Hadoop YARN
+-Part of the core hadoop project
+-pre-requisite for enterprise hadoop
+-Extends mapreduce capabilities by supporting non-mapreduce workloads associated with other programming models
+-Provides resource management
+-provides pluggable architecture for enabling wide variety of data access methods to operate on data stored in hadoop
+
+
+################################################
+Lecture: Hive, Pig and MapReduce
+################################################
+Data access in hadoop ecosystem
+Goal:  To interact with data in a wide variety of ways.  Allows implementing complex business logic plus easy to use APIs supporting both structured and unstructured data
+MapReduce:  Framework for writing applications that process large amounts of structured and unstructured data in parallel across a cluster of thousands of machines of machines in a reliable and fault-tolerant manner
+Apache Hive:  Have is a data warehouse that enables easy data summarization and ad-hoc queries via an SQL-like interface for large datasets stored in HDFS
+Apache Pig:  Provides scripting capabilities.  offers an alternative to MapReduce programming in java.  Pig scripts are automatically converted to mapreduce programs by the pig engine.
+
+Apache Hive
+-Hive evolved as a data warehousing solution built on top of a hadoop map-reduce framework
+-enable data warehouse tasks like ETL, data summariozation, query and analysis.
+-can access files stored in HDFS or other mechanisms like HBase
+-Hive Provides SQL-like declareative language called HiveQL, to run distributed queries on large volumes of data.
+-In Hive, tables and databases are created first and then data is loaded into these tables for managing and querying structured data.
+-Hive comes with a command-line shell interface which can be used to create tables and execute
+
+-Hive engine compiles HiveQl quires into Map-reduce jobs to be executed on hadoop.  In addition, custom mapreduce scripts can also be plugged into queries
+
+Componants of hive include Hcatalog and webHcat
+-Hcatalog:  is a compnent of Hive.  It is a table and storage management layer for hadoop that enables users with different data processing tools, including pig and mapreduce, to more easily read and write data on the grid.
+-WebHCat:  Provides a service that you can use to run hadoop mapreduce or yarn, pig, hive jobs or perform hive metadata operations using an HTTP (REST style) interface
+
+Apache Pig
+-High level programming language useful for analyzing large data sets.  Enables data analysts to write data analysis programs without the complexities of MapReduce
+-Developed at yahoo and open sourced to Apache
+-pig runs on apache hadoop YARN and makes use of mapreduce and HDFS
+-Pig consists of 2 components
+1.)  Pig latin: language to write scripts
+2.)  Runtime environment:  includes parser, optimizer, compiler and execution engine.  Converts pig scripts into a series of mapreduce jobs and executes them on the hadoop mapreduce engine.
+- Hive + pig:  while hive is for querying data pig is for preparing data to make it suitable for querying
+
+
+################################################
+Lecture: Sqoop, Flume, Kafka and Storm
+################################################
+Data ingestion and integration in hadoop ecosystem
+Goal:  to quickly and easily load and process data from a variety of sources
+Apache Flume:  Flume allows you to efficiently move large amounts of logdata from many different sources to Hadoop
+Apache Sqoop:  Sqoop is an effective tool for transferring data from RBDMS and NoSQL data stores into hadoop
+Apache Kafka: Publish-suscribe messaging system for real time even processing that offers strong durability scalability and fault tolerance
+Apache Storm:  Real time message computation system for processing fast, large streams of data not a queue.
+
+Issues with loading data in hadoop:
+1.) large scale data from heterogeneous sources is challenging
+2.)  Ensuring consistency of data and maintaining efficient utilization of resources is needed
+3.) Traditional approaches of loading data using scripts is time consuming
+
+Apache Sqoop (SQL to Hadoop)
+-Designed to support bulk import of data into HDFS from Structured data stores suck as relational databases
+-Also used to export from hadoop file system to relational dateabases
+-Sqoop import:  The import tool imports individual tables from RDBMS to HDFS.  each row in a table is trated as a recored in HDFS.  All records are stored as text data in text files or as binary data in Avro and sequence files.
+-Sqoop Export:  The export tool exports a set of files fro, HDFS back to RDBMS.  The files given as input to Sqoop contain records, which are called as rows in table.  Those are read and parsed into a set of records and delimited with user-specified delimiter
+
+
+
+
+
+################################################
+Lecture: Ambari, Oozie and Zookeeper
+################################################
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Overview of NoSQL databases
+################################################
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+
+################################################
+
+
+
+
+
+
+
+
+
+
+
+################################################
+
+################################################

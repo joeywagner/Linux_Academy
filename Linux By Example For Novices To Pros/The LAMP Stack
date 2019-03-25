@@ -1,0 +1,45 @@
+##################################################
+The LAMP Stack
+##################################################
+##################################################
+The LAMP Stack with PHPMyAdmin
+##################################################
+Linux
+Apache2
+MySQL or MariaDB
+PHP or Pearl
+
+sudo apt-get install lamp-server^ -y
+
+##################################################
+The ^ symbol is used to replace tasksel (a tool that was/is used to install common sets of packages).
+
+By doing
+
+apt-get install lamp-server^
+
+You are actually running installing a set of packages that would have been installed via the command:
+
+tasksel lamp-server
+
+
+
+
+##################################################
+
+#gorilla pass or key pass will generate random passwords for you
+
+
+#we can verify that the packages installed and are running
+ps -aux | grep mysql
+pa -aux | grep apache2
+
+telnet localhost 80
+helo
+
+
+#install mysql admin
+sudo apt-get install phpmyadmin -y
+
+mysql -u root -p123456
+show databases;

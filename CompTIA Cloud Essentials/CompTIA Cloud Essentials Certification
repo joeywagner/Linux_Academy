@@ -1,0 +1,646 @@
+##################################################
+CompTIA Cloud Essentials Certification
+##################################################
+##################################################
+Characteristics of Cloud Services from a Business Perspective
+##################################################
+##################################################
+Common Terms and Definitions of Cloud Computing
+##################################################
+cloud computing
+internet based computing that provides the shared processing of resources and data to computers and other devices on demand
+
+a business owner could refer to cloud computing as a software hosted elsewhere and not in the company's data center
+
+cloud computing that can be consumed:
+email accounts
+data storage
+servers(virtual servers)
+websites
+
+
+cloud computing characteristics:
+flexible resource assignment
+managed by the provider
+managed through self-service on demand
+network accessible
+sustainable
+
+cloud computing characteristics:
+as stated by the national institute of standards and technology
+rapid elasticity
+monitored and measured service usage
+broad network access
+on demand self-service
+resource pooling
+
+
+##################################################
+The Relationship Between Cloud Computing and Virtualization
+##################################################
+virtualization
+software that separates physical infrastructures to create various dedicated resources
+
+multi-tenancy
+allowing system resources to be fully utilized before another server is brought online reducing the operating costs and data center cooling that is required along with it
+
+
+from virtualization to the cloud
+traditional data center -> server virtualization -> distributed virtualization -> private cloud -> hybrid clouds -> public clouds
+
+
+##################################################
+Early Examples of Cloud Computing
+##################################################
+origin of the word cloud
+early diagrams used a cloud symbol to reference different off site equipment
+
+1990s
+telecommunication companies who previously offered primarily dedicated point-to-point data circuits, began the use of the cloud symbol to denote the demarcation point between what the provider was responsible for and what the users were responsible for
+
+2000s
+2006 - amazon introduces EC2
+2008 Microsoft announces Azure
+2010 - rackspace and NASA jointly launch the opensource initiative known as OpenStack
+2013 - Google compute engine
+
+
+##################################################
+Common Definitions of Cloud Computing and Commonalities/Differences
+##################################################
+Cloud terms
+elastic (elasticity)
+can the infrastructure grow and shrink with load
+
+scalable (scalability)
+
+agility
+can it react quickly to scaling up
+
+tenant and multitenant
+
+capacity
+
+##################################################
+Organizations That Might Benefit from Cloud Computing
+##################################################
+Indications you are ready for cloud
+cloud computing can solve issues when it comes to:
+running out of capacity
+costly excess capacity
+tied-up capital
+
+
+##################################################
+Organizations That Might Not Benefit from Cloud Computing
+##################################################
+indications you are not ready for the cloud
+legal and security (compliance) reasons can require an organization to know more details about the location of its data and servers than a cloud provider is able to provide
+organizations that own large data centers often have enough scale to be flexible and efficient as cloud computing providers
+predictable and fixed workloads can typically make optimal use of their hardware and do not need scaling
+organizations with systems that require a high level of operational assurance like military, safety, and emergency response
+
+
+##################################################
+Differences Between Types of Clouds, Including XaaS, IaaS and PaaS
+##################################################
+Cloud categories
+Software as a service(SaaS)
+
+Platform as a service(Paas)
+
+Infrastructure as a service (Iaas)
+
+Anything as a service (Xaas)
+
+
+##################################################
+Cloud Computing and Business Value
+##################################################
+##################################################
+Similarities and Differences Between Cloud Computing and Outsourcing
+##################################################
+Outsourcing
+outsourcing is not specific to the computing itself in the cloud
+outsourcing can be contract-based
+outsourcing is almost always done in the cases for financial gain or circumstances
+typical outsourcing can be seen for call centers and technical support
+
+
+##################################################
+Scalability Cloud Characteristics from a Business Perspective
+##################################################
+cloud scalability
+the ability of a particular system to fit a problem as the scope of that problem increases
+
+scalability of a service is a desirable property for a service which provides an ability to handle growing amount of service loads without suffering significant degradation in relevant quality attributes
+
+the ability of an application to be scaled up to meet demand through replication and distribution of request across a pool or farm of servers
+
+scalability levels
+server scalability
+scaling of network
+scaling of the platform
+
+##################################################
+Security Cloud Characteristics from a Business Perspective
+##################################################
+cloud security
+CIA triad
+C.onfifentiality
+I.ntegrety
+A.vailability
+
+
+Confidentiality
+in information security, confidentiality "is the property, that information is not made available or disclosed to unauthorized individuals, entities, or processes"
+
+Integrity
+Data integrity means maintaining and assuring the accuracy and completeness of data over its entire lifecycle
+
+Availability
+For any information system to serve it purpose, the information must be available when it is needed
+
+
+##################################################
+Hardware Independence Cloud Characteristics from a Business Perspective
+##################################################
+Cloud computing allows business to move away from the need to have large capital expendures related to computer hardware by utilizing the cloud instead
+
+Pay for the loads and tech needed when needed and nothing more
+
+Hardware Independence
+allows business to move virtual machines from server to server and cloud to cloud
+
+The guest OS now uses virtual hardware that works regardless of the underlying servers hardware
+
+The OS is being abstracted from being tied down to hardware
+
+
+##################################################
+Variable Cost Cloud Characteristics from a Business Perspective
+##################################################
+Variable cost
+Fixed cost business models focused on operating efficient do not work anymore
+
+Variable cost business models are focused responsiveness
+
+Variable cost business models allow for smaller operating expenses (OPEX) over time instead of large initial capital expenditures (CAPEX)
+
+
+##################################################
+Time to Market Cloud Characteristics from a Business Perspective
+##################################################
+Most businesses are faced with enormous pressure to accelerate time-to-market for new products and services while controlling costs.
+In many organizations, IT staff are so busy maintaining critical production systems that setting up development, test, and QA servers fall behind. Cloud computing provides a rapid deployment model that enables applications to be set up in record time at a low cost.
+It makes resource provisioning dynamic and a self-service system, where application development teams can now provision their own servers;
+even if the infrastructure team does it for them, it can still be done at a fraction of the time and cost of traditional models.
+
+"nothing seems to take more time, cost more money, involve more pitfalls, cause more anguish, or break more careers that do sincere and well conceived new product programs
+bringing a new product to market is fraught with unknowns, uncertainties, and frequently unknowable risks" theodore levitt
+
+leveraging a cloud platform on the "Platform as a Service" can help accelerate the front end of the product life cycle while also reducing cost and rick and improving quality
+
+##################################################
+Distribution over the Internet and Cloud Characteristics from a Business Perspective
+##################################################
+Distribution over the internet
+Software as a Service
+
+Electronic distribution of product and services
+
+Online distribution offers massive scalability
+
+Think of the latest distribution models over the internet of goods and services that you may have used differently without the internet in the last 10 years
+
+##################################################
+Demonstrate How the Characteristics of Cloud Computing Enhance Business Value
+##################################################
+Proven business benefits enhancing the business value
+https://aws.amazon.com/solutions/case-studies/
+
+https://azure.microsoft.com/en-us/case-studies/
+
+
+
+
+
+##################################################
+Technical Perspectives/Cloud Types
+##################################################
+##################################################
+Differences Between Private and Public Clouds from a Technical Perspective
+##################################################
+Public, private, and hybrid cloud types
+
+Private clouds:
+When computing services and or infrastructure are maintained on your private network
+
+Public clouds:
+When the services and infrastructure are provided off-sire over the internet
+
+Hybrid Clouds:
+A variety of public and private options with multiple providers
+
+
+##################################################
+Understanding Important Techniques for Cloud Computing and Networking
+##################################################
+Cloud Networking
+Cloud enabled networking (CEN)
+Cloud-Based Networking(CBN)
+
+##################################################
+Understanding the Importance of Cloud Computing in Automation and Self Service
+##################################################
+Automation and self service
+Self-service alllows the users/tenants of a cloud to do tasks themselves
+
+the cloud allows massive scalability and agility
+
+the real benefit of a cloud now is the use of automation
+
+ability to provision common tasks quickly like a new vm or storage pool database
+
+There common tasks and automations are even more powerful by allowing these users to self-service themselves
+
+##################################################
+Understanding the Importance of Cloud Computing and Federation
+##################################################
+Federation
+Clouds working with cloud
+
+Federation is really a form of hybrid cloud technologies
+
+Federation is working across multiple clouds regardless of private or public
+
+Single instance management tools to move virtual machines from cloud provider to cloud provider
+
+
+
+##################################################
+Understanding the Importance of Cloud Computing in the Role of Standardization
+##################################################
+Standardization:
+There needs to be standards in cloud technology for scalability to be possible
+
+Architecture such as X86
+
+Same Hypervisor such as XEN, KVM, VMWare
+
+VM sizes such as pre-defined sizes often known as flavors
+
+Cloud standards evolve around portability, security, networking and more
+
+Applications are now being developed to take advantage of tier-based virtualization cloud technologies
+
+
+##################################################
+Cloud Storage: Challenges, Risks and Mitigation
+##################################################
+Cloud storage
+Storing data in the cloud at a service provider such as:
+virtual machines
+data files
+data blocks/objects
+backup data
+
+Risks to using cloud storage
+latency
+availability
+security
+
+Mitigating the risks to using cloud storage
+Cloud provider SLA
+Storage Caching
+Data Replication
+Data portability
+
+
+##################################################
+Cloud Application Performance: Challenges, Risks and Mitigation
+##################################################
+Application performance Risks
+Your business applications and the data that makes those applications up are your companies source of profit
+
+There is a risk when moving your existing applications to the cloud
+
+Application Downtime
+
+Lost Profits
+
+Poor application performance
+
+Application performance - mitigating risks
+Cloud provider SLA
+Network load-balancing
+Application replicas across multiple data centers
+
+
+##################################################
+Cloud Data Integration: Challenges, Risks and Mitigation
+##################################################
+Data integration
+data integration is connecting applications, databases and cloud services altogether
+
+Data integration is complex as it is in private data centers and even more so when it comes to the cloud
+
+Data integration risks:
+Complicated integration
+Poor application performance
+data loss
+down time
+
+
+Data integration and mitigating the risk
+it is of extreme importance to understand the application design when moving to the cloud
+
+Keep the applications, data, and the users as close as possible
+
+
+
+##################################################
+Cloud Security: Challenges, Risks and Mitigation
+##################################################
+Security
+What part of your infrastructure could be a possible security risk when moving to the cloud?
+
+data could be lost or stolen
+
+when moving to the cloud that means that your data is leaving your company premises and will be stores within the cloud provider data center
+
+Security and mitigating the risks
+Risk management:
+identify what the organizations assets are
+identify threats and vulnerabilities
+what are the risk?
+address those risk
+monitor the risk
+
+
+Security and mitigating the risks:
+Common security risks and their mitigations
+Firewalls:
+Virtual firewalls
+Virtual private networks
+
+
+
+Common security risks and their mitigations
+shared technology
+data exposure and data loss
+organizational risks
+
+There are also security benefits in using the cloud
+
+
+##################################################
+Steps to Successful Adoption of Cloud Computing
+##################################################
+##################################################
+Typical Steps for a Successful Adoption of Cloud Computing Services
+##################################################
+Moving to the cloud
+Educate yourself on cloud offerings
+
+Define and decide what the outcomes will be
+
+Implement tools that both monitor during, before and after services are moved to the cloud
+
+Test the migration of servers, applications and services to the cloud
+
+Prepare and execute move to the cloud
+
+
+
+Getting started with the cloud rackspace whitepaper
+decide which types of clouds you need, public, private and hybrid
+compare and confirm goals
+research prospective hosts
+do due diligence on prospective partners
+roll out and evaluate trial
+deploy and monitor further apps
+
+Rackspace white paper, getting started with a cloud
+https://support.rackspace.com/white-paper/getting-started-with-the-cloud-a-step-by-step-enterprise-implementation-guide/
+
+
+##################################################
+Roles and Capabilities of Cloud Computing Vendors and Vendor Dependencies
+##################################################
+moving to the cloud and understanding vender capabilities and their roles
+when you select a public cloud vender you are now becoming dependent upon their services.
+
+Every vendor that offers cloud services will carry risk so it is important to pick the right vendor for your needs
+
+depending upon your organizations needs you may be selecting a vendor on any of the following types of cloud services:
+IaaS
+SaaS
+PaaS
+Network Provider
+cloud auditing service
+
+Understanding what your rolls and responsibilities are when selecting a cloud provider:
+
+Example:
+Who privides the server management
+who does the patching of those servers
+licensing
+security
+auditing
+backup and recovery
+deployment of new servers and applications
+
+
+##################################################
+Organizational Capabilities Relevant for Realizing Cloud Benefits
+##################################################
+Skills that your IT and management needs to be successful in the cloud
+understand the different cloud service models
+know how to negotiate SLAs and contracts
+understand the difference in managing resources within a shared environment and know hot to measure them
+understand service oriented architecture
+test identify cloud opportunities based solely on the business needs
+review the test results
+identify the provisions that need to be addressed to determine if the roadmap or plan needs to be altered
+
+
+##################################################
+Approaches for Migrating Applications
+##################################################
+approaches for migrating applications to the cloud
+not every application may be ready to move to the cloud
+starting out be sure to develop cloud-ready applications
+start your migration to the cloud out small being able to grow it fast
+
+Stateful vs stateless applications
+IaaS VS PaaS
+service-level agreement (SLA)
+Support and monitoring
+Cost associated with data transfers
+
+##################################################
+Impact of Cloud Computing on IT Service Management
+##################################################
+##################################################
+What is IT Service Management (ITSM)?
+##################################################
+IT service management(ITSM)
+refers to the entirety of activities - directed by policies, organized and structured in processes and supporting procedures at are performed by an organization to plan design deliver, operate and control information technology
+
+
+##################################################
+Service Strategy, Service Design, Service Operation and Service Transition
+##################################################
+understanding the impact and changes of cloud computing on IT service management in a typical organization
+service strategy
+business relationship management
+strategy management for IT services
+Service portfolio management
+demand management
+financial management of IT services
+
+service design
+Design coordination
+service catalogue management
+risk management
+capacity management
+IT service continuity management
+information security management
+compliance management
+architecture management
+supplier management
+
+service operation
+event management
+incident management
+request fulfillment
+access management
+problem management
+IT operations control
+facilities management
+application management
+technical management
+
+service transition
+change management
+change evolution
+project management
+release and deployment management
+application development
+service validation and testing
+service asset and configuration management
+knowledge management
+
+
+##################################################
+Structured Approaches Based on ITIL for Exploring the Potential Impact of Cloud Computing Within an Organization
+##################################################
+HoW IT and ITIL is applied to cloud computing
+cloud computing can either be a fantastic business decision or a bad one depending if you done it correctly
+
+if you do not already know the process of your current environment them making changes such as cloud can be determined
+
+cloud computing is not a fix to processes
+
+Understanding what your OT service offerings are before you make a switch to cloud computing in order for it to be successful
+
+
+##################################################
+Risks and Consequences of Cloud Computing
+##################################################
+##################################################
+Issues Associated with Integrating Cloud Computing into an Organization’s Existing Compliance Framework
+##################################################
+Complaince
+SOX
+HIPPA
+PCI/DSS
+
+Cloud Security
+Certificate monitoring and control
+Setup and use alerts
+know the certificates origins
+
+Legal compliance and regulations within the cloud
+where will the data be housed
+are virtual images certified
+how are users accessing their workload
+
+
+legal risks
+datalocation and jurisdiction
+data isolation
+
+destruction on data
+
+Service Level agreements
+
+
+Software licensing
+per user
+device licensing
+enterprise licensing
+
+be aware of cloud software with:
+concurrency
+mobility
+flexibility
+auto-scaling
+
+
+Auditing
+Understand the scope of the cloud environment
+
+can your current risk assessment capture the risks correctly
+sample selection
+what is the universal population from which to pickup a sample form
+what would your sample selection methodology be in highly dynamic environment
+
+audit trails
+how do you test historical data if there was no audit trail?
+
+
+##################################################
+Implications for Direct Cost and Cost Allocations
+##################################################
+Direct cost and cost allocations
+cost allocation is the technique to conclude the cost of the services provided to customers of that service
+
+it does not verify the cost of the service but moderately determines what the service costs to offer
+
+Direct costs
+direct costs are also known as separable costs
+these are those costs that are associated to a single type of service and are connected to one type of output or customer, like sector to sector
+hand-off
+
+Incremental costs
+Incremental cost modify with the level of output productivity produced
+Incremental costs measure alters in output
+differences in staffing levels
+differences in staffing costs at a competence that traffic count
+
+the cloud computing economic model is widely expected to bring significant rewards
+
+organizations have reported reaping cost benefits in several ways
+reducing capital investment
+rapid time to market
+
+However when there is no chargeback little attention is paid to the creation of new servers or deletion of unwanted servers
+
+Direct cost and cost allocations
+cost allocation
+the technique to conclude the cost of services provided to customers of that service
+
+moderately determine what the service costs to offer
+
+
+##################################################
+Maintaining Strategic Flexibility
+##################################################
+Maintaining strategic flexibility
+
+there are three factors that are associated with cloud computing flexibility
+location
+hardware
+user numbers

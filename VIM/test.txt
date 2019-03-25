@@ -1,0 +1,22 @@
+Lorem ipsum dolor sit amet, autem dissentiunt te est, eu vim erant causae facilisi. Qui libris perpetua in, ut nam prodesset temporibus conclusionemque. Facete diceret erroribus est eu, usu lobortis dissentiunt te, an homero periculis gubergren sea. Nec omnesque mediocrem an, mea cu persecuti cotidieque.
+
+Alii laoreet mediocrem cu per, eu corrumpit repudiare mediocritatem duo, ea probo copiosae salutatus usu. No vix zril prodesset ullamcorper, pri summo semper honestatis id, ea nec amet aliquam. Feugiat incorrupte definitiones vel no, has consul nostro an. At vim iusto melius graecis, soluta postea no qui. Aeterno aliquid sapientem est an, pro an fuisset maluisset. Pro persius electram te, in graeco lucilius invenire sit.
+
+Dicam eripuit repudiare no duo. Ad per inciderint repudiandae. Graeci aliquam pertinax te sea. Mandamus assueverit cum cu. His movet offendit complectitur id, nec no dicat vidisse reprimique, in vix nibh case alienum. Eu numquam feugiat accusam eam.
+
+Duo ad mazim nusquam, duo in utamur equidem ocurreret, blandit recusabo ocurreret eam in. Has et dicant ullamcorper. Et his novum movet quaestio, clita laudem nullam ea has. Te alienum dolores efficiantur eum, has in nobis argumentum, possit definitionem est in. Ad qui elit adhuc, pro ei altera ceteros, delenit tibique vis an.
+
+Rebum mandamus ne duo. Ad est wisi scripta. Utamur legendos voluptaria sed in. Ad legendos interesset vix.
+
+if (something = something else)
+{ #to move from this bracket to its matching bracket in normal mode use '%'
+ #do something
+}
+
+now in insert mode - in append mode 
+1
+2
+3
+4
+5
+i want to insert 4 times wantt to do this  

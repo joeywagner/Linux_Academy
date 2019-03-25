@@ -1,0 +1,188 @@
+##################################################
+Vim - The Improved Editor
+##################################################
+##################################################
+Vim vs. Vi - What's the Difference?
+##################################################
+the differences between vi and vim
+vi was derived from ed and nano, designed to work on teletype rather than display terminals
+vi has much more limited functionality than vim
+vi is only available for nix based operating systems
+
+
+vim was developed for the the amiga OS in 1988
+vim was ported to other platforms
+
+gvim is the gnome version of vim
+
+vim is a super set of vi, everything in vi is available in vim but not vice versa
+
+vim allows a .vimrc file that allows a number of vim plugins
+
+vim muliti level undo and redo, can undo the last 4 commands
+vi an only undo the last command
+vim can also edit compressed files
+
+includes a built in diff
+
+vim allows us to write scripts with vim script, its an extention of a scripting language called vimL, its based on the ex editor language of vi but adds commands for control, flow and function definitions
+version 7 also provides for advanced data types such as lists and dictionaries, in the form of OOP
+
+vim will let you edit remote files using network protocols
+
+##################################################
+Vim Packages and Creating Files
+##################################################
+which vi
+/usr/bin/vi
+which vim
+/usr/bin/vim
+
+ll -al /usr/bin/vi? && ll -al /usr/bin/v?
+lrwxrwxrwx 1 root root 21 Feb  7  2016 /usr/bin/vim -> /etc/alternatives/vim
+lrwxrwxrwx 1 root root 20 Aug  8  2015 /usr/bin/vi -> /etc/alternatives/vi
+
+
+to install
+apt-get or yum install vim
+
+to run in gui mode
+vim -g
+
+gvim is the most common gui wrapper
+
+yum install gvim
+apt-get install vim-gnome
+
+then run
+vim -g
+
+to open a text file with vim
+vim <filename>.txt
+
+##################################################
+Vim Modes
+##################################################
+vim test.txt
+
+#three modes of vim
+when you initially enter a file with vim you enter in command mode or normal mode
+when you press a key you either change modes or run a macro that executes a condition or command
+
+two ways to fix something that you dont want to save
+1. save the file as a different name
+2. quit the file without saving
+
+:q! #quit without saving
+
+to change from command mode to the insert or ex mode by pressing "i"
+when in insert mode to return to command or normal mode press the "esc" key
+
+now you can :q! to not save and exit
+
+file or last line mode ":"
+
+:wq #to write and quite
+
+
+##################################################
+Navigating Your File
+##################################################
+vim was designed that you can do everything without moving you hands off the keyboard
+
+the arrow keys are a valid method to move around the keyboard
+
+with gvim you can use your mouse
+
+but the historical way to move around is with the hjkl keys
+h = left
+j = down
+k = up
+l = right
+
+w = moves to the start of the next word
+e = moves to the end letter of the word
+b = to the left beginning of the next word
+
+0 = the beginning of the line
+$ = move to the end of a line
+
+} = move to the next blank line before a paragraph
+{ = move to the previous blank line before a paragraph
+
+if (something = something else)
+{ #to move from this bracket to its matching bracket in normal mode use '%'
+ #do something
+}
+the % will work with {}, [], (), "", '',
+it allows to to go between open and closing functions really quickly
+
+and you can add a number to the beginning of these commands like
+5w #this will move you 5 workds to the right
+
+
+##################################################
+Add and Remove Text
+##################################################
+G = move to the end of the file
+A = append mode, insert at the end of the line
+r = replace #move the cursor over the letter you want to replace and press r
+:u #will undo
+. #this will redo the command
+dd #will delete the line
+d #and any other command to delete
+
+
+##################################################
+Copy, Paste, Search and Replace
+##################################################
+y then move the cursor to where you want and press p to paste
+yy yanks the line p pastes
+
+v #enters visual mode, press v then move the cursor over what you want to copy and press y, them p to paste
+V #enters line wise visual mode, y to copy and p to paste
+
+>> #means indent
+
+/ #to search for something
+n to move to the next search, N goes up the page
+? to search for the bottom up
+: %s/ex/EX/g #the g replaces everything
+: %s/ex/EX/c #this will ask to confirm every time it matches your condition
+
+
+##################################################
+Executing External Commands
+##################################################
+to run commands while in vim
+: ! command
+: ! ll -al ~
+:! command is the same
+
+:r ! cat /root/.bash_profile #the r will read in and insert the value of that command
+
+: 16,23 ! sort -r #the 16,23 are the lines that you want to run the command on
+
+
+
+##################################################
+Files and Buffers
+##################################################
+there are number of ways that we can save a file
+:wq #write quit
+:q! #quit and ignore whats saved in the buffer
+:ZZ #will write what is the buffer and save faster than wq
+
+:saveas filename.txt or a absolute path #this will not touch the file that youve been editing
+
+:bad filename.txt #bad means fill buffer address
+:bn will switch to the next buffer
+:f #will show you the statistics of the file that you are currently editing
+:bp #means previous buffer
+crtl+6 will go back and forth between the documents in the buffer
+before you can change buffers and you have made a change you will have to save
+:w #to write
+
+##################################################
+Where Do I Go from Here?
+##################################################

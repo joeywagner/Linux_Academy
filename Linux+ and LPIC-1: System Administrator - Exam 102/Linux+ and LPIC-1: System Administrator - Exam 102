@@ -1,0 +1,4429 @@
+##################################################
+Linux+ and LPIC-1: System Administrator - Exam 102
+##################################################
+##################################################
+Introduction
+##################################################
+##################################################
+Lecture: About the Course Author
+##################################################
+
+##################################################
+Lecture: Introduction to Linux Academy - How to Maximize Your Experience
+##################################################
+
+##################################################
+Lecture: Introduction to the Linux+/LPIC Exams
+##################################################
+
+##################################################
+Lecture: Course Syllabus
+##################################################
+
+
+##################################################
+Topic 105: Shells, Scripting and Data Management
+##################################################
+##################################################
+Lecture: 105.1 - Customize and Use the Shell Environment (Shells, Variables, Settings and Sourcing)
+##################################################
+#we can see that sh is a link to bash
+ll /bin/sh
+lrwxrwxrwx 1 root root 4 May 11 09:36 /bin/sh -> dash*
+
+#to install additional shells
+yum install csh ksh zsh  #the csh uses a lot of C type syntax
+
+
+#2 special shells
+##/bin/false and /bin/nologin
+• /bin/false - Returns a non-zero code which will block any user request to login to the request
+• /sbin/nologin - Also blocks login requests, but returns a text message result
+
+/etc/nologin  #if this file is present no one will be able to login to the system, its intended for a system that is providing services only, to remove this file you would have to boot to a rescue mode and remove the login or single user mode
+
+####how to execute scripts on the system
+relative path and full path are the two ways to execute a script
+
+most scripts are named with a .sh, if the script is a service file it might not have the .sh
+
+ll /usr/bin/*.sh  #/usr/bin is a common location for executable files
+
+cp /usr/bin/mksmbpasswd.sh /home/user/
+chown user:user mksmbpasswd.sh
+
+vim mksmbpasswd.sh
+:wq
+
+if we are in the directory that the script is located we can do a relative execution of the script
+./mksmbpasswd.sh
+
+the full path method of executing a script
+/home/user/mksmbpasswd.sh
+
+#global files
+when a sysad creates your users there are files that are created that apply to you every time that you login, these files can be created or edited directly or they inherit the system wide version of these files
+
+cd /etc/
+cat profile  #the items here go into creating the .profile for you, its whats called a sourced script and is executed each time you login to a login shell bash reads the contests of the file
+#this is a good place to set things like the way your command prompt looks, how your env prints
+#if you run a script anything that was set while the script is running is nolonger set when the script completes.  env variables, paths, etc.
+#how ever if you source a script, those setting will remain, those setting will remain the same env as the script was executed.
+
+cat /etc/bashrc
+#this is where your functions and aliases would go
+
+if .profile or .bash_profile exists it is read when a system login shell is opened, if they both exist the .profile will be ignored and the .bash_profile will take precedence
+
+/home/user/.bashrc has to be executed or sourced from something, .bash_profile says go get anything thats in the .bashrc
+#you can also reference variables from within scripts by using the $
+
+.bash_login and .bash_logout are also source scripts that are based on when you login or logout
+
+#order of precedence
+bash_profile sources .bashrc which sets things like
+
+#see the study guide for the order that scripts are run when you login
+when you login you login
+your .bash_profile is run and that calls the .bashrc
+
+#the only time that a .bash_login will run is is there is not a .bash_profile
+
+#the only time none of these run is when root or another user becomes you
+
+#when you su root - , the - indicates that you do want all of the sourced scripts to run in that session
+
+#if you want to assume the entire environment for the user that you are becoming make sure that you include the -
+
+#######Special character for our shell
+Tab for auto complete
+
+#to get to a users home dir
+cd /home/user
+cd
+cd ~
+cd $HOME
+
+
+for example
+mkdir /home/user/tmp
+cd ~/tmp  #this will take you to the tmp dir in the user home dir  ~tmp will not
+
+#escape character
+if you want a $ to be evaluated at a $ you need to escape first with \$
+we can escape a \ with another \, like \\
+
+#characters to be used for searching
+?  #any single character wildcard
+
+or the 0-n wildcard, the *
+
+ls -al *.sh
+ls -al *.*
+
+#when we want something to run in the background
+ls -alR  > listall.txt &    # the & at the end of a command will run it in the background
+
+#control how to run multiple commands on the same line
+&&  #will run two commands only of the first one is successful
+
+/bin/false && echo "This executed"  #this will fail because /bin/false is always false
+/bin/true && echo "This executed"
+
+||  #run the second command if the first is unsuccessful
+/bin/false || echo "This executed"
+/bin/true ||  echo "This executed"  #this will fail because /bin/true is always true
+
+; #to execute both commands no matter what
+/bin/false ; echo "whatever"
+
+####exit codes
+exit codes are either 1 of 2 values, its either zero which means that it was successful or its non-zero number, usually between 1-127 but sometimes higher that will indicate some kind of error
+
+echo $?  #to display the exit code
+
+/bin/false
+echo $?
+
+####redirectors
+
+| #the pipe is a redirector
+
+ls -al | more
+
+ls -al > output.txt #to redirect std output to a file
+
+cpio -id < test.cpio #to redirect into a command
+
+##all these special characters are built in environment variables for bash
+
+
+
+##################################################
+Lecture: 105.1 - Customize and Use the Shell Environment (Environment and Aliases)
+##################################################
+#environment variables
+environment variables are essentially shortcut methods to a number of things, that are a easy to use short cut method
+
+#to see every variable for my bash my user my session, everything thats on it, use the set command
+set | more
+#we see that at the top there are a lot of variables, usually variables are all capital letters, if the variable is one full work it will have a underscore between the words
+#there are both env variables and shell setting
+
+#if you want to just see the env variables use the env command.  this is part of the GNU core utils. GNU coreutils online help: <http://www.gnu.org/software/coreutils/>
+env
+
+#if you just want to view variables and setting specific to the shell without seeing environment variables, use the shopt command
+shopt
+#these are setting that you can not only turn on and off by using the set command
+
+
+#commonly used environment variables
+#using shell settings ad the set command we can set things on or off
+set | grep SHELLOPTS
+
+ls -al /etc > tmp/test.txt
+
+set | grep SHELLOPTS
+#we can see that noclobber is off, thats because its off by default, make sure you know the other shell options besides noclobber
+
+#to turn on and off options is
+set -o #this is on
+set +o #this is off
+
+set -o noclobber
+
+set | grep SHELLOPTS
+#we can see that no clobber is not enabled
+
+ls -al /etc > tmp/test.txt
+#now it will tell you that you can not overwrite an existing file
+
+set +o noclobber  #to turn off noclobber
+
+ls -al /etc > tmp/test.txt #now it will over write the file
+
+###Environment variables
+#PATH  is the most common
+/usr/bin is a common location for executable files, because /usr/bin is in the PATH variable you can run commands by just typing the command without the relative path
+
+cd /home/user/tmp
+mkdir testscript
+
+vim mytestscript.sh
+#!/bin/bash
+
+echo "My test script"
+
+:wq
+
+chmod 755 mytestscript.sh
+
+#we cant execute the script without the path because out path variable doesnt know to look in out home dir for executable files
+
+#to add the /home/user/tmp to the path variable
+
+export PATH=$PATH:/home/user/tmp
+
+#now you can just run mytestscript.sh
+
+##you can also export new environment variables
+export MYPATH=/home/user
+echo $MYPATH
+#if you want to add something to it
+export MYPATH=$MYPATH:/etc
+echo $MYPATH
+
+
+#to make it any other value
+export MYSHORTCUT=128
+echo $MYSHORTCUT
+
+##an important environment variable is the HISTFILE variable
+
+echo $HISTFILE
+/home/joe/.bash_history
+
+#history control, $HISTCONTROL ignoredups and ignorespace, you can only set one of the 2 values you cant have both
+
+echo $HISTFILESIZE  #this will set how many lines will be saved in the histfile
+
+
+
+##################################################
+Lecture: 105.2 - Customize or Write Simple Scripts (Creating That First Script)
+##################################################
+bash scripts are linear, executing from top to bottom
+
+at the top of a script there will be the identification of which shell to typically bash
+
+mkdir scripts
+cd scripts
+vim test.sh
+#!/bin/bash  #identifying the environment # comment ! identifying, although this isnt a comment i am identifying the bash shell as the shell i want to start
+
+:wq
+
+chmod u+x test.sh  #755 is a very common permission designation on user provided shell scripts
+
+./test.sh  #here run test.sh, the . means here
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+vim test.sh
+#!/bin/bash
+
+# Copy VNCHOWTO to a backup file
+
+cp /home/users/VNCHOWTO .
+
+:wq
+
+./test.sh
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$?  #tests in the env if the preceding command ran, 0 means success, non 0 means failure
+
+/bin/false #will always fail, its a way to test
+
+#Pass parameters to a script
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+vim passparam.sh
+#!/bim/bash
+
+# touch the indicated file (creates the file), add some content and then display the content to confirm
+
+touch $1   #the $1 is parameter number 1
+echo "This is some data"  >> $1
+
+clear
+
+cat $1
+
+:wq
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+chmod u+x passparam.sh
+
+./passparam.sh harrypotter.txt
+
+
+
+env | grep PATH  #/usr/bin are generally where scripts are located, there are generally available on every distribution, /usr/local/bin are only scripts that are made to use on the local system, they are not universally available on every distribution
+#if you created a script and wanted to make it available for everyone put it in /usr/local/bin
+#there is also /home/user/bin and /home/user/.local/bin, these are scripts that are created by you and only available to you
+
+to make our scripts directory available to ourselves
+export PATH=$PATH:/home/user/Documents/scripts
+
+#now we no longer need to provide a relative or local path
+
+
+##################################################
+Lecture: 105.2 - Customize or Write Simple Scripts (Testing, Files, Looping and Conditionals)
+##################################################
+#Conditionals
+cd /home/users/Documents/scripts
+
+if then else, it uses whats called a fall down structure
+
+it uses whats called a fall down structure
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+vim conditionals.sh
+#!/bin/bash
+
+# check to see if we get yes for confirmation
+
+if [[ "$1" = "yes" ]]; then
+  echo "We have received confirmation"
+else
+  echo "We have not received confirmation"
+fi
+
+:wq
+
+chmod 755 conditionals.sh
+
+./conditionals.sh no
+
+./conditionals.sh yes
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#!/bin/bash
+
+#check that we get a parameter
+if [[ "$#" -lt 1 ]]; then
+  echo "Usage: conditional.sh [string]"
+  echo "Please try again!"
+  exit 4
+fi
+
+# check to see if we get yes for confirmation
+
+if [[ "$1" = "yes" ]]; then
+  echo "We have received confirmation"
+else
+  echo "We have not received confirmation"
+fi
+
+:wq
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#!/bin/bash
+
+#check that we get a parameter
+if [[ "$#" -lt 2 ]]; then
+  echo "Usage: conditional.sh [string] [integer]"
+  echo "Please try again!"
+  exit 4
+fi
+
+# check to see if we get yes for confirmation
+
+if [[ "$1" = "yes" ]]; then
+  echo "We have received confirmation"
+else
+  echo "We have not received confirmation"
+fi
+
+# Test to see if the integer passed second is greater than 10
+if [[ "$2" -ge 10 ]]; then
+  echo "the value is greater than 10, we got: $2"
+else
+  echo "the valse is less than 10, we got $2"
+fi
+
+:wq
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#fixed loop conditional
+#why you use a for loop if you are testing items in a list
+
+vim fixedloop.sh
+#!/bin/bash
+
+#display all the scripts in the current directory and cat them to the console
+
+for FILE in $( ls *.sh ); do
+  echo "============================"
+  echo "NAME: $FILE"
+  echo "============================"
+  cat $FILE
+  echo ""
+done
+
+:wq
+
+chmod 755 fixedloop.sh
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+vim looping.sh
+#!/bin/bash
+
+# find out who we are dealing with
+
+clear
+echo "Please enter your first name:"
+read FIRSTNAME
+
+# make sure we get a single command line parameter
+if [[ "$#" -lt 1 ]]; then
+  echo "Usage: looping.sh [integer]"
+  echo "Please try again!"
+  exit 4
+fi
+
+# create a counting variable
+COUNT=1
+
+# display a message while the count is less than or equal to the command line parameter
+while [[ "$COUNT" -le "$1" ]]; do
+  echo "This is loop number $COUNT  of $1"
+
+# if we get to 3 display a custom message
+  if [[ "$COUNT" -EQ 3 ]]; then
+    echo " Congratulations you have gone atleast 3 times !!!!"
+  fi
+  COUNT=$((COUNT + 1 ))
+done
+
+:wq
+
+chmod 755 looping.sh
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+the until loop, behaves like while, its structured to do something until a condition is met
+
+vim looping.sh
+#!/bin/bash
+
+# find out who we are dealing with
+
+clear
+echo "Please enter your first name:"
+read FIRSTNAME
+
+# make sure we get a single command line parameter
+if [[ "$#" -lt 1 ]]; then
+  echo "Usage: looping.sh [integer]"
+  echo "Please try again!"
+  exit 4
+fi
+
+# create a counting variable
+COUNT=1
+
+# display a message while the count is less than or equal to the command line parameter
+while [[ "$COUNT" -le "$1" ]]; do
+  echo "This is loop number $COUNT  of $1"
+
+# if we get to 3 display a custom message
+  if [[ "$COUNT" -EQ 3 ]]; then
+    echo " Congratulations you have gone atleast 3 times !!!!"
+  fi
+  COUNT=$((COUNT + 1 ))
+done
+
+# count back down to zero from the count value above
+until [[ "$COUNT" -eq 0 ]]; do
+  echo "counting back to 0: $COUNT"
+  COUNT=$((COUNT -1 ))
+done
+
+:wq
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+test #test - check file types and compare values
+
+vim testdir.sh
+#/bin/bash
+
+# test if the value is a directory
+
+if test -d /home/user; then
+  echo "this is a dir"
+else
+  echo "this is not a directory"
+fi
+
+$$$$$$$$$$$  another way, the more common way
+
+vim testdir.sh
+#/bin/bash
+
+# test if the value is a directory
+
+if [[ -d "/home/user" ]]; then
+  echo "this is a dir"
+else
+  echo "this is not a directory"
+fi
+
+:wq
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+vim testdir.sh
+#/bin/bash
+
+# test if the value is a directory
+
+if [[ -d "$1" ]]; then
+  echo "this is a dir"
+else
+  echo "this $1 not a directory"
+fi
+
+:wq
+
+
+##################################################
+Lecture: 105.3 - SQL Data Management (Special Setup for Remainder of Section)
+##################################################
+yum install git
+
+mkdir tmp
+git clone https://github.com/linuxacademy/content-LPI.git
+cd content-LPI
+chmod 755 *.sh
+./setup.sh
+
+#to login
+mysql --user=root --password=#### --host=XXX.XXX.XXX.XXX
+
+##################################################
+Lecture: 105.3 - SQL Data Management (Selecting Records and Limiting Results with Conditionals)
+##################################################
+SHOW DATABASES;  #to show the available databases
+USE dbSample;
+
+SHOW TABLES;
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT * FROM tblOrderInfo;
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT customerName, customerAge FROM tblCustomerInfo;
+
+SELECT customerName, customerAge FROM tblCustomerInfo WHERE customerAge >= 21;
+
+SELECT customerAge FROM tblCustomerInfo WHERE customerName="John Cena";
+
+SELECT customerName, customerAge FROM tblCustomerInfo ORDER BY customerAge;
+
+SELECT customerName, customerAge FROM tblCustomerInfo ORDER BY DESC;
+
+SELECT customerName, customerAge FROM tblCustomerInfo WHERE customerAge IN (18, 21, 25);
+
+SELECT customerName, customerAge FROM tblCustomerInfo WHERE customerAge BETWEEN 18 AND 35;
+
+SELECT * FROM tblCustomerInfo WHERE customerAge > 21 AND customerAge < 65;
+
+SELECT * FROM tblCustomerInfo WHERE customerAge > 18 OR customerAge < 25;
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT * FROM tblCustomerInfo LIMIT 2;
+
+
+##################################################
+Lecture: 105.3 - SQL Data Management (Inserting, Updating and Deleting Records)
+##################################################
+USE dbSample;
+SHOW TABLES;
+SELECT * FROM tblCustomerInfo;
+
+INSERT INTO tblCustomerInfo (customerNumber, customerName, customerAge) VALUES (111, 'Clark Kent', 36);
+
+SELECT * FROM tblCustomerInfo;
+
+INSERT INTO tblCustomerInfo (customerNumber, customerName, customerAge) VALUES (112, 'Bruce Wayne', 40), (113, 'Wally West', 23);
+
+SELECT * FROM tblCustomerInfo;
+
+UPDATE tblCustomerInfo SET customerAge=41 WHERE customerName='Bruce Wayne';
+
+SELECT * FROM tblCustomerInfo;
+
+DELETE FROM tblCustomerInfo WHERE customerName='Wally West';
+
+SELECT * FROM tblCustomerInfo;
+
+
+
+##################################################
+Lecture: 105.3 - SQL Data Management (SubSelects, Ordering Records and Joining Tables)
+##################################################
+#Tables joins are the ability to join 2 tables and display the data in a way that makes sense, if they have a field that are equal in both tables
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT * FROM tblOrderInfo;
+
+SELECT * FROM tblCustomerInfo JOIN tblOrderInfo ON tblOrderInfo.customerNumber=tblCustomerInfo.customerNumber;
+
+SELECT tblCustomerInfo.customerNumber, tblCustomerInfo.customerName, tblOrderInfo.orderNumber, tblOrderInfo.itenDescription, tblOrderInfo.itemPrice FROM tblCustomerInfo JOIN tblOrderInfo ON tblOrderInfo.customerNumber=tblCustomerInfo.customerNumber;
+
+#Subselection
+SELECT customerNumber, customerName from tblCustomerInfo WHERE customerAge IN (SELECT customerAge FROM tblCustomerInfo WHERE customerAge > 25);
+
+SELECT customerNumber, customerName. customerAge from tblCustomerInfo WHERE customerAge IN (SELECT customerAge FROM tblCustomerInfo WHERE customerAge > 25);
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT COUNT(customerNumber) FROM tblCustomerInfo;
+
+SELECT COUNT(customerNumber) FROM tblCustomerInfo WHERE customerAge > 25;
+
+SELECT AVG(customerAge) FROM tblCustomerInfo;
+
+SELECT AVG(itemPrice) FROM tblOrderInfo;
+
+SELECT MAX(customerAge) FROM tblCustomerInfo;
+
+SELECT MIN(itemPrice) FROM tblOrderInfo;
+
+SELECT SUM(customerAge) FROM tblCustomerInfo;
+
+SELECT * FROM tblCustomerInfo WHERE customerAge IN (SELECT MAX(customerAge) FROM tblCustomerInfo);
+
+##################################################
+Exercise: SQL Data Management - The Basics
+##################################################
+Installing The Exercise Data
+
+Once you are connected to your server, become the root user. The following steps and solution assume you are the root user when performing them:
+1. Install the 'git' and 'mysql' packages on your server
+2. Make a directory called 'tmp', change to that directory
+3. Execute the following command: 'git clone http://github.com/linuxacademy/content-LPI.git'
+4. Change to the 'content-LPI' directory created by the previous step
+5. Execute the following command: 'chmod 755 *.sh *.sql'
+6. Execute the following command: './setup.sh'
+NOTE: At this point, all of the packages and data necessary to complete the exercise will be downloaded, installed, started and populated. This process can take five minutes or so to complete. You will see a message once done providing access credentials and connection information for the database
+7. Connect to the database instance with the following command: 'mysql --user=root --password=password123 --host=172.17.0.2'
+
+Exercise
+
+1. Choose the 'dbSample' database to work with
+
+ mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| dbSample           |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.00 sec)
+
+mysql> USE dbSample;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+2. Display the available tables
+
+mysql> USE dbSample;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++--------------------+
+| Tables_in_dbSample |
++--------------------+
+| tblCustomerInfo    |
+| tblOrderInfo       |
++--------------------+
+2 rows in set (0.00 sec)
+
+3. Select all records from the 'tblCustomerInfo' table and display them
+
+mysql> SELECT * FROM tblCustomerInfo;
++----------------+------------------+-------------+
+| customerNumber | customerName     | customerAge |
++----------------+------------------+-------------+
+|            100 | John Cena        |          42 |
+|            101 | Vince McMahon    |          64 |
+|            103 | Jason Vorhees    |          21 |
+|            104 | Bart Simpson     |          11 |
+|            105 | Mister Burns     |         121 |
+|            106 | Joe Smith        |          26 |
+|            107 | Martha Smith     |          23 |
+|            108 | Charlie Brown    |           9 |
+|            109 | Kara Danvers     |          27 |
+|            110 | Mister Wednesday |          75 |
++----------------+------------------+-------------+
+10 rows in set (0.00 sec)
+
+4. Select all records from the 'tblCustomerInfo' table where the 'customerAge' value is greater than 25
+
+mysql> SELECT * FROM tblCustomerInfo WHERE customerAge > 25;
++----------------+------------------+-------------+
+| customerNumber | customerName     | customerAge |
++----------------+------------------+-------------+
+|            100 | John Cena        |          42 |
+|            101 | Vince McMahon    |          64 |
+|            105 | Mister Burns     |         121 |
+|            106 | Joe Smith        |          26 |
+|            109 | Kara Danvers     |          27 |
+|            110 | Mister Wednesday |          75 |
++----------------+------------------+-------------+
+6 rows in set (0.00 sec)
+
+5. Select all records from the 'tblCustomerInfo' table where the 'customerAge' value is greater than 18 but less than 38
+
+mysql> SELECT * FROM tblCustomerInfo WHERE customerAge > 18 AND customerAge < 38;
++----------------+---------------+-------------+
+| customerNumber | customerName  | customerAge |
++----------------+---------------+-------------+
+|            103 | Jason Vorhees |          21 |
+|            106 | Joe Smith     |          26 |
+|            107 | Martha Smith  |          23 |
+|            109 | Kara Danvers  |          27 |
++----------------+---------------+-------------+
+4 rows in set (0.00 sec)
+
+##################################################
+Exercise: SQL Data Management - Working With and Displaying Records
+##################################################
+This section of the lab will focus on SELECT, DELETE, FROM, WHERE, GROUP BY, and ORDER BY.
+Select all rows from the customers table but only display the first_name field.
+Select all orders from the orders table where the date is greater than or equal to 2014-06-02.
+Select all rows from the order table but order the results by customer_id in ascending order.
+Delete the customer Jeff Jefferson from the customers table.
+Select all orders from the table and group them by order date and order the results by customer_id in descending order.
+
+use store;
+SELECT first_name FROM customers;
+SELECT * FROM orders WHERE date >= '2014-06-02';
+SELECT * FROM orders ORDER BY customer_id ASC;
+DELETE FROM customers WHERE first_name="jeff" and last_name="jefferson";
+SELECT * FROM orders GROUP BY date ORDER BY customer_id desc;
+
+
+##################################################
+Exercise: Customize or Write Simple Scripts - Manipulate Output on the Command Line
+##################################################
+1. Enter the following code on the command line and hit enter:
+echo ’1 2 2 4 8 9′ | while read a b c; do  echo result: $b; done
+2. Dissect what this is doing by changing the echo variable from $b to $a and then $c.
+3. Change the echo statement to echo the following output result: 2 4 8 9' 2 '1
+Solution
+
+echo ’1 2 2 4 8 9′ | while read a b c; do  echo result: $c $b $a; done
+The first echo command is echoing the numbers and piping it into a while statement.
+The while statement will associate 1 number to each variable until the last variable.
+When the last variable ($c) is reached it will echo all the remaining numbers into that variable which is why when you echo $c the result is result: 2 4 8 9
+
+
+##################################################
+Exercise: Customize or Write Simple Scripts - Display System Output
+##################################################
+1. Execute a command that will display the entire, full, file listing of the root (/) filesystem
+
+[user@tcox6 ~]$ ls -al /
+total 44
+dr-xr-xr-x.  18 root root 4096 Jun 20 14:46 .
+dr-xr-xr-x.  18 root root 4096 Jun 20 14:46 ..
+lrwxrwxrwx.   1 root root    7 Dec 14  2016 bin -> usr/bin
+dr-xr-xr-x.   4 root root 4096 Mar 11 01:54 boot
+drwxr-xr-x.  18 root root 2760 Jun 24 18:47 dev
+drwxr-xr-x. 109 root root 8192 Jun 24 18:46 etc
+drwxr-xr-x.   5 root root   46 Jun 20 14:48 home
+lrwxrwxrwx.   1 root root    7 Dec 14  2016 lib -> usr/lib
+lrwxrwxrwx.   1 root root    9 Dec 14  2016 lib64 -> usr/lib64
+drwxr-xr-x.   2 root root    6 Nov  5  2016 media
+drwxr-xr-x.   2 root root    6 Nov  5  2016 mnt
+drwxr-xr-x.   5 root root   49 Dec 29 21:10 opt
+dr-xr-xr-x. 178 root root    0 Jun 24 18:46 proc
+dr-xr-x---.  13 root root 4096 Jun 23 18:23 root
+drwxr-xr-x.  31 root root 1020 Jun 24 18:47 run
+lrwxrwxrwx.   1 root root    8 Dec 14  2016 sbin -> usr/sbin
+drwxr-xr-x.   2 root root    6 Nov  5  2016 srv
+dr-xr-xr-x.  13 root root    0 Jun 24 18:46 sys
+drwxrwxrwt.  17 root root 4096 Jun 24 18:47 tmp
+drwxr-xr-x.   2 root root 4096 Jun 20 14:47 tmpdata
+drwxr-xr-x.  13 root root 4096 Dec 14  2016 usr
+drwxr-xr-x.  21 root root 4096 Jun 24 18:46 var
+
+2. Create a shell script that will list the entire, full, file listing of any directory that is passed to it at the command line
+   - NOTE: the default shell error message can be displayed if the parameter is not a directory
+
+#!/bin/bash
+
+DIRECTORY=$1
+
+ls -al $DIRECTORY
+
+3. Name the script 'list.sh', make it executable and place it in your user's home directory, run the script with a valid directory and again with an non-existing directory name
+
+[user@tcox6 ~]$ vim list.sh
+[user@tcox6 ~]$ ./list.sh /var
+total 28
+drwxr-xr-x. 21 root root 4096 Jun 24 18:46 .
+dr-xr-xr-x. 18 root root 4096 Jun 20 14:46 ..
+drwxr-xr-x.  2 root root    6 Nov  5  2016 adm
+drwxr-xr-x.  7 root root   99 Sep 23  2016 awslogs
+drwxr-xr-x. 10 root root  106 Jun 23 15:01 cache
+drwxr-xr-x.  2 root root    6 Nov  7  2016 crash
+drwxr-xr-x.  3 root root   32 Jun 21 20:18 db
+drwxr-xr-x.  3 root root   17 Nov  5  2016 empty
+drwxr-xr-x.  2 root root    6 Nov  5  2016 games
+drwxr-xr-x.  2 root root    6 Nov  5  2016 gopher
+drwxr-xr-x.  3 root root   17 Dec  6  2016 kerberos
+drwxr-xr-x. 50 root root 4096 Jun 24 18:46 lib
+drwxr-xr-x.  2 root root    6 Nov  5  2016 local
+lrwxrwxrwx.  1 root root   11 Sep 29  2014 lock -> ../run/lock
+drwxr-xr-x. 14 root root 4096 Jun 24 18:47 log
+lrwxrwxrwx.  1 root root   10 Dec 14  2016 mail -> spool/mail
+drwxr-xr-x.  2 root root    6 Nov  5  2016 nis
+drwxr-xr-x.  2 root root    6 Nov  5  2016 opt
+drwxr-xr-x.  2 root root    6 Nov  5  2016 preserve
+lrwxrwxrwx.  1 root root    6 Sep 29  2014 run -> ../run
+drwxr-xr-x. 13 root root 4096 Jun 22 00:45 spool
+drwxrwxrwt.  6 root root 4096 Jun 24 18:51 tmp
+-rw-r--r--.  1 root root  163 Dec 14  2016 .updated
+drwxr-xr-x.  3 root root   16 Sep 29  2014 var
+drwxr-xr-x.  2 root root    6 Nov  5  2016 yp
+[user@tcox6 ~]$ ./list.sh /oops
+ls: cannot access /oops: No such file or directory
+
+
+
+##################################################
+Hands-on Lab: Writing a Script to Perform Conditional Input Testing
+##################################################
+sudo yum install git
+
+mkdir scripts
+cd scripts
+git clone https://github.com/linuxacademy/content-LPI.git
+
+
+cat keybdtest.sh
+
+#!/bin/bash
+
+# clear the screen
+clear
+
+# set a counting variable, if they answer NO, they only get two more tries
+COUNT=1
+
+# read the answer, if they answer NO, loop until COUNT=3, then exit with an error
+while [ $COUNT -le 3 ]; do
+
+  # prompt for the user input, hold in a variable to test
+  echo "Please enter text and numbers to test your keyboard and press enter when you are done."
+  echo ""
+  read USERINPUT
+  echo ""
+
+  # display the value that was read in
+  echo "--------------------------------------------------"
+  echo "The values that you entered were - $USERINPUT"
+  echo ""
+  echo "Did you see everything you typed? (Respond YES or NO)"
+  echo ""
+
+  # get the response
+  read CONFIRM
+
+  # test the response
+  if [[ $CONFIRM = "YES" ]]; then
+
+    # display a nice message and exit the program
+    echo "Excellent - Have a Great Day"
+    echo ""
+    exit 0
+
+  else
+
+    # increment the counter and let the loop continue
+    COUNT=$[ COUNT + 1 ]
+
+    # clear the screen for the next try
+    clear
+
+    # let us make sure we do not display the text after we reach COUNT=3
+    if [[ $COUNT < 4 ]]; then
+
+      # display a clean message to prompt for another try
+      echo "Let us try again. Please enter some text. This is try number $COUNT"
+      echo ""
+
+    fi
+
+  fi
+
+done
+
+# if we got here, then they unsuccessfully tested their keyboard, send them to support desk
+echo ""
+echo "I am sorry, it appears your keyboard needs to be replaced."
+echo "   Please contact the Help Desk at 514 744 2911 ext 311 "
+echo ""
+
+# custom error message for the exit
+exit 60
+
+
+##################################################
+Hands-on Lab: Order Entry Databases Are Missing Records
+##################################################
+INSERT INTO tblCustomerData (customerNumber, customerName, customerAge) VALUES (112, 'Jason Smith', 41), (112, 'Sheila Jones', 33);
+
+INSERT INTO tblOrderData (orderNumber, customerNumber, itemDescription, itemCost) VALUES (505, 111, 'Fuzzy Slippers', '$14'), (506, 112, 'Umbrella', '$99');
+
+
+
+##################################################
+Quiz: Topic 105: Shells, Scripting and Data Management (Section Quiz)
+
+##################################################
+1) Every shell script intended to run within a bash environment, should have what identifier at the top of the script file?
+Correct
+
+Correct answer
+#!/bin/bash
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/3/module/126
+
+2) Of the following conditional statements within a shell script, which one will test for the existence of a file called 'mytest.txt' in the current directory?
+Correct
+
+Correct answer
+if [[ -f mytest.txt ]];
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/4/module/126
+
+3) Which of the following variable definitions will be available to subshells in the environment?
+Correct
+
+Correct answer
+EXPORT MYVAR="Some Value"
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/1/module/126
+
+4) Which of the following special shells that, when assigned to a user account as the default shell, will prevent that account from being able to log in? (CHOOSE ALL THAT APPLY)
+Correct
+
+Correct answer
+/bin/false, /sbin/nologin
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/1/module/126
+
+5) What user script (if it exists) is run, from a user's home directory, every time they log into a system?
+Incorrect
+
+Correct answer
+~/.bashrc
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/2/module/126
+
+
+
+##################################################
+Topic 106: User Interfaces and Desktops
+##################################################
+##################################################
+Lecture: 106.1 - Install and Configure X11 (Installing X Windows, Desktops and the Xorg Configuration File)
+##################################################
+X11 and xorg are used interchangeably but x11 was the original graphical desktop for linux and unix systems
+xorg is compatible with x11
+xorg was designed to replace it
+
+what is a window manager, it present the scroll bars and windows, on top of window manager runs the desktop, thats the interactive part
+
+some examples of desktop environments are gnome, kde, unity, xfce
+
+installation take place with 2 installs, the xwindows system and the desktop, the deskyop may or may not come with a display manager
+
+######INSTALL
+#FOR RHEL
+yum groupinstall "X window System" "Desktop" "Desktop platform"
+
+cd /etc/X11
+
+#if you have a nvidia card you will need to generate a xorg config
+X #is the name of the xwindows server and is the binary for the xwindows server
+
+X -configure or Xorg -configure  #Xorg -configure is the modern equivalent to X -configure
+#it will generate the x config for the user that issued the command
+
+vim /root/xorg.conf.new
+#know what each files section does, modules, input devices, monitor, devices, screen
+
+:wq
+
+[root@ip-10-0-1-163 X11]# cat /root/xorg.conf.new
+Section "ServerLayout"
+	Identifier     "X.org Configured"
+	Screen      0  "Screen0" 0 0
+	InputDevice    "Mouse0" "CorePointer"
+	InputDevice    "Keyboard0" "CoreKeyboard"
+EndSection
+
+Section "Files"
+	ModulePath   "/usr/lib64/xorg/modules"
+	FontPath     "catalogue:/etc/X11/fontpath.d"
+	FontPath     "built-ins"
+EndSection
+
+Section "Module"
+	Load  "glx"
+EndSection
+
+Section "InputDevice"
+	Identifier  "Keyboard0"
+	Driver      "kbd"
+EndSection
+
+Section "InputDevice"
+	Identifier  "Mouse0"
+	Driver      "mouse"
+	Option	    "Protocol" "auto"
+	Option	    "Device" "/dev/input/mice"
+	Option	    "ZAxisMapping" "4 5 6 7"
+EndSection
+
+Section "Monitor"
+	Identifier   "Monitor0"
+	VendorName   "Monitor Vendor"
+	ModelName    "Monitor Model"
+EndSection
+
+Section "Device"
+        ### Available Driver options are:-
+        ### Values: <i>: integer, <f>: float, <bool>: "True"/"False",
+        ### <string>: "String", <freq>: "<f> Hz/kHz/MHz",
+        ### <percent>: "<f>%"
+        ### [arg]: arg optional
+        #Option     "ShadowFB"           	# [<bool>]
+        #Option     "DefaultRefresh"     	# [<bool>]
+        #Option     "ModeSetClearScreen" 	# [<bool>]
+	Identifier  "Card0"
+	Driver      "vesa"
+	BusID       "PCI:0:2:0"
+EndSection
+
+Section "Screen"
+	Identifier "Screen0"
+	Device     "Card0"
+	Monitor    "Monitor0"
+	SubSection "Display"
+		Viewport   0 0
+		Depth     1
+	EndSubSection
+	SubSection "Display"
+		Viewport   0 0
+		Depth     4
+	EndSubSection
+	SubSection "Display"
+		Viewport   0 0
+		Depth     8
+	EndSubSection
+	SubSection "Display"
+		Viewport   0 0
+		Depth     15
+	EndSubSection
+	SubSection "Display"
+		Viewport   0 0
+		Depth     16
+	EndSubSection
+	SubSection "Display"
+		Viewport   0 0
+		Depth     24
+	EndSubSection
+EndSection
+
+
+#the easiest way to test if xfs is running
+service xfs status  #xfs is the font server
+
+
+#FOR UBUNTU
+sudo apt-get xserver-xorg-core
+
+
+##################################################
+Lecture: 106.1 - Install and Configure X11 (X Utilities for Screen and Window Information)
+##################################################
+#some utilities
+xwininfo   #Xwininfo is a utility for displaying information about windows. Various information is displayed depending on which options are selected. If no options are chosen, -stats is assumed.
+
+
+xdpyinfo #Xdpyinfo is a utility for displaying information about an X server.  It is  used to examine the capabilities of a server, the predefined values for various parameters used in communicating between  clients  and  the server,  and the different types of screens and visuals that are avail-able.
+
+xdpyinfo #this will display a ton if info
+xdpyinfo | more
+#we are looking for the xorg version and the color depth version
+
+echo $DISPLAY
+
+xhost
+
+#you can enable or disable
+xhost - #enable access control
+xhost + #disable disable access control
+
+#control who you want to connect
+xhost +192.168.1.119
+
+xhost #to view who has access
+
+xhost -192.168.1.119  #to remove access
+
+#if you get a question about how to view resolution information you can get that with xwininfo and xpdyinfo
+
+
+##################################################
+Lecture: 106.2 - Setup a Display Manager
+##################################################
+Display manager is what you run your desktop ontop of, there are a number of them, you need to know about lightdm, other ones are xdm
+
+yum install xorg-x11-xdm
+the config is in /etc/X11/xdm
+
+its possible to pull up a graphical desktop display without a graphical desktop manager
+
+#the kde display manager, or kdm, replaced by kwin and later lightdm
+it was configured in /etc/kde/kdm
+
+Gnome display manager or gdm
+/etc/gdb
+
+Lightdm, it works as a service rather than a binary thats executed as a binary thats run when your server is started
+systemctl status lightdm
+cd /etc/lightdm  #in this location if we had a config this is where it would exist cd /usr/share/doc, there is an example of a lightdm.conf
+the .conf doesnt exist unless you need to customize the display manager
+
+#ways to change your preferred desktop manager
+echo $DISPLAYMANAGER  #it wasnt set in our test env
+
+#for rhel distro
+vim /etc/X11/prefdm
+DISPLAYMANGER="GNOME"
+
+:wq
+
+#on a debian distribution
+dpkg-reconfigure lightdm  #it will give you an ncurses
+
+
+##################################################
+Lecture: 106.3 - Accessibility
+##################################################
+universal access
+high contrast, it changes the background to stark white the buttons to black,
+large text, it effects how big the text appears
+zoom, the ability to set magnification
+white on black, what we see is a really high contrast
+screen reader, this will read the text to you
+sound keys, will make a sound when cap locks or some other special key is pressed
+visual alerts, instead of a sound key you will get a visual alert
+screen keyboard, a key board on your screen
+type assist, sticky key slow keys, bounce keys
+mouse keys you can turn on keys of the mouse to type items, used in conjunction with screen keyboard
+click assist is for the mouse but similar to sticky keys
+
+emacs speak screen reader, broken for moden versions of emacs
+
+Orca, zoom support and brail support, will read text to you
+
+GOK = gnome on screen keyboard
+
+onboard #onboard   is an on-screen keyboard that can be useful for tablet PC users, as well as for mobility impaired people.
+
+
+##################################################
+Exercise: User Interfaces and Desktop - X Windows
+##################################################
+1. Find and display the local environment variable that indicates your current display location and information.
+
+[root@tcox1]# echo $DISPLAY
+:0
+
+2. Display the current status of your system for allowing remote X connections (i.e. the ability of a client connecting to your system to execute a command to run an X Window application for display on their terminal). Change the current status to enabled for all incoming connections, verify, set to disabled.
+
+[root@tcox1]# xhost
+access control enabled, only authorized clients can connect
+[root@tcox1]# xhost +
+access control disabled, clients can connect from any host
+[root@tcox1]# xhost
+access control disabled, clients can connect from any host
+[root@tcox1]# xhost -
+access control enabled, only authorized clients can connect
+[root@tcox1]# xhost
+access control enabled, only authorized clients can connect
+
+3. Using SSH, indicate what command is necessary to tunnel remote X connections to a local display.
+
+[root@tcox1]# ssh -X user@test.mylabserver.com
+
+
+##################################################
+Hands-on Lab: Installing X Windows, Display Manager and Desktop Packages for Deployment
+##################################################
+yum groupinstall "X Windows System" "Desktop" "Desktop Platform"
+
+#now we need to run x or xorg depending on the version of xfree86
+X -configure
+#Because we dont have a video card installed it will error out. but we can see that it will run through all the video drivers installed and it will run though the xconfiguration utility
+
+cat xorg.conf.new  #we dont need to do this
+
+#the last thing we want to check is check for the gnome display manager
+which gdm
+#double check that
+rpm -q gdm
+
+#now we can tell them that the image is setup and all they would have to do is run the xconfigure once its installed on the system
+
+##################################################
+Quiz: Topic 106: User Interfaces and Desktops
+##################################################
+1) Which of the following applications can function as an audible screen reader?
+Correct
+
+Correct answer
+Orca
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/4/module/126
+
+2) Within the /etc/xorg.conf X Server configuration file, which of the following sections will define the keyboard detected?
+Correct
+
+Correct answer
+InputDevice
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/1/module/126
+
+3) Screen readers, Magnifiers, High Contrast Themes, On Screen Keyboards and Mouse Keys are all examples of what?
+Correct
+
+Correct answer
+Accessibility Features
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/4/module/126
+
+4) Which utility can be used to display the screen resolution of your X Windows desktop as configured?
+Correct
+
+Correct answer
+xdpyinfo
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/2/module/126
+
+5) Which of the following display managers replaced the legacy 'kdm' display manager?
+Correct
+
+Correct answer
+lightdm
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/3/module/126
+
+
+
+##################################################
+Topic 107: Administrative Tasks
+##################################################
+##################################################
+Lecture: 107.1 - Manage User and Group Accounts and Related System Files (UIDs, GIDs and Password Files)
+##################################################
+#what do we mean by user ids and group ids, they are both numerical ids, that are a range from 0-4billion
+#typical user account range from 0-65000
+#group ids 0-2500, in practical terms
+#a user id is a unique number that is associated to a user name
+
+##we can look at user ids in /etc/passwd
+###/etc/passwd username:x:userid
+####reserved userid 0 is for root
+####userid 1 is for bin or or system binary or nologin acccount user
+####userid 48 is the apache web server user
+####userid 99 is nobody, is used for a number of things, ftp anonymous access for example, or it can map to a
+
+
+#/etc/group  this contains groups
+##a reserved groupid 0 is for anyone that belongs to the root group
+##bin is 1
+##group 100 that corresponds to the users group
+
+##one of the questions that you are likely to see on the test are the permissions
+for both debian and rhel distributions you will see 644 for passwd and group
+
+#/etc/shadow
+the permissions for /etc/shadow on rhel to be 400 or 000
+for debian 640
+
+#for the /etc/passwd
+#the ids range 0-499 for predefined system accounts and above that for user accounts but you can change that
+name:used to be the password:useris:primary groupid:description of that user account:home directory:default login shell
+
+#for /etc/group
+group name:group password:group id:you can add any user to any group by appending their name here
+
+#for /etc/shadow
+user name:encryped password:last time that password was changed in seconds:the max number of days required before the password expires:number of days you get a warning befor the password expires:grace period after expiration:experation date:reserved
+
+#if you are root you can use the passwd command to change that users password but you can also edit the /etc/shadow file, delete the encrypted password and su to that user
+
+#you can edit the defaults for when a user is created by editing the /etc/login.defs
+
+#if it exists /etc/securetty  #this tells root where he is allows to login, if this file doesnt exit the root user can login from everywhere
+#if the /etc/usertty doesnt exist you are likely using the pam module or pluggable authentication module
+
+#there are two ways that a user account can login that effect where we can get the password, the file nsswitch, this determines the order that a user account is searched for on the system
+/etc/nsswitch
+#two types of login, local and remote
+
+
+getent #will search local or remote systems for user information
+getent passwd user
+
+getent # getent - get entries from Name Service Switch libraries
+#The  getent  command  displays  entries from databases supported by the
+       Name Service  Switch  libraries,  which  are  configured  in  /etc/nss‐
+       witch.conf.   If  one or more key arguments are provided, then only the
+       entries that match the supplied keys will be displayed.  Otherwise,  if
+       no  key is provided, all entries will be displayed (unless the database
+       does not support enumeration).
+
+
+/etc/nsswitch.conf #this allows us to configure db lookup items
+
+getent hosts linuxacademy.com
+
+getent passwd
+
+getent passd user #this will find the users user
+
+getent passwd | cut -d ':' -f1 | sort
+
+getent shadow
+
+getent group wheel #this will show everyone in the wheel group
+
+getent hosts localhosts
+
+getent services
+
+getent services ssh
+
+
+
+##################################################
+Lecture: 107.1 - Manage User and Group Accounts and Related System Files (Account and Group Management)
+##################################################
+useradd #adding a user, on debian adduser is also a command, useradd is vender agnostic
+
+it is possible to add a user by editing the /etc/passwd and /etc/group files, how ever this poses a security risk and can contain errors that will prevent user login or have unintended consquences
+
+#the easiest way to add a user is with the useradd command
+
+useradd anthony
+
+userdel -r anthony
+
+useradd -c #-c, --comment COMMENT Any text string. It is generally a short description of the login, and is currently used as the field for the user's full name.
+
+useradd -d #-d, --home-dir HOME_DIR
+           The new user will be created using HOME_DIR as the value for the user's login directory. The default is to append the LOGIN name to
+           BASE_DIR and use that as the login directory name. The directory HOME_DIR does not have to exist but will not be created if it is
+           missing.
+
+useradd -e #-e, --expiredate EXPIRE_DATE
+           The date on which the user account will be disabled. The date is specified in the format YYYY-MM-DD.
+
+           If not specified, useradd will use the default expiry date specified by the EXPIRE variable in /etc/default/useradd, or an empty
+           string (no expiry) by default.
+
+useradd -M # -M Do no create the user's home directory, even if the system wide setting from /etc/login.defs (CREATE_HOME) is set to yes.
+
+useradd -m #-m, --create-home
+           Create the user's home directory if it does not exist. The files and directories contained in the skeleton directory (which can be
+           defined with the -k option) will be copied to the home directory.
+
+           By default, if this option is not specified and CREATE_HOME is not enabled, no home directories are created
+
+useradd -G #-G, --groups GROUP1[,GROUP2,...[,GROUPN]]]
+           A list of supplementary groups which the user is also a member of. Each group is separated from the next by a comma, with no
+           intervening whitespace. The groups are subject to the same restrictions as the group given with the -g option. The default is for the
+           user to belong only to the initial group.
+
+useradd -g # -g, --gid GROUP
+           The group name or number of the user's initial login group. The group name must exist. A group number must refer to an already
+           existing group.
+
+           If not specified, the behavior of useradd will depend on the USERGROUPS_ENAB variable in /etc/login.defs. If this variable is set to
+           yes (or -U/--user-group is specified on the command line), a group will be created for the user, with the same name as her loginname.
+           If the variable is set to no (or -N/--no-user-group is specified on the command line), useradd will set the primary group of the new
+           user to the value specified by the GROUP variable in /etc/default/useradd, or 100 by default.
+
+useradd -f # -f, --inactive INACTIVE
+           The number of days after a password expires until the account is permanently disabled. A value of 0 disables the account as soon as
+           the password has expired, and a value of -1 disables the feature.
+
+           If not specified, useradd will use the default inactivity period specified by the INACTIVE variable in /etc/default/useradd, or -1 by
+           default.
+
+useradd -k #-k, --skel SKEL_DIR
+           The skeleton directory, which contains files and directories to be copied in the user's home directory, when the home directory is
+           created by useradd.
+
+           This option is only valid if the -m (or --create-home) option is specified.
+
+           If this option is not set, the skeleton directory is defined by the SKEL variable in /etc/default/useradd or, by default, /etc/skel.
+
+           If possible, the ACLs and extended attributes are copied.
+
+#cat /etc/login.defs  #this is where useradd defaults are located
+
+#/etc/skel  #this is the default location of the skeleton directory that is used when a new user is created
+
+echo "Welcome to the system" > /etc/skel/.welcome
+
+#CREATE A USER
+useradd newuser -m -k /etc/skel -u 1010  -G 100 -s /bin/bash  #you can obly specify a primary group if the primary group exists
+
+cat /etc/paddwd | grep newuser
+
+cat /etc/group | grep user
+
+ll /home/newuser
+
+###WHAT HAPPENS IF YOU JUST DO
+useradd mynewuser
+
+ll /home
+
+cat /etc/passwd | grep mynewuser
+
+cat /etc/group | grep user
+
+#all of the defaults for user creation are in the /etc/default/useradd file
+
+groupadd
+groupadd #The groupadd command creates a new group account using the values
+       specified on the command line plus the default values from the system.
+       The new group will be entered into the system files as needed.
+
+groupadd -g #-g, --gid GID
+           The numerical value of the group's ID. This value must be unique,
+           unless the -o option is used. The value must be non-negative. The
+           default is to use the smallest ID value greater than or equal to
+           GID_MIN and greater than every other group.
+
+groupadd -r #-r, --system
+           Create a system group.
+
+           The numeric identifiers of new system groups are chosen in the
+           SYS_GID_MIN-SYS_GID_MAX range, defined in login.defs, instead of
+           GID_MIN-GID_MAX.
+
+groupadd -f #-f, --force
+           This option causes the command to simply exit with success status
+           if the specified group already exists. When used with -g, and the
+           specified GID already exists, another (unique) GID is chosen (i.e.
+           -g is turned off).
+
+cat /etc/group #this is where group information is stored
+
+groupdel #The groupdel command modifies the system account files, deleting all entries
+       that refer to GROUP. The named group must exist.
+
+groupmod #The groupmod command modifies the definition of the specified GROUP by modifying the appropriate entry in the group database.
+
+groupmod -o #-o, --non-unique When used with the -g option, allow to change the group GID to a non-unique value.
+
+groupmod -n #-n, --new-name NEW_GROUP The name of the group will be changed from GROUP to NEW_GROUP name.
+
+
+#CREATE A GROUP
+groupadd mynewgroup -g 1099
+
+cat /etc/group | grep 1099
+
+#ADD A USER TO A GROUP
+#there are 2 ways you cant do this, simply add the user to the group in the /etc/group file and the usermod command
+
+usermod -G mynewgroup mynewuser
+
+cat /etc/group | grep mynewgroup
+
+
+
+cat /etc/passwd #most of the users outside of system accounts do not have descriptions associated to them
+
+######to add a description to a user account
+usermod -c "my new user"
+
+usermod #The usermod command modifies the system account files to reflect the changes that are specified on the command line.
+
+usermod -d #-d, --home HOME_DIR
+           The user's new login directory.
+
+           If the -m option is given, the contents of the current home directory will be moved to the new home directory, which is created if it
+           does not already exist.
+
+usermod -e #-e, --expiredate EXPIRE_DATE
+           The date on which the user account will be disabled. The date is specified in the format YYYY-MM-DD.
+
+           An empty EXPIRE_DATE argument will disable the expiration of the account.
+
+           This option requires a /etc/shadow file. A /etc/shadow entry will be created if there were none.
+
+usermod -f # -f, --inactive INACTIVE
+           The number of days after a password expires until the account is permanently disabled.
+
+           A value of 0 disables the account as soon as the password has expired, and a value of -1 disables the feature.
+
+           This option requires a /etc/shadow file. A /etc/shadow entry will be created if there were none.
+
+usermod -g #-g, --gid GROUP
+           The group name or number of the user's new initial login group. The group must exist.
+
+           Any file from the user's home directory owned by the previous primary group of the user will be owned by this new group.
+
+           The group ownership of files outside of the user's home directory must be fixed manually.
+
+
+usermod -G #-G, --groups GROUP1[,GROUP2,...[,GROUPN]]]
+           A list of supplementary groups which the user is also a member of. Each group is separated from the next by a comma, with no
+           intervening whitespace. The groups are subject to the same restrictions as the group given with the -g option.
+
+           If the user is currently a member of a group which is not listed, the user will be removed from the group. This behaviour can be
+           changed via the -a option, which appends the user to the current supplementary group list
+
+usermod -l #-l, --login NEW_LOGIN
+           The name of the user will be changed from LOGIN to NEW_LOGIN. Nothing else is changed. In particular, the user's home directory or
+           mail spool should probably be renamed manually to reflect the new login name.
+
+usermod -L #-L, --lock
+           Lock a user's password. This puts a '!' in front of the encrypted password, effectively disabling the password. You can't use this
+           option with -p or -U.
+
+           Note: if you wish to lock the account (not only access with a password), you should also set the EXPIRE_DATE to 1.
+
+
+#the problem with modifying a userid after the user has been created is it causes issues
+
+###to lock a user account
+usermod -L mynewuser
+
+cat /etc/passwd  #it doesnt look any different
+
+####to unlock a user account
+usermod -U mynewuser
+
+
+#to change the user password
+passwd mynewuser
+
+
+####groupmod
+
+groupmod #The groupmod command modifies the definition of the specified GROUP by modifying the appropriate entry in the group database.
+
+groupmod -o #-o, --non-unique When used with the -g option, allow to change the group GID to a non-unique value.
+
+groupmod -n #-n, --new-name NEW_GROUP The name of the group will be changed from GROUP to NEW_GROUP name.
+
+cat /etc/group | more
+
+groupmod -G 1012 testuser
+
+cat /etc/group | grep testuser
+
+###when you start manipulating user and group ids to the file that were owned before you modify the ids, the files dont disappear they become orphaned
+
+##how to delete a user
+userdel -r #this will remove all of that users mail, cron, print and the users home directory
+but what it doesnt do is remove other files that the user owns on the file system, the file become orphaned
+
+####change age
+cat /etc/shadow | grep user
+
+chage testuser -m 10 -M 100 -W 25
+
+chage #The chage command changes the number of days between password changes and the
+       date of the last password change. This information is used by the system to
+       determine when a user must change his/her password.
+
+
+chage -E #-E, --expiredate EXPIRE_DATE
+           Set the date or number of days since January 1, 1970 on which the user's
+           account will no longer be accessible. The date may also be expressed in the
+           format YYYY-MM-DD (or the format more commonly used in your area). A user
+           whose account is locked must contact the system administrator before being
+           able to use the system again.
+
+           Passing the number -1 as the EXPIRE_DATE will remove an account expiration
+           date
+
+
+chage -I #-I, --inactive INACTIVE
+           Set the number of days of inactivity after a password has expired before
+           the account is locked. The INACTIVE option is the number of days of
+           inactivity. A user whose account is locked must contact the system
+           administrator before being able to use the system again.
+
+           Passing the number -1 as the INACTIVE will remove an account's inactivity.
+
+
+chage -M #-M, --maxdays MAX_DAYS
+           Set the maximum number of days during which a password is valid. When
+           MAX_DAYS plus LAST_DAY is less than the current day, the user will be
+           required to change his/her password before being able to use his/her
+           account. This occurrence can be planned for in advance by use of the -W
+           option, which provides the user with advance warning.
+
+           Passing the number -1 as MAX_DAYS will remove checking a password's
+           validity.
+
+
+##################################################
+Lecture: 107.2 - Automate System Administration Tasks by Scheduling Jobs (cron, crond and crontab Jobs)
+##################################################
+#what is cron?  it primary job scheduling in linux, crond run the jobs
+
+the crontab utility, thats where we schedule jobs
+
+crontab -l #list cron jobs for the user who is executing the command
+
+crontab -u user -l #this will list cron jobs for the named user
+
+crontab -e #this opens the crontab editor
+#the variable that controls which editor to open is in your bashrc file
+
+#Crontab format
+┌───────────── minute (0 - 59)
+│ ┌───────────── hour (0 - 23)
+│ │ ┌───────────── day of month (1 - 31)
+│ │ │ ┌───────────── month (1 - 12)
+│ │ │ │ ┌───────────── day of week (0 - 6) (Sunday to Saturday;
+│ │ │ │ │                                       7 is also Sunday on some systems)
+│ │ │ │ │
+│ │ │ │ │
+* * * * *  command to execute
+
+#Cron examples
+* * * * * env > /root/env.tmp
+:wq
+
+
+#other places to run cron jobs
+#usually system crons are located in /etc/cron.d
+#jobs in the cron.d directory will have a 6th field for the user, this field isnt normally in cron jobs
+0 1 * * Sun root /usr/sbin/raid-check
+
+
+#jobs in the files below you do not need to set a date, once defined the jobs will run
+in /etc
+cron.daily:
+
+cron.hourly:
+
+cron.monthly:
+
+cron.weekly:
+
+#####
+[root@localhost ~]# cd /etc/cron.d
+[root@localhost cron.d]# ll
+total 12
+-rw-r--r--. 1 root root 128 Mar 31  2016 0hourly
+-rw-r--r--. 1 root root 108 Jan 17  2017 raid-check
+-rw-------. 1 root root 235 Nov  5  2016 sysstat
+[root@localhost cron.d]# cat raid-check
+# Run system wide raid-check once a week on Sunday at 1am by default
+0 1 * * Sun root /usr/sbin/raid-check
+
+crontab -l #to see what job the user has
+
+crontab -e
+45 */2 * 1,4,7,10 * cp /home/user /home/user/tmp
+
+
+crontab scheduling
+2,4,6,8 this is for every 2 hrs
+o-4 this is for a range of hrs
+
+
+#when a cron is created it creates the job in /var/spool/cron
+crond will look in this directory for cron jobs
+
+#allow and deny
+cat /etc/cron.deny
+
+#if cron.allow exists and is empty only root users will be allowed to run cron jobs, if this file does not exists it will look for cron.deny, if cron.deny exists and is empty all users will be able to run cron jobs
+if a user is in the cron.deny they will not be able to run cron jobs with crontab
+
+cron.deny #any user in this file will not be able to use cron
+
+#if you create a cron.allow, all users are denied unless they are in the allow file
+
+know that cron.allow is checked first then cron.deny
+
+vim cron.deny
+user
+:wq
+
+
+
+##################################################
+Lecture: 107.2 - Automate System Administration Tasks by Scheduling Jobs (Anacron and Other Scheduling Commands)
+##################################################
+anacron is easier to use than cron
+
+it runs jobs with less time precision or granularity, but will catch up with jobs that were scheduled to run when the system was turned off, cron cant do that
+it use a single file /etc/anacrontab
+can run as a service but its usually run from cron.daily
+it can only run as reoccurring as daily
+
+#to run batch schedule jobs or add hock jobs
+the AT commmand
+
+yum install at
+#there is a service that has to be running just like cron and crond
+
+systemctl start atd
+
+systemctl status atd
+
+#now we can schedule a job
+#there are two ways to schedule a job using at
+at and the time and day you want the job to run
+
+at 12:35 AM today
+at> wall "log off"
+ctrl+d
+
+atq #this will show you the jobs list
+
+/var/spool/at #this will show you the at jobs
+
+
+#AT allows use to schedule a task 1 time some time in the future
+at #at, batch, atq, atrm - queue, examine or delete jobs for later execution
+
+#at  and batch read commands from standard input or a specified file which are to be executed at a later time, using /bin/sh.
+
+at now + 1 minute
+crtl + d #this will end the at input
+
+atq #atq     lists the user's pending jobs, unless the user is the superuser; in that  case,  every‐
+               body's jobs are listed.  The format of the output lines (one for each job) is: Job num‐
+               ber, date, hour, queue, and username.
+
+
+at teatime #You may also specify midnight, noon, or teatime (4pm) and you can have a time-of-day suffixed with AM or PM for running in the morning or the evening.
+
+atrm #atrm    deletes jobs, identified by their job number
+
+
+#there is also at.deny and at.allow, these are white and black list just like cron
+
+
+##################################################
+Lecture: 107.3 - Localization and Internationalization (Dates and Timezones)
+##################################################
+#determining on a linux system, determined from epoch, the birth day of unix system january 1st 1970, exists in a timestamp in seconds
+date #date - print or set the system date and time
+
+date +%T  #%T     time; same as %H:%M:%S
+
+date +%A  #%A     locale's full weekday name (e.g., Sunday)
+
+date +%a  #%a     locale's abbreviated weekday name (e.g., Sun)
+
+date -d  #-d, --date=STRING display time described by STRING, not 'now'
+
+date -r # -r, --reference=FILE display the last modification time of FILE
+
+date -u #-u, --utc, --universal print or set Coordinated Universal Time (UTC)
+
+date +"%d"
+
+date +"%H"
+
+date +"%m"  months
+
+date +"%M" minuets
+
+date +"%Y" year
+
+date +"%z" time zone offset
+
+date +"%H:%M-%m%d%Y-%z"
+
+cd /usr/share/timezone  #these are timezone definitions
+
+#what determines the system timezone
+/etc/localtime  #this will be a soft link to the timezone definition
+
+#to set the timezone, over ride it using a variable
+env | grep TZ
+TZ="Asia/Tokyo"
+
+tzselect #tzselect - view timezones
+
+sudo dpkg-reconfigure tzdata #we can reconfigure the time zone
+
+timedatectl #command
+
+timedatectl list-timezones
+
+timedatectl set-timezone America/Chicago  #to set a timezone
+
+ls -al /etc/localtime
+
+
+##################################################
+Lecture: 107.3 - Localization and Internationalization (Locales and Character Encoding)
+##################################################
+which locale
+/usr/bin/locale
+
+locale #The  locale command displays information about the current locale, or all locales, on standard output.
+
+#shows us these character sets, show us how text will be displayed on the system
+
+local -a #-a, --all-locales Display a list of all available locales.  The -v option causes the LC_IDEN‐TIFICATION metadata about each locale to be included in the output.
+#this shows us whats configured on our system
+
+local -m #-m, --charmaps Display the available charmaps (character set description files).  This shows us whats available
+
+#linux uses a universal library called gettext
+#variables that encoding depends on
+env | grep LANG
+env | grep LANGUAGE
+env | grep LC_ALL  #
+
+locale
+
+export LC_IDENTIFICATION="en_GB.UTF-8"
+#if we do it like this it will not be there if we log out and back in again
+
+vim .bash_profile
+# Set location override returned by locale
+LC_IDENTIFICATION=en_GB.UTF-8
+
+locale-gen #will regenerate all your locale files
+
+env | grep LANG
+
+less /etc/locale.alias  #this will show all locales that we have available
+
+locale-gen  #this will regenerate all our locales
+
+LC_ALL
+
+#a few things that you need to know for the exam
+What is ascii?
+
+UTF-8 #UTF-8 is a character encoding capable of encoding all possible characters, or code points, defined by Unicode and originally designed by Ken Thompson and Rob Pike.[1]
+The encoding is variable-length and uses 8-bit code units. It was designed for backward compatibility with ASCII and to avoid the complications of endianness and byte order marks in the alternative UTF-16 and UTF-32 encodings. The name is derived from Unicode (or Universal Coded Character Set) Transformation Format – 8-bit.[2]
+
+
+ISO8859 #ISO/IEC 8859 is a joint ISO and IEC series of standards for 8-bit character encodings. The series of standards consists of numbered parts, such as ISO/IEC 8859-1, ISO/IEC 8859-2, etc. There are 15 parts, excluding the abandoned ISO/IEC 8859-12. The ISO working group maintaining this series of standards has been disbanded.
+
+
+ASCII #ASCII (Listeni/ˈæski/ ass-kee),[1]:6 abbreviated from American Standard Code for Information Interchange, is a character encoding standard (the Internet Assigned Numbers Authority (IANA) prefers the name US-ASCII[2]). ASCII codes represent text in computers, telecommunications equipment, and other devices. Most modern character-encoding schemes are based on ASCII, although they support many additional characters.
+english encoded characters
+
+
+Unicode  #Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world's writing systems. Developed in conjunction with the Universal Coded Character Set (UCS) standard and published as The Unicode Standard, the latest version of Unicode contains a repertoire of more than 128,000 characters covering 135 modern and historic scripts, as well as multiple symbol sets.
+#defines every character as a number, called a code point ### for the exam this is all you need to know
+
+code pages #vender specific
+
+iconv #iconv - convert text from one character encoding to another
+
+
+iconv #iconv - convert text from one character encoding to another
+
+echo -e "\nCreate some kind of file with various text.\t1\2\n\nTerry" >> test.txt
+
+iconv --to-code=FR test.txt
+
+iconv -c -f ASCII -t MACCYRILLIC VNCHOWTO > VNCHOWTO.new.cryillic
+
+
+##################################################
+Exercise: Automate System Administration Tasks by Scheduling Jobs - Using CRON
+##################################################
+1.  Login/become the root user, list all cron jobs currently scheduled to run as root.
+2.  As root, add a cron job to list the contents of /var and write a file called dir.out to the /root directory. This job should run daily at 2:15 AM and 2:15 PM.
+
+Solution
+sudo su -; crontab -l
+sudo su -; crontab -e; 15 02,14 * * * ls -alR / > /root/dir.out
+
+
+##################################################
+Exercise: Automate System Administration Tasks by Scheduling Jobs - Using AT
+##################################################
+1.  As root, interactively recreate the cron job you created above using the at command; have it run the same command at 6:00 PM.
+2.  Create a command that will run a script called backup.sh from the /sbin directory at 5:55 AM (non-interactive, single command with appropriate parameters).
+
+Solution
+
+sudo su -; at 18:00; at> ls -alR / > /root/dir.out; #CTRL D
+at 05:55 -f /sbin/backup.sh
+
+
+##################################################
+Hands-on Lab: Creating and Managing Users and Groups
+##################################################
+mkdir /mnt/reports
+
+groupadd accounting
+
+cat /etc/group | grep accounting
+
+useradd tomc
+useradd johns
+useradd brandy
+
+passwd tomc
+passwd johns
+passwd brandy
+
+usermod -G accounting tomc
+usermod -G accounting johns
+usermod -G accounting brandy
+
+chown root:accounting /mnt/reports
+
+chmod 770 /mnt/reporting
+
+ssh tomc@localhost
+cd /mnt/reports
+echo "my file" > johns.txt
+echo "my file" > johns2.txt
+
+exit
+
+
+ssh tomc@localhost
+cd /mnt/reports
+echo "my file" > brandy.txt
+
+rm john.txt
+
+
+
+
+##################################################
+Quiz: Topic 107: Administrative Tasks (Section Quiz)
+##################################################
+1) How many total fields are in a CRON job line?
+Correct
+
+Correct answer
+6
+
+Explanation
+SIX including the command itself - Minute, Hour, Day of Month, Month, Day of Week, Command
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/3/module/126
+
+2) Which of the following directories contains files that will be copied to any new user's home directory when that user is created?
+Correct
+
+Correct answer
+/etc/skel
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/2/module/126
+
+3) Which of the following commands will display the queue of any scheduled 'at' created jobs?
+Correct
+
+Correct answer
+atq
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/4/module/126
+
+4) The root user ID (UID) is always identified by which number?
+Correct
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/1/module/126
+
+5) The default 'users' group ID (GID) is which of the following numbers?
+Correct
+
+Correct answer
+100
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/1/module/126
+
+
+##################################################
+Topic 108: Essential System Services
+##################################################
+##################################################
+Lecture: 108.1 - Maintain System Time (Hardware Clock, System Clock and NTP)
+##################################################
+#there are 2 systems clocks, the first one being the one the kernel relies on that responds with time values when writing files, this is the system clock, this is what the date command will query when
+
+#system clock
+#date command
+we can use the date command to query the system time as well as set the time
+
+date #date - print or set the system date and time
+
+date
+
+date -R # -R, --rfc-2822 output date and time in RFC 2822 format.  Example: Mon, 14 Aug 2006 02:34:56 -0600, this shows the offset from utc
+
+date -u # UTC
+
+sudo date '-s 2013-07-20 09:38:30 +00000' #this is how you set the date with a zero offset
+#-s, --set=STRING set time described by STRING
+
+date --rfc-3339=date
+2017-03-09
+
+date --rfc-3339=seconds
+2017-03-09 19:40:25-08:00
+
+date --rfc-3339=ns
+2017-03-09 19:41:14.225999069-08:00
+
+date --date='15 days ago'
+Wed Feb 22 19:41:43 PST 2017
+
+date --date='15 months ago'
+Wed Dec  9 19:42:02 PST 2015
+
+date --date='15 years ago'
+Sat Mar  9 19:42:22 PST 2002
+
+
+We can set the date and time regardless of what the hardware clock says
+
+#we can set the date by omitting the +
+date MMDDhhmm[CCYY.ss]
+
+date 06210145
+
+
+#hardware clock
+this is the clock thats on your system mother board
+a hardware clock does not worry about time zone
+
+you can sync your hardware clock in 2 ways
+hwclock --systohc
+
+
+hwclock #hwclock - read or set the hardware clock (RTC)
+
+hwclock -s #-s, --hctosys
+              Set  the  System  Clock  from the Hardware Clock.  The time read from the Hardware Clock is compensated to account for systematic drift before using it to set the System Clock.
+              See the discussion below, under The Adjust Function.
+
+hwclock -w #-w, --systohc Set the Hardware Clock from the System Clock, and update the timestamps in /etc/adjtime.  When the --update-drift option is given, then also (re)calculate the drift factor.
+
+#there is a file that can track calibration to the clock
+cat /etc/adjtime
+
+The hardware clock is maintained by a battery on the mother board
+
+#ntp
+Network time protocol
+#it isnt installed by default unless its a server distribution
+
+yum install ntp
+systemctl start ntpd
+systemctl status ntpd
+
+#what is ntp syncronizing against?
+pool.ntp.org
+
+
+
+#sends round trip packets to the remote time server and it measures the time it takes
+
+vim /etc/ntp.conf
+
+ntpq #ntpq - standard NTP query program
+
+Drift is the amount of time that the hardware and system clock differ and for ntp is can be the amount from your local system clock and the response that we get from our sync peers
+
+
+
+##################################################
+Lecture: 108.2 - System Logging
+##################################################
+syslog #syslogd
+log levels 0-7, 0 meaning log only emergencies and 7 being debug level
+#syslog is generally not used in modern distributions
+
+vim syslog.cong
+#these are logging facilities
+
+:wq
+
+cat messages
+
+logger #logger - enter messages into the system log
+
+logger hello will
+
+#logger send the messages to /var/log/syslog
+
+logger -i this is another message  #this will include  the thread pid associated with the thread that send the message
+
+logger -t backupscript -s error message
+joe-VirtualBox backupscript: error message
+
+logger -f /var/log/ourownfile
+
+
+logger -t backupscript -i Error while trying to backup #-i is the process id
+
+
+journalctl #journalctl may be used to query the contents of the systemd(1) journal as written by systemd-journald.service(8)
+
+journelctl -o --verbose  #verbose mode
+
+journelctl -f #like tale -f, the f means follow
+
+journelctl -u ntpd  #you will only get entries that apply to the ntpd service
+
+#the 2 options that are the most pertinent
+journelctl -xe #this will jump to the end of the log and provide context under why the log occured
+
+everytime the system reboot the systemd journal clears out, its not a persistant state
+
+vim /etc/systemd/journal.conf
+
+#the contents are stored in the /run , this is temporary storage, when the system reboots the contents are cleared out
+
+if we change this to
+#Storage=auto
+Storage=persistent  #the journal data will now be persistent
+
+dmesag dumps the entire kernel ring buffer content
+
+systemd journal is listening and recoding messages
+
+systemctl status httpd
+
+journelctl -n #will show us the last 10 lines
+
+journelctl -n 20 #this will show the last 20 lines, -n is 10 by default
+
+journelctl -xn  #-x  Augment log lines with explanation texts from the message catalog. adds extra help from  the messages
+
+journelctl _SYSTEMD_UNIT=httpd.service
+
+
+logrotate #logrotate ‐ rotates, compresses, and mails system logs
+
+-rw-r--r--   1 root root     703 May  5  2015 logrotate.conf
+drwxr-xr-x   2 root root    4096 Feb 21 21:56 logrotate.d/
+
+cat /etc/logrotate.d
+
+
+
+rsyslogd
+-opensource port of the unix syslog protocal.  it is the program used for forwarding log messages on a system
+-ususally is default on all linux systems instead of syslog which is less feature rich unix version of logging
+-enables "central" logging and the abbility to send log messages over tcp transport
+-/etc/rsyslog.conf
+
+#sending logging to a central logging server is called sending logging over TCP
+
+rsyslogd /etc/rsyslog.conf
+selectors - a selector is made up of a facility and a priority.  "facility.priority" cron.info;kern.warn
+
+facility -specifies the subsystem that produced the message
+aoth, authpriv, cron, daemon, kern, lpr, mail, mark, news, security, syslog, user, uucp
+priority defines the severity of the message
+debug, info, notice, warning, err, crit, emerg
+
+* means all facilities or all priorities
+"none" means no priority of the given facility
+selectors can overwrite existing ones in the same configuration
+
+syslog-ng
+-aleternative next generation logging
+-opensource  version of syslog for unix
+-extends syslog support so it does include tcp transport for centralized logging
+has a premium non free version with enterprise level support
+available as a package download on most common distributions to use in place of rsyslog
+also uses selectors with a facility/priority
+
+
+
+vim /etc/rsyslog.conf
+
+
+##################################################
+Lecture: 108.3 - Mail Transfer Agent (MTA) Basics (Email Overview)
+##################################################
+#sendmail, is the original
+#mail relying, sending mail through your server, it would get your mail server blacklisted because people would use them for spam
+
+#postfix, it was developed by IBM to replace sendmail as the default mail server on modern distributions.  Incorporates policy support to reduce spam and separates processes for security purposes
+
+#qmail, secure replacement for sendmail.  Separate process es allow for better security and isolation and a much simpler configuration make this a good choice.  however, development has stagnated recently
+
+#exim, like sendmail in that it is considered 'monolithic' in type and configuration, although it is known to have a better security history.  the configuration is simpler and is sometimes seen as the default mail server in older versions of Debian distributions
+
+SMTP  simple mail tranfer protocol. it is a protocol that really defines how email is tranferred and saved and is part of the TCP/IP application layer as well as settings rules that email applications follow
+
+MUA  Mail user agent, this is whatever application you use to create and send email (thunderbolt, evolution, squirrelmail)
+
+MSA, mail submission agent, acts as an intermediary or gateway between the MUA and an MTA to start the tranfer of a email
+
+MTA, Mail transfer agent.  accepts email from the MUA and sends it (if needed) to the receiving mail server (another MTA if this is not the destination).  There are a number of MTA servers in linux (postfix, which we will use, sendmail and more)
+
+MDA, mail deliver agen.  receives email from the MTA and then delivers it to local mail spool for retrieval by any of dozens of client email applications.  sometimes an MTA can also function as a MDA but often (procmail for example) they are independent applications that can also filter (like spam)
+
+POP, post office protocol, used my MUAs to get email (covered in more detail later)
+
+IMAP, Internet message access protocol.  used by MUAs to get email
+
+MX Record, these are the mail DNS records we created earlier in the isourse, these records are useed by MTAs to determin the authoratative mail server for any email message
+
+yum search postfix
+
+yum install postfix
+
+ps -aux | grep postfix
+
+systemctl status postfix
+
+cd /var/mail #these are where the mail spools for our users are located
+
+mail -s "this is the subject" linux  #if the user is located on the system you can just use the name of that user
+-b #blind carbon copy
+-c  #carbon copy
+
+[root@localhost mail]# mail -s "this is the subject" linux
+we can write the body of the email here
+#to end press ctrl+d
+#############THE CONTENTS OF THE LINUX USER SPOOL
+[root@localhost mail]# cat linux
+From root@localhost.localdomain  Sun Mar 12 21:30:53 2017
+Return-Path: <root@localhost.localdomain>
+X-Original-To: linux
+Delivered-To: linux@localhost.localdomain
+Received: by localhost.localdomain (Postfix, from userid 0)
+	id E91C7306A8DC; Sun, 12 Mar 2017 21:30:53 -0700 (PDT)
+Date: Sun, 12 Mar 2017 21:30:53 -0700
+To: linux@localhost.localdomain
+Subject: this is the subject
+User-Agent: Heirloom mailx 12.5 7/5/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20170313043053.E91C7306A8DC@localhost.localdomain>
+From: root@localhost.localdomain (root)
+
+we can write the body of the email here
+
+###############
+
+vim sendmail
+#!/bin/bash
+
+mail -s "your script has completed thanks" < /root/bin/body.txt root
+
+echo "this is the body of your email" > body.txt
+
+chmod u+x sendmail
+
+./sendmail
+
+mail -u root #this displays mail for the root user
+
+enter the id of the email to get the entire contents
+
+enter r, to respond back , ctrl+d to send the message
+
+enter d, to delete
+
+######
+mail -s "test email" /root/bin/body.txt joeywagner@gmail.com
+
+man mailq #
+
+man postqueue #postqueue - Postfix queue control
+
+postqueue -f #this will force any mail that has built up in our queue
+
+
+
+
+##################################################
+Lecture: 108.3 - Mail Transfer Agent (MTA) Basics (Creating Aliases)
+##################################################
+MTA #MTA is responsible for delivering mail from one place to another, wether that is from the client to another mail transfer agent, called relaying,
+the MTA will be using a email server like sendmail or postfix, or qmail
+
+#for the lpic 1 exam we are not required to know how to install and configure a email system
+we just need to know from a client perspective howe to use the email system, manage the queue, and setup aliases both as a user and system wide
+
+#however for testing we need a email server
+yum install sendmail  #monolithic but relativly simple out of the box
+
+systemctl start sendmail
+systemctl status sendmail
+
+#we may want someone else on the system to to receive the root uses emails
+there are a few ways that we can do this
+#first we need to test that our system is able to send and receive mail using mailq
+yum install mailx  #this gives us the ability to do commanline mail
+
+mail  #with the mail command we can check email
+
+mail -u user  #we can check mail for a different user
+
+mail user  #to email the user user
+#enter subject here
+#enter body
+##when you are done press ctrl+q to end/send the email
+
+##if you press enter, it will start the display of each email message
+
+##to delete the messages that are in the queue
+d 1 #delete message 1
+d 2  #delete message 2
+
+quit #to quit mail
+
+
+vim /etc/aliases
+#at the bottom
+#person who should get roots mail
+
+:wq
+
+#for the alias change to take effect you must run the newaliases command
+newaliases
+
+#the new aliases command updates the /etc/aliases.db
+
+
+
+cd /var/spool/mail
+#there is mail by user here
+
+cd ..
+#the mail queue directory is what the mailq reads
+#this directory should be empty most of the time, unless mail is queued or waiting to be delivered
+#or a spam filter installed or a invalid email
+
+mailq  #you can verify if things are waiting to be delivered
+
+
+#one other thing that you will wan to be aware of from a configuration standpoint
+cat /var/log/maillog  #this will contain relay errors, delivery confirmations, the PID that was responsible for sending it
+
+
+#not everyone has access to set a alias at a system level
+#if you are a regular user, there might be times that you want to send your email to another user
+vim /home/user/.forward
+newuser  #this is who's going to receive your mail
+
+systemctl restart sendmail
+
+#now lets mail user to test
+mail user
+is this being forwarded
+did we do this right
+ctrl+q
+
+
+#one of the other things that we can look at for aliases for users is multiple users receiving a particular email
+vim /etc/aliases
+root  user,newuser
+
+#we could also send email to a script or an application
+support   | /opt/helpdesk/create_ticket.sh  #this is a madeup script
+
+
+##################################################
+Lecture: 108.4 - Manage Printers and Printing (CUPS, lpr and Printing at the CLI)
+##################################################
+#2 legacy printing devices
+lpd #the line printing deamon, before CUPS
+
+IPP  #internet printing protocol, developed in conjunction with HP and some other printing vendors
+
+CUPS arrived to save the day
+Common UNIX Printing System (CUPS)
+
+
+#To install cups
+yum install cups cups-lpd -y
+
+#there is a daemon associated with cups
+systemctl enable cups
+systemctl start cups
+systemctl status cups
+
+
+cd /etc/cups
+#the primary configuration is cupsd.conf
+#the default configuration is just fine
+
+
+#other files that we need to be aware of:
+classes.conf #configures class definitions
+
+cups.conf.default  #its a copy of the default configuration file incase you hork your .conf
+
+printers .conf   #this is a definition of all thje printers installed on the system
+
+
+cd ppd  #this will contain printer drivers that are specific to printers that we install
+
+
+#using cups
+##first install a printer that we can use
+yum install cups-pdf
+
+#how do we administer the system
+yum install elinks
+
+elinks http://localhost:631
+
+#using elinks is more difficult to use that a graphical browser
+
+#look at current lp configuration
+lpstat #this will provide no information
+
+lpstat -p  #this will display what printers you have installed
+
+lpstat -d  #this will display what the default printers are
+
+lpstat -a  #list all of the print queues and what their status might be
+
+lpstat -r #is the service running
+
+lpstat -s  #what the default configuration is
+
+
+#How do you set a default?  you can set a default by setting the name of the printer that you want the default to be
+lpstat -a
+
+lpoptions -d Cups-PDF #this will set the default
+
+lpstat -d #to list the default printer
+
+lpoptions -l  #list available options for printer
+
+#add a printer at the command line
+lpadmin -p MyTestPrinter -E -v /dev/null -m raw
+
+
+#How to send a file to a printer
+cat VNCHOWTO | lp
+
+
+lpr #the lpr command is the same as lp but it takes some different options
+
+lpr -P Cups-PDF
+
+
+lp -n 2  #number of copies
+
+lpq  #see whats in the print queue
+
+
+cupsctl  #hot to control cups
+
+
+
+cups command line tools
+lpstat -d
+
+cupsreject Cups-PDF
+
+lpstat -a
+
+cupsaccept Cups-PDF
+
+lpstat -a
+
+lpoptions -d Cups-PDF
+
+lpstat -a
+
+lpstate -d
+
+cupsdisable Cups-PDF
+
+lpstat -a
+
+lpq  #we can see that the job is in the queue
+
+cupsenable Cups-PDF
+
+lpq
+
+
+lprm #lprm — remove jobs from the line printer spooling queue
+
+
+cd /var/spool/cups
+#the files that exist here can be reprinted in the browser, if we remove the file from cups we will not be able to resubmit jobs
+
+
+
+##################################################
+Exercise: Manage Printers and Printing - Create and Test Job and Verify the Queue
+##################################################
+1. Install the CUPS and Legacy LPD print service
+
+[root@tcox6 ~]# yum install cups cups-lpd
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.datto.com
+ * epel: mirror.cogentco.com
+ * extras: mirrors.advancedhosters.com
+ * nux-dextop: mirror.li.nux.ro
+ * updates: mirror.cs.pitt.edu
+Resolving Dependencies
+--> Running transaction check
+---> Package cups.x86_64 1:1.6.3-26.el7 will be installed
+--> Processing Dependency: ghostscript-cups for package: 1:cups-1.6.3-26.el7.x86_64
+---> Package cups-lpd.x86_64 1:1.6.3-26.el7 will be installed
+--> Running transaction check
+---> Package ghostscript-cups.x86_64 0:9.07-20.el7_3.5 will be installed
+--> Finished Dependency Resolution
+
+***OUTPUT TRUNCATED HERE***
+
+2. Install the CUPS-PDF Printer
+
+[root@tcox6 ~]# yum install cups-pdf
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.datto.com
+ * epel: mirror.cogentco.com
+ * extras: mirrors.advancedhosters.com
+ * nux-dextop: mirror.li.nux.ro
+ * updates: mirror.cs.pitt.edu
+Resolving Dependencies
+--> Running transaction check
+---> Package cups-pdf.x86_64 0:2.6.1-7.el7 will be installed
+--> Finished Dependency Resolution
+
+3. Start the CUPS service, verify it is running
+
+[root@tcox6 ~]# systemctl start cups
+[root@tcox6 ~]# systemctl status cups
+● cups.service - CUPS Printing Service
+   Loaded: loaded (/usr/lib/systemd/system/cups.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sat 2017-06-24 19:12:27 UTC; 4s ago
+ Main PID: 1968 (cupsd)
+   CGroup: /system.slice/cups.service
+           └─1968 /usr/sbin/cupsd -f
+
+Jun 24 19:12:27 tcox6.mylabserver.com systemd[1]: Started CUPS Printing Service.
+Jun 24 19:12:27 tcox6.mylabserver.com systemd[1]: Starting CUPS Printing Service...
+
+4. List all printers along with the default printer set
+
+[root@tcox6 ~]# lpstat -p -d
+printer Cups-PDF is idle.  enabled since Wed 21 Jun 2017 10:14:57 AM CDT
+no system default destination
+
+5. Configure the CUPS-PDF printer as default
+
+[root@tcox6 ~]# lpoptions -d Cups-PDF
+copies=1 device-uri=cups-pdf:/ finishings=3 job-hold-until=no-hold job-priority=50 job-sheets=none,none marker-change-time=0 number-up=1 printer-commands=AutoConfigure,Clean,PrintSelfTestPage printer-info=Cups-PDF printer-is-accepting-jobs=true printer-is-shared=true printer-location printer-make-and-model='Generic CUPS-PDF Printer' printer-state=3 printer-state-change-time=1498058097 printer-state-reasons=none printer-type=8450124 printer-uri-supported=ipp://localhost:631/printers/Cups-PDF
+
+6. Verify it shows as default, display printer options for that printer
+[root@tcox6 ~]# lpstat -d
+system default destination: Cups-PDF
+[root@tcox6 ~]# lpoptions -l
+PageSize/Page Size: Custom.WIDTHxHEIGHT 11x14 11x17 13x19 16x20 16x24 2A 4A 8x10 8x12 A0 A1 A2 A3 A4 A5 AnsiA AnsiB AnsiC AnsiD AnsiE ArchA ArchB ArchC ArchD ArchE C0 C1 C2 C3 C4 C5 Env10 EnvC5 EnvDL EnvMonarch Executive ISOB0 ISOB1 ISOB2 ISOB3 ISOB4 ISOB5 JISB0 JISB1 JISB2 JISB3 JISB4 JISB5 Ledger Legal *Letter RA0 RA1 RA2 RA3 RA4 SRA0 SRA1 SRA2 SRA3 SRA4 SuperA SuperB TabloidExtra Tabloid
+Resolution/Output Resolution: 150dpi *300dpi 600dpi 1200dpi 2400dpi
+
+
+
+##################################################
+Exercise: Maintain System Time - Working with System Time
+##################################################
+1.  Display the current date and time on the system. Display the UTC equivalent time. Set the time one minute ahead.
+2.  Show the hardware clock system time. Reset the system time based on the current timezone.
+Solution
+
+date; date -u; date --date 00:00 #(add 1 here)
+sudo hwclock -r; sudo hwclock --systz #(read from /usr/share/zoneinfo tzset)
+
+
+##################################################
+Exercise: Maintain System Time - Timezones
+##################################################
+1.  List the directory that is responsible for all timezone information
+2.  List the contents of your ntp.conf file. Find the NTP public servers for your region of the world/country and add them to your configuration. Start the NTP service.
+Solution
+
+1.  /usr/share/zoneinfo
+2.  If exists for the distribution, it will be /etc/ntp.conf or /etc/ntp/ntp.conf. Timezone servers can be found at http://www.pool.ntp.org; each server can be added to ntp.conf by adding a line server 0.ntp.server.location and then 1.ntp.server.location', etc.
+
+
+##################################################
+Hands-on Lab: Installing the CUPS Print System and Setting Up Local Printers
+##################################################
+yum install lynx
+
+yum install cups cups-lpd
+
+yum install cups-pdf
+
+systemctl start cups
+
+lynx http://localhost:631
+
+admin > add printer > user/pw > continue > continue > continue > add printer > exit
+
+
+lpstat -p -d
+
+lpoptions -d Cups-PDF
+
+lpstat -p -d
+
+exit
+
+#create a print job
+echo "hi" | lp
+
+lpq
+
+ll
+
+su root
+
+cupsdisable Cups-PDF
+lpstat -p -d
+
+echo "another test" | lp
+
+lpq
+
+lprm 4
+lpq
+
+cupsenable Cups-PDF
+
+lpstat -p -d
+
+
+##################################################
+Hands-on Lab: Resolving Time Synchronization Issues Between Clocks
+##################################################
+date
+
+sudo hwclock
+
+sudo /cat /etc/adjtime
+
+date 06260738  #you can set the date like this but its better to sync them
+
+sudo hwclock -w
+
+date
+
+sudo hwclock
+
+
+##################################################
+Hands-on Lab: Remote Server Timezone Configuration
+##################################################
+date  #find what time zone your system is in
+
+date +%z  #timezone offset
+
+#a timezone is set in 1 of 2 locations, it is et per person or per environemt
+
+echo $TZ  #the timezone variable
+
+ll /etc/localtime
+
+#figure out what timezone we want
+
+ll /usr/share/zoneinfo
+ll /usr/share/zoneinfo/America
+
+cd ../US
+
+pwd
+usr/share/zoneinfo/US
+
+rm /etc/localtime
+
+ln -s usr/share/zoneinfo/US/Central /etc/localtime
+
+#now the timezone will survive a reboot
+
+
+##################################################
+Quiz: Topic 108: Essential System Services (Section Quiz)
+##################################################
+1) Which of the following is the correct format for an entry in the /etc/aliases file for email?
+Correct
+
+Correct answer
+root: fred,sam
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/4/module/126
+
+2) What is the definition of 'time drift'?
+Correct
+
+Correct answer
+The amount of time that the hardware and system clocks differ
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/1/module/126
+
+3) The CUPS command 'cupsdisable' will have what effect on a printer?
+Correct
+
+Correct answer
+Disable the printer and queue all jobs
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/5/module/126
+
+4) Which of the following special character combinations that, when used with the 'date' command, will display JUST the two digit month?
+Incorrect
+
+Correct answer
+%m
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/1/module/126
+
+5) Which of the following are 'syslog' alternatives? (CHOOSE ALL THAT APPLY)
+Correct
+
+Correct answer
+rsyslog, syslog-ng
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/2/module/126
+
+
+
+##################################################
+Topic 109: Networking Fundamentals
+##################################################
+##################################################
+Lecture: 109.1 - Fundamentals of Internet Protocols (Overview)
+##################################################
+IP (internet protocol):  A method of uniquely identifying an address (destiniation) for a specific system.  Two primary versions: ipv4 and ipv6
+
+IPv6
+Why IPv6?
+IPv4 is only 32 bits long, originally thought to be enough to provide each public network device with a global address.
+
+--phones
+--IOT (internet of things)
+
+128 bits long, first 48 bits are network prefix and the following 16bits are the subnet ID and finally the last 16 bits are the interface identifier
+made up of 8, 16 nit groups
+2001:db8:85a3:0:0:8a2e:370:7334
+
+TCP(transmission control protocol)
+the method by which all transactions between IP addresses (of any version) are communicated.  Defines a system of transmissions and acknowledgement to verify traffic arrives and can be assembled in the correct order
+
+UDP(user datagram protocol)
+Often considered 'complementary' to IP but is a stateless connection.
+no error checking or retransmission of packets takes place, even if the transmission of the packet failed.
+
+ICMP (internet control message protocol)
+Designed for networking devices (routers, intelligent switches, firewalls, etc) to send error messages.  In addition it can perform queries around network service availability (as in the case where the 'ping' command is used to test whether an address responds to a request)
+
+IP class ranges
+Class	Address Range	Supports
+Class A	1.0.0.1 to 126.255.255.254	Supports 16 million hosts on each of 127 networks.
+Class B	128.1.0.1 to 191.255.255.254	Supports 65,000 hosts on each of 16,000 networks.
+Class C	192.0.1.1 to 223.255.254.254	Supports 254 hosts on each of 2 million networks.
+Class D	224.0.0.0 to 239.255.255.255	Reserved for multicast groups.
+Class E	240.0.0.0 to 254.255.255.254	Reserved for future use, or Research and Development Purposes.
+
+
+Network Mask
+Defines a logical network (called a subnet) that indicates the start and ending of a range of addresses.
+
+Ranges
+each address class range has an associated network/subnet mask.  The number (designated by the /) is called classless inter-doman routing notation (CIDR)
+Example
+class A: 255.0.0.0 or /8
+class B: 255.255.0.0 or /16
+class C: 255.255.255.0 or /24
+
+
+Gateway
+the destination where network traffic goes that has no other matching route or is not intended for the local system network itself
+
+Broadcast address
+every network has one, operating on the address nummber 255
+Example:
+192.168.1.0/24
+192.168.1.255 is the broadcast address
+
+
+• 20/21—FTP
+• 22—SSH
+• 23—Telnet
+• 25—SMTP
+• 53—DNS
+• 80—HTTP
+• 110—POP3
+• 123—NTP
+• 139—NETBIOS
+• 143—IMAP
+• 161/162—SNMP
+• 389—LDAP
+• 443—HTTPS
+• 465—SMTPS
+• 514—SYSLOG
+• 636—LDAPS
+• 993—IMAPS
+• 995—POP3S
+
+
+
+##################################################
+Lecture: 109.2 - Basic Network Configuration (Working with Interfaces and Routes)
+##################################################
+ifconfig
+
+HWaddr = mac address
+
+ifconfig -a  #list all interfaces
+
+ifdown
+
+ifup
+
+ip #ip - show / manipulate routing, devices, policy routing and tunnels
+
+ip addr show  #this is the same as ifconfig
+
+#neworking scripts are located
+/etc/sysconfig/network-scripts
+
+ll ifconfig-*
+
+vim ifconfig-eth0
+#to configure a static interface
+DEVICE=eth0
+ONBOOT=on
+BOOTPROT=static
+IPADDR=10.1.0.10
+NETMASK=255.255.255.0
+GATEWAY=10.1.0.1
+
+:q!
+
+#to activate the changes we need to restart the neuwork
+service network restart
+
+
+#the default gateway
+The destination of ALL traf c whose destination is not on the local system network OR does not have another matching static route con gured
+
+#to view routing table
+route
+
+netstat -r #to also view routing
+
+ip route show  #also to view routing
+
+#destination default
+netstat -rn
+
+#to add a route
+route add 8.8.8.8 gw 172.31.26.111
+
+route
+
+netstat -rn
+
+#now we will see that any traffic to 8.8.8.8 will go through 172.31.26.111
+
+route del 8.8.8.8 gw 172.31.26.111
+
+route add 8.8.8.8 gw 172.31.26.1
+
+route
+
+route del 8.8.8.8 gw 172.31.26.1
+
+#Forwarding
+we can allow our server to forward traffic and act as a router but we need to turn on forwarding
+
+cd /proc/sys/net/ipv4
+cat ip_forward
+0
+
+#all we have to do to enable forwarding is change the 0 to 1
+echo 1 > ip_forward
+
+#to make this persistant
+vim /etc/sysctl.conf
+#change the 0 to 1
+net.ipv4.ip_forward
+
+
+
+#DHCP
+3 ways to renew your servers lease
+which dhcpd
+dhcpd -k  #it kills and restarts to get a new lease
+
+which pump
+pump  #this will release the lease and resubscription for new ip lease
+
+which dhclient
+dhclient
+#you will want to restart networking after getting a new ip
+
+
+##################################################
+Lecture: 109.3 - Basic Network Troubleshooting
+##################################################
+ping #ping uses icmp to make queries for the availability of a interface over a period of time
+
+ping www.linuxacademy.com
+icmp is very often squashed at the firewall
+
+ping google.com
+
+ping -c 5 google.com #ping 5 times
+
+ping -c -i 2 google.com  #ping with a 2 second delay
+
+#traceroute and path are a good why to test performance from one machine to a destination
+
+traceroute   #this will tell us how many hops a icmp packet takes, you must be a root user to run, tracepath is better than traceroute
+
+tracepath google.com #as a non root user, it has some limitations because youre not root
+
+
+netstat -a #will show all active sockets on our system
+
+netstat -a | grep CONNECTED | wc -l #to get the number of connections
+
+netstat -c 5 -a #refresh every 5 seconds
+
+netstat -a -p #this will show the pid for every running socket
+
+netstat -t #this will show only tcp
+
+netstat -rn #show routing table
+
+#there are ipv6 equivalence to all of the ablve commands
+ping6
+ping -6 is the same thing as ping6
+
+tracepath6
+
+traceroute6
+
+
+##################################################
+Lecture: 109.4 - Configure Client Side DNS
+##################################################
+vim /etc/hosts
+8.8.8.8 www.google.com
+
+:wq
+
+#dns lookup
+vim /etc/resolv.conf
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+:wq
+
+#dns order lookup
+vim /etc/nsswitch.conf
+hosts: files dns myhostname  #the order after hosts determine the order that the system will query dns record
+
+
+#3 dns trouble shooting utilities
+host
+getent
+dig
+
+yum install bind-utils  #berkley internet naming daemon
+
+host www.linuxacademy.com
+
+getent hosts www.linuxacademy.com
+
+dig www.linuxacademy.com
+
+#different types of records
+A record
+C name = alias
+NS record = nameserver record
+MX record = where do i send my email
+
+dig www.linuxacademy.com NS
+
+
+##################################################
+Exercise: Basic Network Configuration - Using Local Hosts File
+##################################################
+1. Display the local hosts file
+
+[root@tcox6 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+2. Install the 'bind-utils' package
+
+[root@tcox6 ~]# yum install bind-utils
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.datto.com
+ * epel: mirror.cogentco.com
+ * extras: mirrors.advancedhosters.com
+ * nux-dextop: mirror.li.nux.ro
+ * updates: mirror.cs.pitt.edu
+Resolving Dependencies
+--> Running transaction check
+---> Package bind-utils.x86_64 32:9.9.4-38.el7_3.3 will be installed
+--> Processing Dependency: bind-libs = 32:9.9.4-38.el7_3.3 for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: liblwres.so.90()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: libisccfg.so.90()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: libisccc.so.90()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: libisc.so.95()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: libdns.so.100()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Processing Dependency: libbind9.so.90()(64bit) for package: 32:bind-utils-9.9.4-38.el7_3.3.x86_64
+--> Running transaction check
+---> Package bind-libs.x86_64 32:9.9.4-38.el7_3.3 will be installed
+--> Finished Dependency Resolution
+
+***OUTPUT TRUNCATED HERE***
+
+3. Perform an 'ping' on the full cloud server host name and note the returned IP
+
+[root@tcox6 ~]# ping tcox6.mylabserver.com
+PING tcox6.mylabserver.com (52.201.233.71) 56(84) bytes of data.
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=1 ttl=63 time=0.952 ms
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=2 ttl=63 time=0.669 ms
+^C
+--- tcox6.mylabserver.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.669/0.810/0.952/0.144 ms
+
+4. Edit the local hosts file, using the cloud servers private IP, add an entry for the full cloud server host name and the private IP, save the file
+
+[root@tcox6 ~]# vim /etc/hosts
+[root@tcox6 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+172.31.97.114 tcox6.mylabserver.com
+
+5. Rerun the 'ping' on the full cloud server host name and verify the internal IP is returned
+
+[root@tcox6 ~]# ping tcox6.mylabserver.com
+PING tcox6.mylabserver.com (172.31.97.114) 56(84) bytes of data.
+64 bytes from tcox6.mylabserver.com (172.31.97.114): icmp_seq=1 ttl=64 time=0.015 ms
+64 bytes from tcox6.mylabserver.com (172.31.97.114): icmp_seq=2 ttl=64 time=0.026 ms
+^C
+--- tcox6.mylabserver.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 999ms
+rtt min/avg/max/mdev = 0.015/0.020/0.026/0.007 ms
+
+
+
+
+##################################################
+Exercise: Basic DNS Client Configuration - Working with Order of DNS Record Queries
+##################################################
+1. Display the local hosts file
+
+[root@tcox6 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+2. Perform an 'ping' on the full cloud server host name and note the returned IP
+
+[root@tcox6 ~]# ping tcox6.mylabserver.com
+PING tcox6.mylabserver.com (52.201.233.71) 56(84) bytes of data.
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=1 ttl=63 time=0.673 ms
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=2 ttl=63 time=0.641 ms
+^C
+--- tcox6.mylabserver.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.641/0.657/0.673/0.016 ms
+
+3. Edit the local hosts file, using the cloud servers private IP, add an entry for the full cloud server host name and the private IP, save the file
+
+[root@tcox6 ~]# vim /etc/hosts
+[root@tcox6 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+172.31.97.114 tcox6.mylabserver.com
+
+4. Rerun the 'ping' on the full cloud server host name and verify the internal IP is returned
+
+[root@tcox6 ~]# ping tcox6.mylabserver.com
+PING tcox6.mylabserver.com (172.31.97.114) 56(84) bytes of data.
+64 bytes from tcox6.mylabserver.com (172.31.97.114): icmp_seq=1 ttl=64 time=0.012 ms
+64 bytes from tcox6.mylabserver.com (172.31.97.114): icmp_seq=2 ttl=64 time=0.022 ms
+c64 bytes from tcox6.mylabserver.com (172.31.97.114): icmp_seq=3 ttl=64 time=0.025 ms
+^C
+--- tcox6.mylabserver.com ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+rtt min/avg/max/mdev = 0.012/0.019/0.025/0.007 ms
+
+5. Edit the /etc/nsswitch.conf file and reverse the order that DNS lookups are done (so that lookups start with a DNS external call vs. a local DNS host file)
+
+[root@tcox6 ~]# vim /etc/nsswitch.conf
+[root@tcox6 ~]# cat /etc/nsswitch.conf | grep hosts
+#hosts:     db files nisplus nis dns
+#hosts:      files dns myhostname
+hosts:	   dns files
+
+6. Rerun the 'ping' on the full cloud server host name and verify that the external IP is returned
+
+[root@tcox6 ~]# ping tcox6.mylabserver.com
+PING tcox6.mylabserver.com (52.201.233.71) 56(84) bytes of data.
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=1 ttl=63 time=0.537 ms
+64 bytes from ec2-52-201-233-71.compute-1.amazonaws.com (52.201.233.71): icmp_seq=2 ttl=63 time=0.612 ms
+^C
+--- tcox6.mylabserver.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.537/0.574/0.612/0.044 ms
+
+
+
+##################################################
+Hands-on Lab: Legacy Application with DNS Limitations
+##################################################
+#We need to verify that the server is setup to resolve DNS using the /etc/hosts file then DNS
+cat /etc/nsswitch.conf
+#look at the hosts line specifically
+hosts:  files dns myhostname  #files is first that mean the system will look at the /etc/hosts file first
+
+#on server 1
+ifconfig
+
+vim /etc/hosts
+172.0.0.33  ministrator.benov.com
+172.0.0.34  clientum.benov.com
+:wq
+
+#now goto server 2
+ifconfig
+
+vim /etc/hosts
+172.0.0.33  ministrator.benov.com
+172.0.0.34  clientum.benov.com
+
+#to test
+ping ministrator.benov.com
+ping clientum.benov.com
+
+
+##################################################
+Quiz: Topic 109: Networking Fundamentals (Section Quiz)
+##################################################
+1) Which port is the default for the 'LDAPS' service?
+Correct
+
+Correct answer
+636
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/1/module/126
+
+2) Which of the following commands can renew a DHCP network address? (CHOOSE ALL THAT APPLY)
+Correct
+
+Correct answer
+dhcpd -k, dhclient, pump
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+3) Which port is the default for the 'SSH' service?
+Correct
+
+Correct answer
+22
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/1/module/126
+
+4) Which port is the default for the 'POP3' service?
+Correct
+
+Correct answer
+110
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/1/module/126
+
+5) Which command OTHER than 'ifconfig' can be used to display the active network interface configuration?
+Correct
+
+Correct answer
+ip
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+
+
+##################################################
+Topic 110: Security
+##################################################
+##################################################
+Lecture: 110.1 - Perform Security Administration Tasks
+##################################################
+#best practices say they you should never login directly as root
+
+#the reason that you login as your user then become the root user is because it gives you a security audit trail
+
+#there are 2 ways to become root user, these ways you need to know the root PW
+su #all of the login shell scripts are not inherited with out the -
+or
+su -  #all of the login scripts are run with the -, just like you were the user logging in
+
+#if you execute who, it will not say they you are the root user, it will say that you are the user who logged into the system
+
+#if you sudo su -, and you are a user that has root privileges then you do not need to know the root PW
+sudo su -  #in a distributed system with a number of users that need root access this is the best way to manage the system, you dont have to hand out the root password
+
+
+#users that you want to have root access
+/etc/sudoers
+
+visudo  #to edit the editor that visudo opens export EDITOR=***
+user  ALL=(ALL)   NOPASSWD: ALL  #this allows the user to not have to enter a password
+user  ALL=(ALL)   ALL  #normally you will have just this
+
+#the reason to run visudo and not just edit the sudoers file is because visudo has to error checking so you dont totally hork your system
+
+#the wheel group has sudo rights so if your user is a member of the group then
+in the sudoers file the % infront of the wheel name tells use that its a group rather than an account
+
+#to restrict user to only being able to run 1 elevated command
+user  ALL=(ALL)   /bin/systemctl
+
+
+#one of the things that you might want to do is the detection, investigation, prevention, and mitigation of problems
+#to check if ownership of root files has changed
+find / -user root -perm 0755 -type f -exec ls -al {} \; | mail -s "Root owned executable files" root
+
+mail
+
+
+###
+fuser #fuser - identify processes using files or sockets
+
+fuser -m -u #-m NAME, --mount NAME
+              NAME  specifies  a file on a mounted file system or a block device that is mounted.  All pro‐
+              cesses accessing files on that file system are listed.  If a directory file is specified,  it
+              is  automatically  changed  to  NAME/.   to use any file system that might be mounted on that
+              directory.
+              -u, --user
+             Append the user name of the process owner to each PID.
+
+fuser -k /mnt/test #this will kill all processes using the mount, this will log the users out as well
+
+#with apache or httpd running
+
+fuser -v -n tcp 80  #-v, --verbose Verbose  mode.  Processes are shown in a ps-like style.  The fields PID, USER and COMMAND are
+              similar to ps.  ACCESS shows how the process accesses the file.  Verbose mode will also  show
+              when  a  particular file is being access as a mount point, knfs export or swap file.  In this
+              case kernel is shown instead of the PID.
+              -n SPACE, --namespace SPACE
+              Select a different name space.  The name spaces file (file names, the  default),  udp  (local
+              UDP  ports),  and  tcp (local TCP ports) are supported.  For ports, either the port number or
+              the symbolic name can be  specified.   If  there  is  no  ambiguity,  the  shortcut  notation
+              name/space (e.g. 80/tcp) can be used.
+
+
+#lsof is not generally installed by default
+yum install lsof
+lsof - list open files
+
+lsof +D /var/log
+
+lsof -u root
+
+chage #for changing the aging of passwords
+
+usermod #changing characteristics for the users
+
+ulimit #setting file system limits for users
+
+w #give the load and a summery of the system
+
+/etc/inittab #is good to check after an event to validate that the ruin level hasnt changed
+
+
+##################################################
+Lecture: 110.2 - Setup Host Security
+##################################################
+#service management or on-demand service management
+inetd  #/etc/inetd.conf
+What is meant by indemand, the service was installed but it was only started if and when something needed it
+
+#the replacement for inetd is xinetd
+
+yum install xinetd telent telnet-server
+
+vim/etc/xinetd.conf
+
+cps   = 50 10  #Limits the rate of incoming connections. Takes two arguments. The first argument is the number of connections per second to handle. If the rate of incoming connections is higher than this, the service will be temporarily disabled. The second argument is the number of seconds to wait before re-enabling the service after it has been disabled. The default for this setting is 50 incoming connections and the interval is 10 seconds.
+
+:wq
+##########
+HOW TO CONFIGURE TELNET SERVER AND TELNET CLIENT IN RHEL/CENTOS/FEDORA
+##########
+http://www.elinuxbook.com/how-to-configure-telnet-server-and-telnet-client-in-linux/
+
+cd /etc/xinet.d
+
+vim /etc/xinet.d/telent
+# default: on
+# description: The telnet server serves telnet sessions;  it uses \
+#       unencrypted username/password pairs for authentication.
+service telnet
+{
+        flags           = REUSE
+        socket_type     = no
+        user            = root
+        server          = /usr/sbin/in.telnetd
+        log_on_failure  += USERID
+        disable         = no
+}
+
+:wq
+
+service xinetd restart
+
+service xinetd status
+
+#now you can goto another server and test telnet to the server we just configured
+
+#one of the things that we can do for a security standpoint is TCP wrappers
+#xinetd has to use a library called libwrap.a
+
+cd /etc
+vim hosts.deny
+in.telnetd: 172.0.0.2/24  #it can be the entire network or just one ip address
+
+
+#order of precedence for host.allow and host.deny
+host.allow  #is read first
+
+vim hosts.deny
+in.telnetd: 172.0.0.2  : twist /bin/echo "Service 404 - service not found"
+
+
+##################################################
+Lecture: 110.3 - Securing Data with Encryption (Using GnuPG to Encrypt and Decrypt Files)
+##################################################
+Key that are generated on a system use something thats called a seed, the seed value is from entropy
+
+entropy #The Linux kernel generates entropy from keyboard timings, mouse movements, and IDE timings and makes the random character data available to other operating system processes through the special files /dev/random and /dev/urandom.
+
+yum install rng-tools  #random number generating tools
+rngd -r /dev/urandom
+
+
+#generate keys
+gpg --gen-key
+enter
+0
+y
+User
+user@hgfdh.com
+
+#when you enter in a password for the key, that is called multi factor authentication
+#make a know of the key reference
+
+cd .gnupg
+echo "key reference" > keyreference.key
+chmod 600 keyreference.key
+
+#generate the public key
+gpg -a -o userpubkey  --export keyreference
+
+exit
+
+ssh newuser@
+gpg --gen-key
+enter
+0
+y
+newuser
+newuser@hgfdh.com
+
+#make a note of the key reference
+
+cd .gnupg
+echo "key reference" > keyreference.key
+chmod 600 keyreference.key
+
+#generate the public key
+gpg -a -o newuserpubkey  --export keyreference
+
+exit
+
+cp /home/user/.gpupg/userpubkey /home/newuser/userpubkey
+chown newuser:newuser /home/newuser/userpubkey
+
+cp /home/newuser/gpupg/newuserpubkey /home/user/newuserpubkey
+chown user:user /home/user/newuserpubkey
+
+gpg --import newuserpubkey
+
+logout and backin as the newuser
+
+gpg --import newuserpubkey
+
+gpg -e nameoffile
+newuser
+y
+
+cp /home/user/inittab.gpg /home/newuser
+chown newuser:newuser /home/newuser/inittab.gpg
+
+gpg inittab.gpg  #to decrypt
+
+
+
+
+##################################################
+Lecture: 110.3 - Securing Data with Encryption (SSH Keys - Public and Private - for Secure Connections)
+##################################################
+vim /etc/ssh/sshd_config  #this is the ssh configuration file
+:wq
+
+#there are a number of other files in the ssh directory, like the ssh keys for the ssh server its self
+#key permissions
+private keys will have the permissions of 600
+public keys will have the permissions of 644
+regardless of the type, DSA or RSA
+
+#one file that might not exist is called know hosts
+/etc/known_hosts
+know_hosts is used to check the public keys of known or trusted hosts
+
+#also in the home dir
+.ssh will also have a known_hosts
+
+ssh -l user hostname
+ssh user@hostname
+
+#to generate a ssh key
+ssh-keygen #by default it will create a 2048 bit rsa key
+
+ssh-keygen -b 1024 -t DSA #you can use these options to create a 1024 bit key and a DSA key, the defaults are the best option
+
+cd /home/user/.ssh
+
+ssh-keygen
+#enter a password
+
+id_rsa.pub is the public key
+id_rsa is the private key
+#but you can name and save it whatever name and in what ever directory you want
+
+
+cat id_rsa.pub
+
+#go to your other server into the .ssh dir
+ssh-keygen
+
+vim authorized_keys
+#paste in your pub key from the first server
+
+:wq
+chmod 600
+
+#go back to the first server
+
+ssh user@hostname
+#you will be asked for the passphrase for the key
+
+
+ssh-agent bash  #ssh-agent is a ssh wrapper that will validate the pub key with the private key so even if the pub key is passphrase protected you wont have to enter it
+ssh-add
+ssh user@hostname
+#you will get no prompt for a passphrase
+
+
+#tunneling for X windows forwardsing
+ssh -X user@hostname #the -X enables xwindos forwarding
+the -x disables xwindows forwarding
+
+##################################################
+Exercise: Setup Host Security - Preventing Logins
+##################################################
+1. Create a new user on your system (using default values) called 'testuser'
+
+[root@tcox6 ~]# adduser testuser
+
+2. Display the default login shell for the 'testuser' account in the appropriate file
+
+[root@tcox6 ~]# cat /etc/passwd | grep testuser
+testuser:x:1002:1002::/home/testuser:/bin/bash
+
+3. Set a password for that user and make sure the account can log into the system
+
+[root@tcox6 ~]# passwd testuser
+Changing password for user testuser.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+[root@tcox6 ~]# ssh testuser@localhost
+The authenticity of host 'localhost (::1)' can't be established.
+ECDSA key fingerprint is 0d:0c:b1:1d:e1:cf:6d:9f:51:bf:0f:dc:60:82:a1:73.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'localhost' (ECDSA) to the list of known hosts.
+testuser@localhost's password:
+[testuser@tcox6 ~]$
+4. Edit the appropriate file, change the default login shell so they can no longer log in
+
+[root@tcox6 ~]# cat /etc/passwd | grep testuser
+testuser:x:1002:1002::/home/testuser:/sbin/nologin
+
+5. Verify that the user is now not able to log into the system
+
+[root@tcox6 ~]# ssh testuser@localhost
+testuser@localhost's password:
+Last login: Sat Jun 24 19:51:52 2017 from localhost
+This account is currently not available.
+Connection to localhost closed.
+[root@tcox6 ~]#
+
+
+
+##################################################
+Exercise: Securing Data With Encryption - Generate SSH Keys
+##################################################
+
+1. Create two new users that will be used to log in to the local system over SSH. For simplicity sake, set their passwords the same.
+2. Log in as each user to the local system (i.e. ssh -l user localhost) so that the appropriate knownhosts files are created. Output each users' knownhosts file to your lab output file.
+3. Using one of the created users, generate both RSA and DSA public/private keypairs and list them in your output file. Using the second user, generate BOTH RSA and DSA public/private keypairs; however, during generation, have their key files named “RSAPair” and “DSAPair”.
+4. List the key directory and its values in your output file.
+
+sudo adduser user1 && sudo adduser user2, sudo passwd user1, sudo passwd user2 #set password to whatever, same for each
+ssh -l user1 localhost, ssh -l user2 localhost
+sudo cat /home/user1/knownhosts >> file.out && sudo cat /home/user2/knownhosts >> file.out
+#logged in as user1:
+ssh-keygen -t dsa >> file.out && ssh-keygen -t rsa >> file.out
+#logged in as user2
+ssh-keygen -t dsa -f DSAPair >> file.out && ssh-keygen -t rsa -f RSAPair >> file.out
+cat /home/user1/.ssh/knownhosts >> file.out
+
+
+##################################################
+Exercise: Securing Data With Encryption - Use SSH Keys for Authentication
+##################################################
+1. Using one of the users created earlier, copy the generated public key to the localhost using the appropriate command.
+2. Using the second user created earlier, copy the generated public key to the localhost using the appropriate command (remembering you generated a key file not using the default name).
+3. On your running terminal, start the ssh-agent application, bind it to the system address and session.
+4. Once the agent is running, add one of the users identities to the session and log in to the remote system.
+5. Capture SSH output with -v verbose parameter to show key exchange happening.
+
+#logged in as user1
+ssh-copy-id user1@localhost #will prompt for password and then phrase
+#logged in as user2
+ssh-copy-id -i RSAPair user2@localhost #will prompt for password and then phrase
+#logged in as user1
+ssh-agent -a:localhost
+ssh-add user1
+ssh -v localhost >> file.out
+
+
+##################################################
+Hands-on Lab: Server Application Requires a Secure SSH Connection
+##################################################
+useradd client
+passwd client
+ssh client@localhost
+exit
+
+su - client
+ssh-keygen
+cd .ssh
+ll
+
+ssh-copy-id client@localhost  #what this does is create an authorized keys file in .ssh
+
+
+ssh client@localhost
+
+#if you are logged in as client
+ssh localhost #this will work
+
+
+##################################################
+Hands-on Lab: Legacy Telnet Access Required for Single Client Connection
+##################################################
+yum install xinetd
+
+cd /etc/xinet.d
+ll
+#these are the services that xinetd can handle by default
+
+yum install telnet-server
+
+ll
+
+vim telnet
+disable     = no
+
+:wq
+
+service xinetd start
+service xinetd status
+
+#on the client system
+yum install telnet
+
+telnet <ipaddress>
+
+exit
+
+###
+which in.telnetd
+
+vim /etc/hosts.allow
+in.telnetd: <clientip>
+
+service xinetd stop
+service xinetd start
+
+###go back to the client server
+telnet <ipaddress>  #now this server will be the only server that will have telnet access
+
+
+
+
+##################################################
+QUIZ RESULTS: TOPIC 110: SECURITY (SECTION QUIZ)
+##################################################
+1) Which of the following files is the default SSH configuration file?
+Correct
+
+Correct answer
+/etc/sshd/sshd_config
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/4/module/126
+
+2) Which Gnu Privacy Guard command would you use to generate a new public and private key to use for encrypting and exchanging files with a third party?
+Correct
+
+Correct answer
+gpg --gen-key
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/3/module/126
+
+3) Which command would you use to become root so that you would NOT inherit the settings from root's user scripts on login?
+Correct
+
+Correct answer
+su
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/1/module/126
+
+4) Which of the following key types is generated by default with the command 'ssh-keygen'?
+Correct
+
+Correct answer
+RSA
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/4/module/126
+
+5) Which of the following services can be configured to manage other services in an 'on demand' capacity?
+Correct
+
+Correct answer
+xinetd
+
+Further Reading
+
+
+
+##################################################
+Quiz: LPIC-1 Exam 2 - Final Course Assessment Exam
+##################################################
+1) When using the 'alias' command to create a new shortcut to a complex command, how can you later remove that alias?
+Correct
+
+Correct answer
+Run the 'unalias' command with the shortcut created
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/2/module/126
+
+2) The SQL UPDATE transaction can only update one field per statement.
+Correct
+
+Correct answer
+False
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/7/module/126
+
+3) The Accessibility tool called 'Orca' performs what function?
+Correct
+
+Correct answer
+Reads the text of any screen with focus
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/4/module/126
+
+4) Which of the following user files contains public keys for users that are permitted to connect using key files?
+Correct
+
+Correct answer
+~/.ssh/authorized_keys
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/4/module/126
+
+5) Which command would display a list of all configured printers and indicate which is the default?
+Correct
+
+Correct answer
+lpstat -p -d
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/5/module/126
+
+6) Encryption keys cannot be set with no expiration date.
+Correct
+
+Correct answer
+False
+
+Explanation
+Although not recommended (and you will have to confirm a second time in the generation of it), you can set a key with no expiration.
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/3/module/126
+
+7) The 'ntpq' command, when paired with the ________ keyword, will show you a list of time servers you are associated with.
+Correct
+
+Correct answer
+peers
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/1/module/126
+
+8) Which logging level will cause your system to log the highest number of message to the syslog?
+Correct
+
+Correct answer
+debug
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/2/module/126
+
+9) SELECT * FROM tblCustomer ___________ customerAge > 25; This select statement will display customer information when their age is greater than 25. What is the missing key term?
+Correct
+
+Correct answer
+WHERE
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/6/module/126
+
+10) Which of the following components are common in most desktop environments? (CHOOSE ALL THAT APPLY)
+Correct
+
+Correct answer
+Window Manager, File Manager, Themes and Styles
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/1/module/126
+
+11) Which of the following entries in the /etc/sudoers file would provide the user account called 'test' with the ability to work with system services on a systemd system, but restrict other privileged commands from being run?
+Correct
+
+Correct answer
+test ALL=(ALL) /bin/systemctl
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/1/module/126
+
+12) The acronym MDA stands for...
+Correct
+
+Correct answer
+Mail Delivery Agent
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/3/module/126
+
+13) In the DNS client configuration file /etc/resolv.conf, which of the following is a valid entry for a DNS server at IP 8.8.8.8?
+Correct
+
+Correct answer
+nameserver 8.8.8.8
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/3/module/126
+
+14) Anacron will run scheduled jobs that did not run while your system was off.
+Correct
+
+Correct answer
+True
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/4/module/126
+
+15) Which directory contains a list of all user and root cron jobs?
+Correct
+
+Correct answer
+/var/spool/cron
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/3/module/126
+
+16) Which directory will generally contain system provided shell scripts?
+Incorrect
+
+Correct answer
+/usr/bin
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/3/module/126
+
+17) Within a SQL query, a sub select performs what function?
+Incorrect
+
+Correct answer
+Provides a sub set of values to do another selection against
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/8/module/126
+
+18) Which of the following files will provide default configuration values when a user is created with the 'useradd' command?
+Incorrect
+
+Correct answer
+/etc/login.defs
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/1/module/126
+
+19) What is one of the primary functions of a display manager in terms of user interaction?
+Incorrect
+
+Correct answer
+Facilitate user login to the desktop
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/3/module/126
+
+20) The gpg public key can be stored and exchanged locally or can be stored on a keyserver and the URL can be shared with anyone you want to have it.
+Correct
+
+Correct answer
+True
+
+Explanation
+GPG keys are commonly stored on keyservers where only the user know which is theirs and can share the URL as desired.
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/3/module/126
+
+21) Which log file will typically contain everything except the mail log on a syslog system?
+Incorrect
+
+Correct answer
+/var/log/messages
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/2/module/126
+
+22) The command 'ssh-keygen' creates both public AND private SSH keys.
+Correct
+
+Correct answer
+True
+
+Further Reading
+https://linuxacademy.com/cp/exercises/view/id/477/module/126
+
+23) Which value, when set in /etc/sysctl.conf, will allow your system to function as a network router?
+Correct
+
+Correct answer
+net.ipv4.ip_forward=1
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+24) Which of the following cron entries would execute the command called '/opt/cleanup.sh' starting at midnight and running every four hours thereafter on every day of every week of every month of every year?
+Correct
+
+Correct answer
+* 0/4 * * * /opt/cleanup.sh
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/3/module/126
+
+25) If the file '/etc/at.allow' does NOT exist, what affect does that have on user's ability to schedule 'at' jobs?
+Incorrect
+
+Correct answer
+Prevents any user other than root from running an 'at' job
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/4/module/126
+
+26) Which 'ssh' client utility will allow you to run a shell that you can attach your SSH public key to in order to avoid constantly having to enter your passphrase?
+Correct
+
+Correct answer
+ssh-agent
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/4/module/126
+
+27) A SQL INSERT statement must contain which of the following information?
+Correct
+
+Correct answer
+INTO table (fields) VALUES (matching values)
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/7/module/126
+
+28) Which of the following are examples of display managers (CHOOSE ALL THAT APPLY)?
+Correct
+
+Correct answer
+xdm, gdm
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/3/module/126
+
+29) Which directory will contain email that has NOT been delivered to the appropriate local account yet?
+Incorrect
+
+Correct answer
+/var/spool/mqueue
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/4/module/126
+
+30) Which of the following user scripts are commonly sourced within the ~/.bash_profile file on user login?
+Correct
+
+Correct answer
+~/.bashrc
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/2/module/126
+
+31) The 'lpq' command will show you a list of what kind of print jobs?
+Correct
+
+Correct answer
+All jobs that are queued but not printed
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/5/module/126
+
+32) Which of the following entries is valid within the /etc/group file?
+Correct
+
+Correct answer
+user:x:1001:test,temp
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/1/module/126
+
+33) If a non-root user wishes to have their email sent to another address, what file can they create without access to the /etc/aliases file, that will allow that?
+Correct
+
+Correct answer
+~/.forward
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/4/module/126
+
+34) Which of the following directories contain scripts that are executed periodically based on the directory name? (CHOOSE ALL THAT APPLY)
+Correct
+
+Correct answer
+/etc/cron.d/cron.daily, /etc/cron.d/cron.hourly
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/3/module/126
+
+35) Which of the following commands will display the configuration and statistics of ALL network interfaces, active or otherwise?
+Correct
+
+Correct answer
+ifconfig -a
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+36) The /etc/xinetd.conf file generally contains only one line by default, which line is that?
+Correct
+
+Correct answer
+include /etc/xinetd.d/*
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/2/module/126
+
+37) Which editor should be used to make changes to the /etc/sudoers file because it has specific error checking built in for that file?
+Correct
+
+Correct answer
+visudo
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/1/module/126
+
+38) When used within a shell script, 'test -f' will test whether the following parameter ___________ .
+Correct
+
+Correct answer
+is a file
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/4/module/126
+
+39) Which SQL key word at the end of a SELECT query will return only the first two records of a matching record set?
+Correct
+
+Correct answer
+LIMIT 2
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/6/module/126
+
+40) The 'GOK' Accessibility tool provides what function?
+Correct
+
+Correct answer
+Provides an on screen keyboard
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/4/module/126
+
+41) Which of the following email alias lines in /etc/aliases would run a script called 'createticket.sh' when an email arrives for the 'support' account?
+Correct
+
+Correct answer
+support: | /opt/HelpDesk/createticket.sh
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/4/module/126
+
+42) Which command would create 10 requests to a single IP address to determine if it is configured to answer for UDP requests?
+Correct
+
+Correct answer
+ping -n 10 [hostname]
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/3/module/126
+
+43) The ________ command can be used to reset the date a user's password was last reset.
+Correct
+
+Correct answer
+chage
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/2/module/126
+
+44) What are the default system permissions applied to the /etc/passwd file?
+Incorrect
+
+Correct answer
+-rw-r--r--(644)
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/1/module/126
+
+45) From the command line, you need to take a very busy printer down for maintenance without letting jobs queue and filling disk space. Which CUPS command would you use?
+Incorrect
+
+Correct answer
+cupsreject
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/5/module/126
+
+46) Which of the following 'ssh' command line parameters will allow you to tunnel X Window connections?
+Correct
+
+Correct answer
+-X
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/4/module/126
+
+47) Which X Window utility can be used to display size of a window on your desktop?
+Incorrect
+
+Correct answer
+xwininfo
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/2/module/126
+
+48) In xinetd, if the tcp wrapper configuration file /etc/hosts.allow contains multiple definitions for the same service, which definition will apply.
+Correct
+
+Correct answer
+the first
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1148/lesson/2/module/126
+
+49) Which of the following bash script key words will prompt a user to enter data?
+Correct
+
+Correct answer
+read
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/4/module/126
+
+50) Which file would you edit to set a shell environment variable for all users?
+Incorrect
+
+Correct answer
+/etc/profile
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/1/module/126
+
+51) Which of the following subnet masks is considered a 'Class B' value?
+Correct
+
+Correct answer
+255.255.0.0
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/1/module/126
+
+52) Which command will allow you to force your system clock to synchronize to a configured network time server?
+Incorrect
+
+Correct answer
+ntpdate
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/1/module/126
+
+53) Which of the following is considered a 'stateless' internet protocol?
+Correct
+
+Correct answer
+UDP
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/1/module/126
+
+54) Which DNS record is used to identify a mail server in a given domain?
+Correct
+
+Correct answer
+MX
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/3/module/126
+
+55) Within the X Server configuration file /etc/xorg.conf, which section identifier would contain information around the supported resolutions for desktop display?
+Correct
+
+Correct answer
+Screen
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/1/module/126
+
+56) Which method of creating a variable at the command line would make that variable available within subshells?
+Correct
+
+Correct answer
+export MYVAR="Some Value"
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/1/module/126
+
+57) On most distributions, which directory contains the scripts responsible for interface configuration and state?
+Correct
+
+Correct answer
+/etc/sysconfig/network-scripts
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+58) Which command will take an existing user called 'test' and add that user to an existing group called 'users'?
+Incorrect
+
+Correct answer
+usermod -G users test
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/2/module/126
+
+59) The 'xhost' utility will display what information about your X Server configuration?
+Correct
+
+Correct answer
+Current state of access control for remote X connections
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1144/lesson/2/module/126
+
+60) Which variable can be used to refer to the first command line parameter passed into a shell script?
+Correct
+
+Correct answer
+$1
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/3/module/126
+
+61) The command 'set -x' will have what effect on subsequent commands run in the same shell environment?
+Incorrect
+
+Correct answer
+Each command will be printed to the terminal as it executes
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/1/module/126
+
+62) Which option when added to the 'useradd' command will force the home directory to be created regardless of any default setting in the configuration file?
+Correct
+
+Correct answer
+-m
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/2/module/126
+
+63) Which of the following time devices or utilities are unaware of timezones?
+Correct
+
+Correct answer
+hardware clock
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/1/module/126
+
+64) Which of the following SQL key words that, when added to the following statement, will add all the values of the indicated field together? SELECT _______(itemPrices) FROM tblOrderInfo;
+Incorrect
+
+Correct answer
+SUM
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1143/lesson/8/module/126
+
+65) When dealing with a single IP that is causing your server to respond with a large amount of traffic, which route command could you use to prevent that traffic from reaching the requesting end point (assuming the remote IP address was 188.111.112.55) without affecting any other traffic leaving your server??
+Incorrect
+
+Correct answer
+route add 188.111.112.55 lo
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/2/module/126
+
+66) Which utility will allow non-privileged users the ability to determine how many devices/hops are between their server and a given destination?
+Correct
+
+Correct answer
+tracepath
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/3/module/126
+
+67) The 'iconv' utility is used to convert character sets within text files and translate the text into the indicated language.
+Correct
+
+Correct answer
+False
+
+Explanation
+Although it does convert text between character sets, it is not a language translation engine.
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/6/module/126
+
+68) What is the 'epoch' in Unix/Linux terms?
+Correct
+
+Correct answer
+Number of seconds since 1/1/1970
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/5/module/126
+
+69) The 'systemd' logging service uses this utility to view system log messages.
+Correct
+
+Correct answer
+journalctl
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1146/lesson/2/module/126
+
+70) Which of the following files is either a copy of or link to the configured timezone in /usr/share/zoneinfo?
+Correct
+
+Correct answer
+/etc/localtime
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/5/module/126
+
+71) The original ASCII specification of 7 bits for character storage could hold how many characters?
+Correct
+
+Correct answer
+128
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1145/lesson/6/module/126
+
+72) Which DNS client configuration file is responsible for determining the order that client DNS requests are made between local and remote DNS sources?
+Correct
+
+Correct answer
+/etc/nsswitch.conf
+
+Further Reading
+https://linuxacademy.com/cp/courses/lesson/course/1147/lesson/3/module/126
+
+
+
+
+##################################################
+
+##################################################

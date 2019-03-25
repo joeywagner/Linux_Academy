@@ -1,0 +1,157 @@
+##################################################
+Bootloading with GRUB
+##################################################
+##################################################
+What is GRUB?
+##################################################
+GRUB(the grand unified bootloader) is a bootloder designed to boot multiple systems across a wide swath of hardware platforms and operating systems
+
+bootloaders in general are small pieces of executable code which provide just enough functionality to call another bootloader or to hand control of the CPU to the operating system
+
+bootloaders allow us to make changes to the system environment prior to the operating system being loaded
+
+bootloaders can be installed on disks, partitions, loopback devices -anything from which a pc might boot
+
+
+on windows platform the startup is handled by the bios, the basic input output system
+
+pc hardware has historicaly relied on BIOS  to determine storage device characteristics; it passes that information to the bootloader or the operating system
+
+bios was originally intended to work with a method of addressing storage space called CHS, cylinder head sector
+chs hs some notable limitations, in its most modern for, it can only address about two terabytes of space
+without the assistance of translation chs is limited to addressing 504 megabytes
+
+most modern operating systems ignore chs information or rely on translation
+
+EFI, extensible firmware interface and uefi, unifided extensible firmware interface have been developed by intel to replace bios interface and the limitations it imposes
+
+
+This quickstart
+we are going to use the following bootloaders
+MBR
+Legacy GRUB #deprecated
+GRUB2
+
+addressing block storage
+block storage refers to any system in which an arbitrary number of bytes are handled as a single unit.
+this includes devices, floppy disks, tape drives, CD-ROMS and both SSD and magnetic media
+
+there are many ways to address block storage but the prevailing standard for rotational media in the pc industry was chs for many years
+
+chs does not describe only the amount of storage space available but the characteristics of the storage device itself
+
+ultimately chs was limited by design, backward compatibility was dauntingly difficult, which means that each revision obviated a great deal of very expensive storage equipment and computer hardware
+
+addressing block storage :why chs at all
+chs came into play to meet the needs of ibms hardware
+because the design of the pc bios and ms-doss dependence on bios chs addressing was a must
+
+keep in mind the CPU expected boot code in the axact location in ram every boot
+in like manner bios expected the boot code to reside in the exact same location on every storage device
+
+for compatability reasons most bios still report chs information to bootloaders and operating systems
+it is almost universally ignored
+chs dependent systems must take care when accessing sectors beyond the 504mb threshold
+
+
+
+moving past cgs to LBA logical block addressing
+
+addressing block storage: ZBR (zone bit resording)
+
+Solid state device
+
+
+
+##################################################
+Legacy GRUB: Adding Boot Parameters
+##################################################
+most block storage devices provide for the storage space to be diveded into multiple parts.
+individual parts are call partitions and are used for a variety of purposes.
+if you're familiar with linux, recall that swap is often created in its own partition
+
+
+mbr partitions have several limitations apart from those associated with bois and chs addressing:
+-partitions must always start on a track boundary and end on a cylinder boundary; this is true whether chs or lba addressing is used
+-mbr device reports 512 byte sector sizes even if the device actually uses 4k sectors which can lead to degraded performance
+-if a drive has more than one partition the bootable partition must be marked "active"
+-a small amount of empty space is left between the first sector of the drive and the first sector of the first partition
+-partitions may be labeled but primarily their number is used to identify them
+
+GPT, globally unique partition table
+-compatiable with uefi and efi
+
+gpt partitions provide the following benefits:
+-compatiable with uefi and efi
+-a reserved addressing LBA or ZBR schemes
+-up to 128 primary partitions
+-recognizes the actual sector size of block devices
+uses PMBR or protective master boot record which embeds a backward compatible MBR into the boot sector to enable booting on BIOS based computers
+-the PMBR prevents disk utilities which are not GTP-aware from destroying the GTP Partition
+-on systems which use BIOS hybrid MBR code is installed which allows the recognition of GPT partitions; this code must not presume sectors are 512 bytes in size
+-partitions may be labeled but are identified by a UUID
+
+final notes MBR
+mbr long the standard bootloader and partition in PC operating systems was introduced in 1983
+-the specification has been updated through the years but few things remain unchanged
+-when a computer is turned on both the central processor and BIOS expect to find the code for booting at a specific address in RAM
+-that code must reside at a specific location on the first block storage device identified bu BIOS or the system will not boot
+-BIOS numbers partitions in the order they exist in the MBR partition table.
+the linux kernel may or may not maintain device operating order between boot, which is why it is a very good idea to use disk labels or UUIDS in /etc/fstab
+
+the GRUB/GRUB2 boot process is a bit different
+-the process is identical for MBR disks on BOIS-based PCs save that GRUB is loaded by MBR
+
+Adding Boot Parameters: Legacy GRUB
+Changes to GRUBs configuration should be made in one of the following files:
+-/etc/grub.conf
+-/boot/grub/grub.conf
+
+Legacy GRUB symlinks the following files to /boot/grub/grub.conf for compatibility reasons:
+-/etc/grub.conf
+-/boot/grub/menu.lst
+
+https://www.gnu.org/software/grub/manual/legacy/grub.html
+
+
+##################################################
+GRUB2: Adding Boot Parameters
+##################################################
+adding boot parameters: GRUB2
+changes to GRUBs configuration should be made in one of the following files:
+-/etc/sysconfig/grub
+-/etc/grub.d/
+
+the configuration does not take effect until the /etc/grub2.cfg (for BIOS systems) or /etc/grub2-efi.cfg (for EFI systems) has been updated
+
+the GRUB2 configuration can be updated using the "grub2-mkconfig" command.
+the file can also be edited manually
+
+be sure to take a look at the GRUB2 manual
+https://www.gnu.org/software/grub/manual/grub.html
+
+##################################################
+Chainloading and Dual-Booting
+##################################################
+grub can be used to load other bootloaders and boot non-linux operating systems
+
+in particular if installing windows after linux be aware windows may clobber the boot loader which may have to be installed from scratch
+
+##################################################
+Using the GRUB Command Line Interface
+##################################################
+set root='hd0,msdos'
+linux /vmlinuz root="LABEL=ROOT"
+initramfs.img
+
+search --label --hint='hd0,msdos2' ROOT
+
+how do you find the uuid of the root partition
+ls --all
+
+set root='h0.msdos1'
+
+
+##################################################
+Conclusion and What's Next
+##################################################

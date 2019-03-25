@@ -1,0 +1,90 @@
+##################################################
+Configuring Ubuntu NFS Version 4
+##################################################
+##################################################
+Client and Server Setup and Testing
+##################################################
+vim /etc/hosts
+<ipaddress>     FQDN  <servershortname>
+
+
+:wq
+
+
+apt-get install nfs-kernel-server rpcbind nfs-common
+
+cd /etc/default
+vim rpcbind  #we are creating this
+OPTIONS=""
+:wq
+
+
+#we need to create a hosts allow entry
+vim /etc/hosts.allow
+portmap:  10.0.0    #you can use 10.0.0.0/24 but that will only work for debian and ubuntu systems
+
+:wq
+
+
+vim /etc/default/nfs-common
+
+
+
+#add at the bottom on the conf
+NEED_IDMAPD=YES
+
+:wq
+
+#Configuration file for libnfsidmap. Used by idmapd and svcgssd to map NFSv4 name to and from ids.
+
+vim /etc/idmapd.conf
+:q
+
+cd /
+mkdir exports
+chmod R 777 exports
+
+cd exports
+
+echo "this is a test file " > mytest.txt
+
+chmod 777 mytest.txt
+
+cd /etc
+
+vim exports
+/exports 10.0.0.0/255.255.255.0(rw,no_root_squash,no_subtree_check,crossmnt,fsid=0)
+:wq
+
+
+/etc/init.d/nfs-kernel-server start
+
+/etc/init.d/rpcnind start
+/etc/init.d/rpcnind status
+
+
+#connect to the client
+apt-get install nfs-common rpcbind
+
+cd /home/user
+mkdir share
+sudo mount.nfs4 10.0.0.100:/ share
+
+df -h
+
+#for the mount to remain after reboot
+sudo umount share
+
+
+df -h
+
+vim /etc/fstab
+10.0.0.100:/  /mnt/share      nfs4    rw      0       0
+
+:wq
+
+cd /mnt
+mkdir share
+mount -a
+
+df -h

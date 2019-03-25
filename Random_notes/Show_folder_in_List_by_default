@@ -1,0 +1,7 @@
+http://askubuntu.com/questions/272413/show-folder-in-list-by-default
+
+
+In the top bar, do a click in Edit
+Select the Preferences option
+Now you'll note that the first tab (enabled by default) is called Views, if not, choice it
+In this tab, the first option is Default view, so click in the box of the left and select List view instead of Icon view

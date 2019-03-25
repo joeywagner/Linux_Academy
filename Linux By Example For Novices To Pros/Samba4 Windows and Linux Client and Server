@@ -1,0 +1,128 @@
+##################################################
+Samba4 Windows and Linux Client and Server
+##################################################
+##################################################
+Lecture: Samba File Sharing: Windows Server/Linux Client
+##################################################
+rdp to the windows server
+
+turn off the domain, private and public profile firewall rules
+
+create a new folder called share on C:/
+
+
+right click the share folder and click sharing, set up who you want to share it with there
+
+ssh to you linux node
+
+
+ apt-get install cifs-utils winbind smbclient -y
+
+vim /etc/nsswitch.conf
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+
+passwd:         compat
+group:          compat
+shadow:         compat
+
+hosts:          files wins dns
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+
+:wq
+
+
+service networking restart
+
+
+#test your connection to the windows server
+smbclient -L //10.0.0.101 -U linuxacademy
+Enter linuxacademy's password:
+Domain=[LINUXACADEMY] OS=[Windows Server 2008 R2 Datacenter 7601 Service Pack 1] Server=[Windows Server 2008 R2 Datacenter 6.1]
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	C$              Disk      Default share
+	IPC$            IPC       Remote IPC
+	share           Disk
+Connection to 10.0.0.101 failed (Error NT_STATUS_CONNECTION_REFUSED)
+NetBIOS over TCP disabled -- no workgroup available
+
+
+
+#create a mount point
+mkdir test
+
+mount -t cifs //10.0.0.101/share test -o username=linuxacademy,password=123456,rw,nounix,file_mode=0777
+
+
+#to make the the mount permanent add the mount to the fstab file
+vim /etc/fstab
+LABEL=cloudimg-rootfs	/	 ext4	defaults	0 0
+/dev/xvda3	none	swap	sw,comment=cloudconfig	0	0
+
+#fileshare
+//10.0.0.101/share	/root/test	cifs	credentials=/root/test/.smbcredentials,rw,nounix,file_mode=0777,directory_mode=0777	00
+
+#unmount test
+umount test
+
+#mount everything in fstab
+mount -a
+
+
+##################################################
+Samba File Sharing: Linux Server/Windows Client
+##################################################
+#install the linux client utilities
+apt-get install samba samba-common
+
+vim /etc/samba/smb.conf
+#add these lines
+####### Authentication #######
+
+# Server role. Defines in which mode Samba will operate. Possible
+# values are "standalone server", "member server", "classic primary
+# domain controller", "classic backup domain controller", "active
+# directory domain controller".
+#
+[homes]
+comment = Local user home directories
+browseable = no
+writable = yes
+
+[share]
+comment = default share
+path = /share/
+force user = samba
+force group = samba
+read only = no
+hosts allow =
+
+:wq
+
+
+
+sudo service smbd restart
+
+sudo smbpasswd -a linuxacademy
+
+sudo mkdir share
+
+sudo chmod 777 share
+
+
+#move to the windows box
+#enter \\ipaddress
+#mount the drive as a letter on the box

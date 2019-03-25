@@ -1,0 +1,231 @@
+##################################################
+Introduction to Linux Academy - Maximize Your Experience
+##################################################
+##################################################
+Installation and Configuration
+##################################################
+They have a course called docker deep dive
+
+#to install on ubuntu
+https://docs.docker.com/engine/installation/linux/ubuntu/
+
+
+#your kernel has to be running 3.10
+uname -r #to verify kernel version
+
+sudo vim /etc/yum.repos.d/docker.repo
+
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+enabled=1
+gpgcheck=1
+gpgkey=https://apt.dockerproject.org/gpg
+:wq
+
+yum update
+
+yum install -y docker-engine
+
+#if you are running a earlier version you will want to disable SElinux on RHEL or apparmor on debian, they cause issues with the docker engine itself
+
+systemctl enable docker
+
+systemctl start docker
+
+docker --version
+
+docker images
+
+cd /var/run
+ll -al dock*
+docker.sock #is owned by the docker group
+
+#add your user to the docker group
+usermod -a -G docker user
+
+##################################################
+The Docker Hub
+##################################################
+you can host any number of public images and 1 private for free
+a docker container is based upon the base image
+we can pull these base images, the base images do not run, they exist as a snapshot on the system that containers use
+all images use a docker file
+
+
+##################################################
+Base Images
+##################################################
+#to search docker hub
+docker search <whatever>
+
+#pull they latest image
+docker pull
+
+docker run <image_name>:latest
+
+#list images
+docker images
+
+#you can also use the image ID to run the container
+docker run <image_id>
+
+#this will pull the latest centos6
+docker pull centos:centos6
+
+#this will pull the latest centos
+docker pull centos
+
+#show more info about images
+docker inspect <image_name>  or <image_id>
+#the out put will be in json format
+
+
+#with in containers you run things as applications not services
+
+##################################################
+Running Containers
+##################################################
+docker search whale
+
+docker pull docker/whalesay
+docker run docker/whalesay  cowsay hello
+
+#list running containers
+docker ps
+
+docker inspect docker/whalesay
+
+#get a list of cantainers that you have run
+docker ps -a
+
+
+docker inspect <container_name>
+
+#run a container interactively and launch a terminal
+docker run -it cerntos:latest /bin/bash
+
+#to run the container without being connected to it run the -d flag, detached mode
+docker run -d centos:latest /bin/bash
+
+docker run -d centos:latest /bin/bash -e <command>
+
+#stop a running container
+docker stop <container_id>
+
+#name your container
+docker run -d --name=myname nginx:latest
+
+##################################################
+The Container Lifecycle
+##################################################
+docker attach <container_name> #this attaches to the container process
+
+docker restart <container_name> #can also user start
+
+#lets you execute commands in a running container
+docker exec -it <container_name> /bin/bash
+
+
+##################################################
+Image and Container Management
+##################################################
+#deal with containers and images that are no longer needed
+docker rmi <image_id> #remove image, images that havent had a container created from
+
+#images that are the base image for a container
+docker rm <container_id>
+
+
+#remove all non running docker containers
+docker rm $(docker ps -a -q)
+or docker rm `docker ps -a -q`
+
+#now you can remove the image
+docker rmi <image>
+
+docker rmi -f <contaner_name>
+
+
+
+##################################################
+Redirection - Ports and Volumes
+##################################################
+docker images
+docker run -d enginx:latest
+docker inspect <container_name> | grep -i ipaddr
+#we can get the ip address for the container
+#we can use elinks or lynx to test
+
+#redirect any ports to localhost, there are 2 way to accomplish this
+
+docker ps
+docker stop <container_name>
+docker rm $(docker ps -a -q)
+or
+docker rm `docker ps -a -q`
+
+#what the -P does is it say to make any ports available on my container to make available on my host machine
+docker run -d --name=Webserver1 -P nginx:latest
+
+#to view the ports
+docker port WebServer1 $CONTAINERPORT
+
+
+#to bind a port to a port on the host to a port on the container
+docker run -d -p 8080:80 --name=WebServer2 nginx:latest
+
+
+#start a container that mounts a specific directory
+docker run -d -p 8080:80 --name=WebServer2 -v /mnt/data nginx:latest
+
+#one of the best practices for containers is to have you containers as ephemeral as possible, meaning that they should be as portable as you can make them, they should not contain things that are intended to stick around, no complex configuration inside the container
+mkdir www
+vim index.html
+<HTML>
+
+<HEAD></HEAD>
+
+<BODY>
+<HR/>
+THIS IS ATEST PAGE
+<HR/>
+
+</BODY>
+
+</HTML>
+
+:wq
+
+
+docker run -d -p 8080:80 --name=WebServer2 -v /home/user/www:/usr/share/nginx/html nginx:latest
+docker ps
+
+
+##################################################
+The Dockerfile
+##################################################
+#how to create our own base image
+#we will use the docker file
+#when running commands in the docker image the only user that is created is root, so all commands will be run as root
+mkdir Builds
+cd Builds
+
+vim dockerfile
+FROM debian:stable
+MAINTAINERS dockerhubusername <theemail@email.com>  #yes you need the <>
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y apache2
+#RUN apt-get upgrade
+#RUN apt-get install telnet
+
+ENV MYVALUE my-value
+
+EXPOSE 80
+EXPOSE 22
+
+CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"] #BECAUSE IF THIS IT WILL RUN IN THE BACK GROUND, docker run -d latest123/myapache:latest
+
+:wq
+
+docker build -t latest123/myapache .

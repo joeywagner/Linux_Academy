@@ -1,0 +1,1204 @@
+##################################################
+SQL Primer
+##################################################
+##################################################
+Creation and Setup
+##################################################
+##################################################
+Lecture: Introduction
+##################################################
+
+
+
+##################################################
+Lecture: Create Database
+##################################################
+#get the download from the mysql website
+
+rpm -Uvh mysql
+
+yum update
+
+yum install mqsql-community-server
+
+systemctl enable mysqld
+
+systemctl start mysqld
+
+/usr/bin/mysql_secure_installation
+
+mysql -u root -p
+
+show databases;
+
+#Hungarian notation how items are named
+
+CREATE DATABASE  dbCustomerInfo;
+
+SHOW DATABASES;
+
+CREATE DATABASE dbTest;
+
+SHOW DATABASES;
+
+DROP DATABASE dbTest;
+
+##################################################
+Lecture: Create Table
+##################################################
+mysql -p
+
+SHOW DATABASES;
+
+USE dbCustomerInfo;
+
+SHOW TABLES;
+
+CREATE TABLE tblCustomerInfo (custInfoFirstName varchar(50),custInfoLasttName varchar(50),custInfoAddr1 varchar(50),custInfoAddr2 varchar(50),custInfoCityName varchar(50),custInfoState varchar(50), custInfoZip varchar(10),custInfoPhone varchar(12));
+
+SHOW TABLES;
+
+CREATE TABLES tblTest (tstCol1 varchar(1),tstCol2(1));
+
+SHOW TABLES;
+
+DROP TABLE tblTest;
+
+SHOW TABLES;
+
+
+##################################################
+Lecture: Create Table With Constraints
+##################################################
+#SQL constraints are used to establish rules for the data in a table
+
+SHOW DATABASES;
+
+USE dbCustomerInfo;
+
+SELECT * FROM tblCustomerInfo;
+
+SHOW FIELDS FROM tblCustomerInfo;
+
+CREATE TABLE tblCustomerIDInfo (custID varchar(10) PRIMARY KEY,custInfoFirstName varchar(50),custInfoLasttName varchar(50),custInfoAddr1 varchar(50),custInfoAddr2 varchar(50),custInfoCityName varchar(50),custInfoState varchar(50), custInfoZip varchar(10),custInfoPhone varchar(12));
+
+SHOW FIELDS FROM tblCustomerIDInfo;
+
+
+##################################################
+Lecture: Oracle MySQL Installation: Ubuntu
+##################################################
+
+
+##################################################
+Lecture: Oracle MySQL Secure Setup: Ubuntu
+##################################################
+mysql -uroot -p root
+USE mysql;
+
+mysql_secure_installation
+
+#the validate password plugin will validate passwords at certain levels of strength
+
+mysql -uroot -p
+
+USE mysql;
+
+SHOW TABLES;
+
+service mysqld restart
+
+
+
+
+##################################################
+Lecture: Oracle MySQL Installation: CentOS
+##################################################
+wget http://downloadlocation
+
+rpm -Uvh mysqldownload.rpm
+
+#at this point all we have done is installed the mysql repo
+
+yum update
+
+yum install mysql-community-server
+
+systemctl enable mysqld
+
+systemctl start mysqld
+
+ps aux | grep mysql
+
+
+##################################################
+Lecture: Oracle MySQL Secure Setup: CentOS
+##################################################
+mysql_secure_installation
+
+systemctl stop mysqld
+
+cd /usr/lib/systemd/system
+
+vim mysqld.service
+#Find the start main service declaration
+ExecStart=/usr/sbin/mysqld --daemonize $MYSQLD_OPTS #add --skip-grant-tables
+
+:wq
+
+systemctl status mysqld
+
+systemctl daemon-reload
+
+systemctl start mysqld
+
+mysql -u root
+#now we are able to login, this is what the default installation used to look like
+
+USE mysql;
+
+SHOW TABLES;
+
+SELECT * FROM user;
+
+UPDATE user SET authentication_string = PASSWORD('somepassword') WHERE user='root';
+
+FLUSH PRIVILEGES;
+
+quit;
+
+systemctl stop mysqld
+
+vim mysqld.service
+#Find the start main service declaration, remove --skip-grant-tables
+ExecStart=/usr/sbin/mysqld --daemonize $MYSQLD_OPTS
+
+:wq
+
+systemctl daemon-reload
+
+systemctl start mysqld
+
+mysql -u root -p
+
+quit;
+
+mysql_secure_installation
+
+#on centos the secure install uses the password policy plugin by default
+
+
+##################################################
+Lecture: MariaDB Installation: Ubuntu
+##################################################
+#to add the repo
+https://downloads.mariadb.org/mariadb/repositories/#mirror=jmu&distro=Ubuntu&distro_release=xenial--ubuntu_xenial&version=10.1
+
+apt-get update
+
+apt-get install mariadb-server
+
+ps aux | grep mysql
+
+
+##################################################
+Lecture: MariaDB Secure Setup: Ubuntu
+##################################################
+mysql_secure_installation
+
+
+
+##################################################
+Lecture: MariaDB Installation: CentOS
+##################################################
+#get the repo setup and run the commands
+https://downloads.mariadb.org/mariadb/repositories/#mirror=jmu&distro=CentOS&distro_release=centos7-amd64--centos7&version=5.5
+
+vim /etc/yum/repos.d/mariadb.repo
+#paste the values from the website
+
+yum update #so it pulls the repo cache from the mariadb repo
+
+#install mariadb
+sudo yum install MariaDB-server MariaDB-client
+
+systemctl status mysql
+
+systemctl enable mysql.service
+
+systemctl start mysql.service
+
+
+##################################################
+Lecture: MariaDB Secure Setup: CentOS
+##################################################
+mysql_secure_installation
+
+systemctl restart mysql
+
+
+
+##################################################
+Exercise: Install and Configure MySQL Database Server
+##################################################
+1. Visit the Oracle site and obtain the latest repository configuration import for the most current version of MySQL Community Edition in the 5.x branch. Run the appropriate RPM command to import and install that repository configuration file.
+[user@linuxacademy:~]$ sudo rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
+
+
+
+2. Update your yum repository cache. Execute the appropriate command to install the "mysql-community-edition" package.
+[user@linuxacademy:~]$ sudo yum -y upgrade && sudo yum -y install mysql-community-edition
+(Output)
+...packages needing update here, repository caches updating...
+...mysql-community-edition and dependencies are installed/updated here...
+(Output)
+
+3. Using the appropriate service management commands, set the MySQL server daemon to start automatically on boot. After that, start the MySQL server.
+[user@linuxacademy:~]$ sudo systemctl enable mysqld
+[user@linuxacademy:~]$ sudo systemctl start mysqld
+
+4. Once MySQL has started, secure the installation using the appropriate MySQL binary command in /usr/bin. Answer the questions posed to obtain the following results:
+Set the root password
+Remove anonymous users
+Disallow remote root login
+Remove test users and database
+Reload the privileges
+[user@linuxacademy:~]$ sudo /usr/bin/mysql_secure_installation
+(Output)
+Questions posed, answer as indicated in the instructions above
+(Output)
+
+5. Verify that you can login to the database instance using the root account credentials provided in Step #4.
+[user@linuxacademy:~]$ mysql -u root -p
+(Output)
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 14
+Server version: 5.6.26 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+(Output)
+
+##################################################
+SQL Functions and Statements
+##################################################
+##################################################
+Lecture: Insert Into
+##################################################
+INSERT INTO tblCustomerInfo (custInfoFirstName,custInfoLasttName,custInfoAddr1,custInfoAddr2,custInfoCityName,custInfoState,custInfoZip,custInfoPhone) VALUES ('john','Smith','11 Main St','','Anytown','NY','43211','2135556666');
+
+#insert one table into another
+INSERT INTO tblCustomerInfoBkup SELECT * FROM tblCustomerInfo;
+
+##################################################
+Lecture: Select From
+##################################################
+USE dbCustomerInfo;
+
+SHOW FIELDS FROM tblCustomerInfo;
+
+SELECT * FROM tblCustomerInfo;
+
+SELECT custInfoCityName FROM tblCustomerInfo;
+
+SELECT custInfoLastName FROM tblCustomerInfo WHERE custInfoState='whatever';
+
+SELECT custInfoLastName FROM tblCustomerInfo WHERE custInfoState LIKE 'whatever';
+
+SELECT custInfoLastName FROM tblCustomerInfo WHERE custInfoState!='whatever';
+#this is the same thing
+SELECT custInfoLastName FROM tblCustomerInfo WHERE custInfoState<>'whatever';
+
+
+##################################################
+Lecture: Alter Table
+##################################################
+#to add a new column
+ALTER TABLE tblCustomerInfoBkup ADD custInfoDOB varchar(10);
+
+SHOW FIELDS tblCustomerInfoBkup;
+
+#this will create a error because its a year which is 2 characters
+ALTER TABLE  tblCustomerInfoBkup ALTER COLUMN custInfoDOB year;
+
+ALTER TABLE  tblCustomerInfoBkup MODIFY custInfoDOB year;
+
+SHOW FIELDS FROM tblCustomerInfoBkup;
+
+
+##################################################
+Lecture: Delete From
+##################################################
+SHOW DATABASES;
+
+USE dbCustomerInfo;
+
+SHOW TABLES;
+
+SHOW FIELDS FROM tblCustomerInfoBkup;
+
+SELECT * FROM tblCustomerInfoBkup;
+
+DELETE * FROM tblCustomerInfoBkup;
+
+DELETE FROM tblCustomerInfoBkup WHERE custInfoState='OH';
+
+DELETE FROM tblCustomerInfoBkup WHERE custInfoFirstName='John' AND custInfoLastName='Johnson';
+
+
+
+
+##################################################
+Lecture: Create Index
+##################################################
+#indexing takes a performance hit, but the larger a table is the more important a index is.
+
+CREATE INDEX indexCustInfiID  ON tblCustIDInfo (custID);
+
+CREATE INDEX indexCustInfoNames ON  tblCustomerIDInfo (custInfoFirstName, custInfoLastName);
+
+#we slowed down writes to this table times 2 because we have two indexes on the same table.
+
+
+##################################################
+Lecture: Drop Table
+##################################################
+USE dbCustomerInfo;
+
+SHOW TABLES;
+
+CREATE TABLE tblTeat (col1 varchar(2),col2 varchar(2));
+
+DROP TABLE tblTest;
+
+ALTER TABLE tblCustomerIDInfo DROM INDEX indextblCustIDInfo;
+
+
+##################################################
+Lecture: Truncate Table
+##################################################
+USE dbCustomerInfo;
+
+SHOW TABLES;
+
+TRUNCATE TABLE tblCustomerInfoBkup;
+
+
+##################################################
+Lecture: Auto Increment
+##################################################
+CREATE TABLE eblEmpInfo(empID int PRIMARY KEY AUTO_INCREMENT,empLastName varchar(50),empSSN varchar(11));
+
+SHOW FIELDS tblEmpInfo;
+
+INSERT INTO tblEmpInfo (empLastName,empSSN) VALUES ('Smith','11111111111')
+
+SELECT * FROM tblEmpInfo
+
+ALTER TABLE tblEmpInfo AUTO_INCREMENT=1000;
+
+ALTER TABLE tblCustomerIDInfo MODIFY custID int AUTO_INCREMENT;
+
+SHOW FIELDS FROM tblCustomerIDInfo;   #show fields outputs the same thing as desc
+
+
+##################################################
+Lecture: Count Function
+##################################################
+SELECT COUNT(*) FROM tblCustomerInfo;
+
+SELECT COUNT(DISTINCT custInfoLastName) FROM tblCustomerInfo;
+
+SELECT COUNT(custInfoLastName) FROM tblCustomerInfo;
+
+SELECT COUNT(ustInfoState) FROM tblCustomerInfo WHERE custInfoState='NY';
+
+
+##################################################
+Lecture: Average and Sum Functions
+##################################################
+SELECT COUNT(*) tblInvoices;
+
+SELECT AVG(inNumberItems) from tblInvoices;
+
+SELECT COUNT(*),AVG(invNumberItems) FROM tblInvoices;
+
+SELECT SUM(invNumberItems) FROM tblInvoices;
+
+SELECT COUNT(*),AVG(invNumberItems),SUM(invNumberItems) FROM tblInvoices;
+
+
+##################################################
+Lecture: Like Operator
+##################################################
+SELECT * FROM tblCustomerInfo WHERE custInfoLastName='Smith';
+
+SELECT * FROM tblCustomerInfo WHERE custInfoLastName LIKE '%s'; #any name that ends with a S
+
+SELECT * FROM tblCustomerInfo WHERE custInfoLastName LIKE 's%'; #any name that begins with a S
+
+SELECT COUNT(*) FROM tblCustomerInfo WHERE custInfoLastName LIKE 'S%';
+
+SELECT COUNT(*) FROM tblInvoices WHERE invCustName LIKE '%smith%';
+
+SELECT SUM(invNumberItems),COUNT(*) FROM tblInvoices WHERE invCustName LIKE '%smith%';
+
+
+##################################################
+Lecture: Create View
+##################################################
+CREATE VIEW myview AS SELECT COUNT(*),AVG(invNumberItems),SUM(invNumberItems) FROM tblInvoices WHERE invNumberItems > 50;
+
+SHOW TABLES;
+
+SELECT * FROM myview
+
+
+##################################################
+Lecture: Inner Join
+##################################################
+#will only return information that matches in both locations
+SELECT tblOrders.ordID,tblCustomerIDInfo.custInfoLastName,tblCustomerIDInfo.custInfoFirstName,tblOrder.ordDate FROM tblOrders INNER JOIN tblCustomerIDInfo ON tblOrders.ordID=tblCustomersIDInfo.ordID;
+
+
+
+##################################################
+Lecture: Left Join
+##################################################
+#returns all the rows from the left table and the matching rows from the right table, if there is a value in the left but not in the right it will display that there is no matching row for it
+
+SHOW FIELDS tblOrders;
+
+SHOW FIELDS tblCustomerIDInfo;
+
+SELECT tblCustomerIDInfo.custInfoLastName,tblOrders.ordID FROM tblCustomerIDInfo LEFT JOIN tblOrders ON tblCustomerIDInfo.custID=tblOrders ORDER BY tblCustomerIDInfo.custInfoLastName;
+
+
+##################################################
+Lecture: Right Join
+##################################################
+
+SHOW FIELDS tblOrders;
+
+SHOW FIELDS tblCustomerIDInfo;
+
+SELECT tblOrders.ordID,tblCustomerIDInfo.custInfoLastName FROM tblOrders RIGHT JOIN tblCustomerIDInfo ON tblOrders.ordID=tblCustomerIDInfo.custID ORDER BY tblOrders.ordID;
+
+
+##################################################
+Lecture: Full Join
+##################################################
+SELECT tblCustomerIDInfo.custInfoLastName,tblOrders.ordID FROM tblCustomerIDInfo FULL OUTER JOIN tblOrders ON tblCustomerIDInfo.xustID=tblOrders.custID;
+#we get an error because mysql doesnt support outer joins
+
+
+##################################################
+Lecture: Unions
+##################################################
+SELECT tblCustomerIDInfo.custID,tblCustomerIDInfo.CustInfoLastName,tblCustomerIDInfo.custInfoFirstName FROM tblCustomerIDInfo UNION SELECT * FROM tblOrders;
+
+
+##################################################
+Lecture: Sorting Records
+##################################################
+SELECT * FROM tblCustomerIDInfo ORDER BY custID ACS LIMIT 1;
+
+SELECT * FROM tblCustomerIDInfo ORDER BY custID ACS ;
+
+SELECT * FROM tblCustomerIDInfo ORDER BY custID DESC LIMIT 1;
+
+
+
+##################################################
+Lecture: Minimum and Maximum Values
+##################################################
+SELECT MIN(custID) FROM tblCustomers;
+
+SELECT MAX(custID) FROM tblCustomers;
+
+SELECT custID,custLastName,custFirstName FROM tblCustomers WHERE custID=(SELECT MAX(custID) FROM tblCustomers);
+
+
+
+##################################################
+Lecture: Upper and Lower Case Conversions
+##################################################
+SELECT UCASE(custInfoFirstName),UCASE(custInfoLastName) FROM tblCustomerIDInfo;
+
+SELECT LCASE(custInfoFirstName),LCASE(custInfoLastName) FROM tblCustomerIDInfo;
+
+
+
+##################################################
+Lecture: Now()
+##################################################
+#We would use Now when we were building a view
+
+#Now will time stamp the row
+SELECT prodID,rodName,prodDesc, Now() As prodPriceDateFROM tblProducts;
+
+
+
+
+
+##################################################
+Exercise: Exercise: Create Database, Database User and Tables
+##################################################
+1. Log into the MySQL server instance as the root user with the already created credentials.
+[rootr@linuxacademy:~]# mysql -u root -p
+(Output)
+Enter Password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 14
+Server version: 5.6.26 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+(Output)
+
+2. After logging in, list the current databases already created on the instance.
+mysql> SHOW DATABASES;
+(Output)
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+3 rows in set (0.00 sec)
+(Output)
+
+3. Create a new database named "dbTest". Once the database is created, list all databases again on the instance to verify.
+mysql> CREATE DATABASE dbTest;
+Query OK, 1 row affected (0.00 sec)
+mysql> SHOW DATABASES;
+(Output)
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| dbTest             |
+| performance_schema |
++--------------------+
+4 rows in set (0.00 sec)
+(Output)
+
+4. Create a user called 'testuser' that is granted all permissions on the 'dbTest' database created above. Make sure that user is able to log in from the local system and has a password assigned. Once the user is created and access to the database granted, be sure to reload the privileges and then log out.
+mysql> create database dbTest;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> grant all on dbTest.* to 'testuser'@'localhost' identified by 'password';
+Query OK, 0 rows affected (0.00 sec)
+mysql> quit;
+
+5. Verify the user can login and access the database created. Once logged in, create two tables called "tblVendors" and "tblOrders" structured as follows:
+tblVendors
+Field: vendorID, numeric type, autoincremented, primary key
+Field: vendorName, text, length of 50 characters or less
+tblOrders
+Field: orderID, numeric type, autoincremented, primary key
+Field: orderVendorID, numeric type (match type to tbleVendors::vendorID)
+Field: orderDate, date or timestamp type
+[root@linuxacademy ~]# mysql -u testuser -p -h localhost dbTest
+(Output)
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 15
+Server version: 5.6.26 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+(Output)
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| dbTest             |
++--------------------+
+2 rows in set (0.00 sec)
+mysql> create table tblVendors(vendorID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,vendorName varchar(50));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> create table tblOrders(orderID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,orderVendorID INT,orderDate DATE);
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> show tables;
++------------------+
+| Tables_in_dbTest |
++------------------+
+| tblOrders        |
+| tblVendors       |
++------------------+
+2 rows in set (0.00 sec)
+
+6. Once created, list the tables and field for each to verify.
+mysql> use dbTest;
+Database changed
+mysql> show tables;
++------------------+
+| Tables_in_dbTest |
++------------------+
+| tblOrders        |
+| tblVendors       |
++------------------+
+2 rows in set (0.00 sec)
+
+mysql> show columns from tblOrders;
++---------------+---------+------+-----+---------+----------------+
+| Field         | Type    | Null | Key | Default | Extra          |
++---------------+---------+------+-----+---------+----------------+
+| orderID       | int(11) | NO   | PRI | NULL    | auto_increment |
+| orderVendorID | int(11) | YES  |     | NULL    |                |
+| orderDate     | date    | YES  |     | NULL    |                |
++---------------+---------+------+-----+---------+----------------+
+3 rows in set (0.01 sec)
+
+mysql> show columns from tblVendors;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| vendorID   | int(11)     | NO   | PRI | NULL    | auto_increment |
+| vendorName | varchar(50) | YES  |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+2 rows in set (0.01 sec)
+
+
+
+##################################################
+Exercise: Exercise: Creating Tables with Constraints
+##################################################
+1. Using the previously created 'testuser' and the 'dbTest' database, log in and select the database to create our structures in. List the current tables.
+[user@linuxacademy bin]$ mysql -u root -p -h localhost
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 11
+Server version: 5.5.44-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+3 rows in set (0.00 sec)
+MariaDB [(none)]> USE dbTest;
+
+2. Create a table, using the indicated constraints, as follows:
+* Name: tblAcctExec
+* Field: execID - Primary Key, autoincrement, not null
+* Field: execLastName - Text, Length of 35, not null
+* Field: execFirstName - Text, Length of 35, not null
+* Field: execSalary - Integer, not null
+MariaDB [dbTest]> CREATE TABLE tblAcctExec(execID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,execLastName varchar(35) NOT NULL,execFirstName varchar(35) NOT NULL,execSalary INT NOT NULL);
+Query OK, 0 rows affected (0.07 sec)
+
+3. Create a table, using the indicated constraints, as follows:
+* Name: tblCustomerInfo
+* Field: customerID - Primary Key, autoincrement, not null
+* Field: customerLastName - Text, Length of 35, not null
+* Field: customerFirstName - Text, Length of 35, not null
+* Field: customerEmail - Text, Length of 50, not null
+MariaDB [dbTest]> CREATE TABLE tblCustomerInfo(customerID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,customerLastName varchar(35) NOT NULL,customerFirstName varchar(35) NOT NULL,customerEmail varchar(50) NOT NULL);
+Query OK, 0 rows affected (0.01 sec)
+
+4. List each table in the database
+MariaDB [dbTest]> SHOW TABLES;
++------------------+
+| Tables_in_dbTest |
++------------------+
+| tblAcctExec      |
+| tblCustomerInfo  |
+| tblOrders        |
+| tblVendors       |
++------------------+
+4 rows in set (0.00 sec)
+
+5. List the fields for all tables in the database and check that the constraints of entry match those intended during creation.
+MariaDB [dbTest]> SHOW COLUMNS FROM tblAcctExec;
++---------------+-------------+------+-----+---------+----------------+
+| Field         | Type        | Null | Key | Default | Extra          |
++---------------+-------------+------+-----+---------+----------------+
+| execID        | int(11)     | NO   | PRI | NULL    | auto_increment |
+| execLastName  | varchar(35) | NO   |     | NULL    |                |
+| execFirstName | varchar(35) | NO   |     | NULL    |                |
+| execSalary    | int(11)     | NO   |     | NULL    |                |
++---------------+-------------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+MariaDB [dbTest]> SHOW COLUMNS FROM tblCustomerInfo;
++-------------------+-------------+------+-----+---------+----------------+
+| Field             | Type        | Null | Key | Default | Extra          |
++-------------------+-------------+------+-----+---------+----------------+
+| customerID        | int(11)     | NO   | PRI | NULL    | auto_increment |
+| customerLastName  | varchar(35) | NO   |     | NULL    |                |
+| customerFirstName | varchar(35) | NO   |     | NULL    |                |
+| customerEmail     | varchar(50) | NO   |     | NULL    |                |
++-------------------+-------------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+
+
+
+##################################################
+Exercise: Exercise: Altering Table Structures
+##################################################
+1. Using the 'testuser' and 'dbTest' database created in our earlier exercises, login to the database instance and choose the appropriate database for our use. List all tables in that database;
+[user@linuxacademy bin]$ mysql -u testuser -p -h localhost
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 14
+Server version: 5.5.44-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| dbTest             |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [(none)]> USE dbTest;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+MariaDB [dbTest]> SHOW TABLES;
++------------------+
+| Tables_in_dbTest |
++------------------+
+| tblAcctExec      |
+| tblCustomerInfo  |
+| tblOrders        |
+| tblVendors       |
++------------------+
+4 rows in set (0.00 sec)
+
+2. Display the Vendors table and it's columns with constraints. Notice that although the Vendor ID cannot be NULL, the Vendor Name can be. As a result, we could have an ID with no associated name. Alter the table so that the Vendor Name is constrained so as to not allow NULL values. List the new constraints for the table.
+MariaDB [dbTest]> SHOW COLUMNS FROM tblVendors;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| vendorID   | int(11)     | NO   | PRI | NULL    | auto_increment |
+| vendorName | varchar(50) | YES  |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+2 rows in set (0.00 sec)
+
+MariaDB [dbTest]> ALTER TABLE tblVendors MODIFY COLUMN vendorName varchar(50) NOT NULL;
+Query OK, 8 rows affected (0.04 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+MariaDB [dbTest]> SHOW COLUMNS FROM tblVendors;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| vendorID   | int(11)     | NO   | PRI | NULL    | auto_increment |
+| vendorName | varchar(50) | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+
+3. Display the Account Executive table and it's columns and constraints. Alter the table to add another column as follows:
+* Field: execPhoneNumber - Integer, cannot be NULL
+MariaDB [dbTest]> SHOW COLUMNS FROM tblAcctExec;
++---------------+-------------+------+-----+---------+----------------+
+| Field         | Type        | Null | Key | Default | Extra          |
++---------------+-------------+------+-----+---------+----------------+
+| execID        | int(11)     | NO   | PRI | NULL    | auto_increment |
+| execLastName  | varchar(35) | NO   |     | NULL    |                |
+| execFirstName | varchar(35) | NO   |     | NULL    |                |
+| execSalary    | int(11)     | NO   |     | NULL    |                |
++---------------+-------------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+MariaDB [dbTest]> ALTER TABLE tblAcctExec ADD COLUMN execPhoneNumber INT NOT NULL;
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+4. Display the new constraints on the Account Executive table to verify the change.
+MariaDB [dbTest]> SHOW COLUMNS FROM tblAcctExec;
++-----------------+-------------+------+-----+---------+----------------+
+| Field           | Type        | Null | Key | Default | Extra          |
++-----------------+-------------+------+-----+---------+----------------+
+| execID          | int(11)     | NO   | PRI | NULL    | auto_increment |
+| execLastName    | varchar(35) | NO   |     | NULL    |                |
+| execFirstName   | varchar(35) | NO   |     | NULL    |                |
+| execSalary      | int(11)     | NO   |     | NULL    |                |
+| execPhoneNumber | int(11)     | NO   |     | NULL    |                |
++-----------------+-------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+
+
+
+
+
+
+##################################################
+Exercise: Exercise: Insert and Select Records in a Table
+##################################################
+1. Using the previously created 'testuser' and 'dbTest' database, log into MySQL and change to that database.
+
+[rootr@linuxacademy:~]# mysql -u testuser -p -h localhost dbTest
+mysql> USE dbTest;
+Database Changed
+mysql>
+
+2. Insert records matching the indicated list below into the table called 'tblVendors':
+tblVendors
+Record List: IBM, Oracle, Verizon, Walmart, Time Warner, LG, Sony, Panasonic
+mysql> INSERT INTO tblVendors (vendorName) VALUES ('IBM'),('Oracle'),('Verizon'),('Walmart'),('Time Warner'),('LG'),('Sony'),('Panasonic');
+Query OK, 8 rows affected (0.07 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+3. Insert records matching the indicated list below into the table called 'tblOrders'
+Record List: (8, 07-12-2011)
+(6, 08-12-2011)
+(7, 09-12-2011)
+(3, 01-12-2011)
+(1, 07-12-2012)
+(2, 07-18-2010)
+(4, 12-25-2001)
+(5, 09-19-2014)
+mysql> INSERT INTO tblOrders (orderVendorID,orderDate) VALUES (8,'2011-07-12'),(6,'2011-08-12'),(7,'2011-09-12'),(3,'2011-01-12'),(1,'2012-07-12'),(2,'2010-07-18'),(4,'2001-12-25'),(5,'2014-09-19');
+Query OK, 8 rows affected (0.07 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+4. Select and display all the records from each of the two tables and display their results to verify their creation.
+mysql> SELECT * FROM tblVendors;
++----------+-------------+
+| vendorID | vendorName  |
++----------+-------------+
+|        1 | IBM         |
+|        2 | Oracle      |
+|        3 | Verizon     |
+|        4 | Walmart     |
+|        5 | Time Warner |
+|        6 | LG          |
+|        7 | Sony        |
+|        8 | Panasonic   |
++----------+-------------+
+8 rows in set (0.00 sec)
+
+mysql> SELECT * FROM tblOrders;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       1 |             8 | 2011-07-12 |
+|       2 |             6 | 2011-08-12 |
+|       3 |             7 | 2011-09-12 |
+|       4 |             3 | 2011-01-12 |
+|       5 |             1 | 2012-07-12 |
+|       6 |             2 | 2010-07-18 |
+|       7 |             4 | 2001-12-25 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+8 rows in set (0.00 sec)
+
+5. Select only those records from the 'tblOrders' table with a date greater than September 20, 2011 and display the results.
+mysql> SELECT * FROM tblOrders WHERE orderDate >= '2011-09-20';
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       5 |             1 | 2012-07-12 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+2 rows in set (0.00 sec)
+
+
+
+
+
+
+##################################################
+Exercise: Exercise: Count Records and Execute Functions in a Table
+##################################################
+1. Logged into the MySQL instance used in our previous exercises as the 'testuser' and using the 'dbTest' database, obtain a count of the records in each of the tables 'tblOrders' and 'tblVendors'.
+mysql> SELECT COUNT('*') FROM tblOrders;
++------------+
+| COUNT('*') |
++------------+
+|          8 |
++------------+
+1 row in set (0.01 sec)
+
+mysql> SELECT COUNT('*') FROM tblVendors;
++------------+
+| COUNT('*') |
++------------+
+|          8 |
++------------+
+1 row in set (0.00 sec)
+
+2. Using a single SQL statement, obtain a count of all records in both tables combined and display the result.
+mysql> SELECT (SELECT COUNT('*') FROM tblOrders) + (SELECT COUNT('*') FROM tblVendors);
++--------------------------------------------------------------------------+
+| (SELECT COUNT('*') FROM tblOrders) + (SELECT COUNT('*') FROM tblVendors) |
++--------------------------------------------------------------------------+
+|                                                                       16 |
++--------------------------------------------------------------------------+
+1 row in set (0.01 sec)
+
+3. Select all records in the tblOrders database but sort the output in reverse order.
+mysql> SELECT * FROM tblOrders ORDER BY orderID DESC;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       8 |             5 | 2014-09-19 |
+|       7 |             4 | 2001-12-25 |
+|       6 |             2 | 2010-07-18 |
+|       5 |             1 | 2012-07-12 |
+|       4 |             3 | 2011-01-12 |
+|       3 |             7 | 2011-09-12 |
+|       2 |             6 | 2011-08-12 |
+|       1 |             8 | 2011-07-12 |
++---------+---------------+------------+
+8 rows in set (0.00 sec)
+
+4. Select all records in the tblOrders database and sort in date order.
+mysql> SELECT * FROM tblOrders ORDER BY orderDate;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       7 |             4 | 2001-12-25 |
+|       6 |             2 | 2010-07-18 |
+|       4 |             3 | 2011-01-12 |
+|       1 |             8 | 2011-07-12 |
+|       2 |             6 | 2011-08-12 |
+|       3 |             7 | 2011-09-12 |
+|       5 |             1 | 2012-07-12 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+8 rows in set (0.00 sec)
+
+5. Select all the Vendor IDs from the 'tblorders' table greater than 4 and add them using a single query.
+ mysql> SELECT * FROM tblOrders WHERE orderVendorID > 4;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       1 |             8 | 2011-07-12 |
+|       2 |             6 | 2011-08-12 |
+|       3 |             7 | 2011-09-12 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+4 rows in set (0.00 sec)
+
+
+##################################################
+Exercise: Exercise: Use Joins to View Multi-Table Data
+##################################################
+1. Log into the MySQL databases instance called 'dbTest' with the user id 'testuser' that has been previously provisioned in our exercises.
+[root@linuxacademy:~]# mysql -u testuser -p -h localhost dbTest
+mysql>
+2. Using an 'inner join', return all rows from the Vendors and Orders table where there is a matching Vendor ID value in BOTH the Vendors and Orders tables.
+mysql> SELECT tblVendors.vendorID,tblVendors.vendorName,tblOrders.orderDate FROM tblVendors INNER JOIN tblOrders ON tblVendors.vendorID = tblOrders.orderVendorID;
++----------+-------------+------------+
+| vendorID | vendorName  | orderDate  |
++----------+-------------+------------+
+|        8 | Panasonic   | 2011-07-12 |
+|        6 | LG          | 2011-08-12 |
+|        7 | Sony        | 2011-09-12 |
+|        3 | Verizon     | 2011-01-12 |
+|        1 | IBM         | 2012-07-12 |
+|        2 | Oracle      | 2010-07-18 |
+|        4 | Walmart     | 2001-12-25 |
+|        5 | Time Warner | 2014-09-19 |
++----------+-------------+------------+
+8 rows in set (0.00 sec)
+
+3. Using a 'left outer join' return all rows from the Vendors table and ONLY those rows from the Orders table where the joined fields are equal. Order the results by Vendor ID.
+mysql> SELECT tblVendors.vendorID,tblVendors.vendorName,tblOrders.orderDate FROM tblVendors LEFT OUTER JOIN tblOrders ON tblVendors.vendorID = tblOrders.orderVendorID ORDER BY tblVendors.vendorID;
++----------+-------------+------------+
+| vendorID | vendorName  | orderDate  |
++----------+-------------+------------+
+|        1 | IBM         | 2012-07-12 |
+|        2 | Oracle      | 2010-07-18 |
+|        3 | Verizon     | 2011-01-12 |
+|        4 | Walmart     | 2001-12-25 |
+|        5 | Time Warner | 2014-09-19 |
+|        6 | LG          | 2011-08-12 |
+|        7 | Sony        | 2011-09-12 |
+|        8 | Panasonic   | 2011-07-12 |
++----------+-------------+------------+
+8 rows in set (0.00 sec)
+
+4. Write a query that can display the Vendor table ID and Name along with the Order ID from the Orders table for each order, use a join or other multi-table syntax.
+mysql> SELECT tblVendors.vendorID,tblVendors.vendorName,tblOrders.orderDate,tblOrders.orderID FROM tblVendors INNER JOIN tblOrders ON tblVendors.vendorID = tblOrders.orderVendorID;
++----------+-------------+------------+---------+
+| vendorID | vendorName  | orderDate  | orderID |
++----------+-------------+------------+---------+
+|        8 | Panasonic   | 2011-07-12 |       1 |
+|        6 | LG          | 2011-08-12 |       2 |
+|        7 | Sony        | 2011-09-12 |       3 |
+|        3 | Verizon     | 2011-01-12 |       4 |
+|        1 | IBM         | 2012-07-12 |       5 |
+|        2 | Oracle      | 2010-07-18 |       6 |
+|        4 | Walmart     | 2001-12-25 |       7 |
+|        5 | Time Warner | 2014-09-19 |       8 |
++----------+-------------+------------+---------+
+8 rows in set (0.00 sec)
+
+
+
+##################################################
+Exercise: Exercise: Sort Records and Determine Min/Max Values
+##################################################
+1. While logged in as the 'testuser' in MySQL, using the 'dbTest' database created earlier.
+[root@linuxacademy:~]# mysql -u testuser -p -h localhost dbTest
+mysql>
+
+2. Select all the records in the Vendors Table and sort them alphabetically on the Vendor's Name.
+mysql> SELECT * FROM tblVendors ORDER BY vendorName;
++----------+-------------+
+| vendorID | vendorName  |
++----------+-------------+
+|        1 | IBM         |
+|        6 | LG          |
+|        2 | Oracle      |
+|        8 | Panasonic   |
+|        7 | Sony        |
+|        5 | Time Warner |
+|        3 | Verizon     |
+|        4 | Walmart     |
++----------+-------------+
+8 rows in set (0.00 sec)
+
+3. Select all the records in the Vendors Table and sort them reverse numerically on the Vendor's ID.
+ mysql> SELECT * FROM tblVendors ORDER BY vendorID DESC;
++----------+-------------+
+| vendorID | vendorName  |
++----------+-------------+
+|        8 | Panasonic   |
+|        7 | Sony        |
+|        6 | LG          |
+|        5 | Time Warner |
+|        4 | Walmart     |
+|        3 | Verizon     |
+|        2 | Oracle      |
+|        1 | IBM         |
++----------+-------------+
+8 rows in set (0.00 sec)
+
+4. Select all orders in the Orders table after January 1st, 2012 and order by the date.
+mysql> SELECT * FROM tblOrders WHERE orderDate > '2012-01-01' ORDER BY orderDate;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       5 |             1 | 2012-07-12 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+2 rows in set (0.00 sec)
+
+5. Write two queries, one that will provide the minimum Vendor ID in the Vendor's Table and one that will provide the maximum Order ID in the Order's table.
+ mysql> SELECT MIN(vendorID) FROM tblVendors;
++---------------+
+| MIN(vendorID) |
++---------------+
+|             1 |
++---------------+
+1 row in set (0.00 sec)
+mysql> SELECT MAX(orderID) FROM tblOrders;
++--------------+
+| MAX(orderID) |
++--------------+
+|            8 |
++--------------+
+1 row in set (0.00 sec)
+
+
+##################################################
+Exercise: Exercise: SQL Functions (Average and Sum)
+##################################################
+1. While logged in as the 'testuser' in MySQL, using the 'dbTest' database created earlier.
+[root@linuxacademy:~]# mysql -u testuser -p -h localhost dbTest
+mysql>
+
+2. Select all the records in the Vendors Table and sort them alphabetically on the Vendor's Name.
+mysql> SELECT * FROM tblVendors ORDER BY vendorName;
++----------+-------------+
+| vendorID | vendorName  |
++----------+-------------+
+|        1 | IBM         |
+|        6 | LG          |
+|        2 | Oracle      |
+|        8 | Panasonic   |
+|        7 | Sony        |
+|        5 | Time Warner |
+|        3 | Verizon     |
+|        4 | Walmart     |
++----------+-------------+
+8 rows in set (0.00 sec)
+
+3. Select all the records in the Vendors Table and sort them reverse numerically on the Vendor's ID.
+ mysql> SELECT * FROM tblVendors ORDER BY vendorID DESC;
++----------+-------------+
+| vendorID | vendorName  |
++----------+-------------+
+|        8 | Panasonic   |
+|        7 | Sony        |
+|        6 | LG          |
+|        5 | Time Warner |
+|        4 | Walmart     |
+|        3 | Verizon     |
+|        2 | Oracle      |
+|        1 | IBM         |
++----------+-------------+
+8 rows in set (0.00 sec)
+
+4. Select all orders in the Orders table after January 1st, 2012 and order by the date.
+mysql> SELECT * FROM tblOrders WHERE orderDate > '2012-01-01' ORDER BY orderDate;
++---------+---------------+------------+
+| orderID | orderVendorID | orderDate  |
++---------+---------------+------------+
+|       5 |             1 | 2012-07-12 |
+|       8 |             5 | 2014-09-19 |
++---------+---------------+------------+
+2 rows in set (0.00 sec)
+
+5. Write two queries, one that will provide the minimum Vendor ID in the Vendor's Table and one that will provide the maximum Order ID in the Order's table.
+ mysql> SELECT MIN(vendorID) FROM tblVendors;
++---------------+
+| MIN(vendorID) |
++---------------+
+|             1 |
++---------------+
+1 row in set (0.00 sec)
+mysql> SELECT MAX(orderID) FROM tblOrders;
++--------------+
+| MAX(orderID) |
++--------------+
+|            8 |
++--------------+
+1 row in set (0.00 sec)

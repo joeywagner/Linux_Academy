@@ -1,0 +1,650 @@
+##################################################
+Git Quick Start
+##################################################
+##################################################
+Installation and Configuration
+##################################################
+yum install git
+
+a lot of git is written in pearl
+
+after installation you have to set some global parameters
+
+git config --global user.name "youregithubusername"
+git config --global user.email "youreemail@email.com"
+git config --system core.editor "/bin/vim"
+cat /etc/gitconfig
+
+you can add any value, butit wont work unless there is a hook for that value
+example
+git --system my.junk "myjunk"
+
+cat /home/joe/.gitconfig
+[user]
+	name = Joe Wagner
+	email = joeywagner@gmail.com
+[push]
+	default = matching
+[core]
+	editor = vim
+
+
+##################################################
+Creating a Repository and Adding Content
+##################################################
+create a dir for a repo
+
+to initialize a git repo
+git init .  #the . if got this dir, you can also give the path to the dir
+
+the files that are created when initialized
+gittest git:(master) ll -al
+drwxrwxr-x  7 joe joe 4.0K Jan  6 22:26 .git
+
+cd .git
+
+.git git:(master) ll
+total 32K
+drwxrwxr-x 2 joe joe 4.0K Jan  6 22:26 branches
+-rw-rw-r-- 1 joe joe   92 Jan  6 22:26 config
+-rw-rw-r-- 1 joe joe   73 Jan  6 22:26 description
+-rw-rw-r-- 1 joe joe   23 Jan  6 22:26 HEAD
+drwxrwxr-x 2 joe joe 4.0K Jan  6 22:26 hooks
+drwxrwxr-x 2 joe joe 4.0K Jan  6 22:26 info
+drwxrwxr-x 4 joe joe 4.0K Jan  6 22:26 objects
+drwxrwxr-x 4 joe joe 4.0K Jan  6 22:26 refs
+
+
+if you want to get rid of a repo delete the .git, then it just becomes a directory of files
+
+source and text files are the 2 most common things that you are going to use version control for
+
+echo "this is a readme file" > README.MD
+
+echo "/* THIS IS A VALID C SOURCE FILE */" > source.c
+
+
+to see what files are in what state we can issue a status command
+git status
+
+git add #use this to add the fies to the internal DB for tracking purposes
+
+to override the global user we can go into the repo and run this command
+git config user.name "user"
+git config user.email "user@email.com"
+
+now when you make any commit from this repo it will track them as the user user and not the user in the global config
+
+you can also do the same thing for the editor
+
+git add either the name of the file or a git add . or git add *
+
+
+echo "testing file" > test.txt
+
+git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+	new file:   README.MD
+	new file:   source.c
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	test.txt
+
+
+now all 3 files are staged and ready to be commited
+
+git commit -m "this is the initial commit"
+
+[master (root-commit) aaa0861] this is the initial commit
+ 3 files changed, 3 insertions(+)
+ create mode 100644 README.MD
+ create mode 100644 source.c
+ create mode 100644 test.txt
+
+vim README.MD
+
+git status
+On branch master
+Changes not staged for commit:
+ (use "git add <file>..." to update what will be committed)
+ (use "git checkout -- <file>..." to discard changes in working directory)
+
+ modified:   README.MD
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+because the file is tracking because of the initial commit
+
+echo "new file" > test2.txt
+
+git status
+On branch master
+Changes not staged for commit:
+ (use "git add <file>..." to update what will be committed)
+ (use "git checkout -- <file>..." to discard changes in working directory)
+
+ modified:   README.MD
+
+Untracked files:
+ (use "git add <file>..." to include in what will be committed)
+
+ test2.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+git commit -a #this says commit anything that sis already tracked but do not do anything with untracked files
+
+
+to remove a file from from being tracked
+rm test2.txt
+
+git rm test2.txt
+
+
+just like we have to stage a addition we have to stage removal too
+
+##################################################
+Logging
+##################################################
+a merge is called resolving issues
+
+git log #this will show us what has been done to our repo
+
+git it how docker got alot of its ideas for IDing docker containers
+
+git log --oneline #this will give me a one line summary of the commits, optimal for reports
+
+git log -p  #this will show you want was changed, the exact transactions from the DB
+
+git log -- filename.txt #this will show me the transactions that occurred to a specific file
+
+git log --author="user" #this will show all the changes from a particular author
+
+git log --grep="changed" #this will seach for the word "changed" in a commit message
+
+git log --graph  #Draw a text-based graphical representation of the commit history on the left hand side of the output.
+
+git log --graph --decorate #the decorate flag will give us different colors
+
+
+##################################################
+Cloning
+##################################################
+you dont want to work in master, you want to create a working copy ie a new branch
+
+you could make a copy with a cp -rf, but the best thing to do is to make a clone
+
+clone local directory
+mkdir cpgittest
+git clone /home/joe/gittest .
+
+git config user.name "dev1"
+git config user.email "dev1@email.com"
+
+vim test.txt
+git add .
+git commit -m "made changes to test.txt"
+
+the changes were not made to the gittest the changes were only made to the local/working directory
+
+because the git clone over ssh is relatice to the user, it will go to the users home directory, thats why the location of the
+
+git clone user@<servername>.com:gittest . #the /home/user/ is already there
+
+you can clone with ssh or http or https
+
+
+git push origin master #push you local changes to github
+
+
+##################################################
+Ignoring Content
+##################################################
+git doesnt generally work with anything that isnt a text based file
+
+2 kinds of files that will exclude files from tracking transactions
+
+to exclude files
+git config --global code.excludesfile #this checks if there is a excludesfile set
+
+git config --global code.excludesfile '/etc/gitignore' #this sets a excludes file
+vim /etc/gitignore #creates the git ignore
+#globally ignore .out binary files
+*.out
+
+#you can also have a repo specific gitignore file
+vim .gitignore #just add a .gitignore file to the repo
+
+#you can also iginor a directory
+tmp/*
+
+
+##################################################
+Branching
+##################################################
+#create a branch
+git branch <branchname>
+
+#view available branches
+git branch #a * at the front of the branch will show you want branch you are on
+
+#checkout branch
+git checkout dev
+
+#any changes that you make now will only be applied to the dev branch
+
+git checkout -b <new_branch_name> #this will create and move to the branch that you created
+
+##################################################
+Merging and Pushing Updates
+##################################################
+git push origin master #means take what is currently in the master branch of this repo and push it to the origin
+
+#to push other branches
+git checkout dev
+git push origin dev #if the branch does not exist it will create it
+
+git checkout qa
+git push origin qa
+
+you dont have to be on a a active branch to push that branch
+
+git push origin --all #this will push all branches
+
+you can merge any branch with any other branch
+
+git checkout qa
+git merge dev
+git checkout master
+git merge qa #this merges all the changes in qa into master
+git push origin master #this updated everything into the master
+
+git checkout dev
+git merge qa #this merges qa into dev
+
+
+#the issues that you might run into merging are merge conflicts
+
+
+##################################################
+Where Do I Go from Here?
+##################################################
+Git and Git lab - Start to Finish #this is located in the intermediate linux classes
+
+
+##################################################
+##################################################
+##################################################
+Git and Git lab - Start to Finish
+##################################################
+##################################################
+Introduction
+##################################################
+what is version control?
+quite simply it is a method used to keep a software system that can consist of many versions and/or configurations we organized
+
+there have been a ton on version control systems throughout the lifetime of software, some are:
+CVS #the grandfather of source control
+PVCS #commercialized CVS
+subversion #inspired by CVS
+perforce
+microsoft visual sourcesafe
+mercrial
+teamsite
+vault
+bitkeeper #used to manage the linux kernel before
+git #created by our favorite linux author and creator linus
+
+the repo is the base of all version control
+
+Common source tasks:
+initializing #creating the empty repository for use
+clone #making a local full copy on your work station
+Branching #allowing a set of lines to be developed concurrently and differently and at different speeds for different reasons
+merging #taking different branches or sets of changes and integrating them into one set or branch
+resolving #taking conflicting changes from multiple people on the same file and manually addressing them
+commit #taking changes from the local system and committing them to the branch
+push/pull #taking changes locally or remotely and merging into one or more branches
+
+
+##################################################
+Installation and Configuration
+##################################################
+yum install git
+apt-get install git
+
+git installs its self as both a client and a server
+
+a lot of git is written in pearl, a lot of pearl packages dependencies are installed
+
+git stores things in binary delta files
+
+
+##################################################
+Basic Configuration
+##################################################
+there are 3 types of git configurations files stored
+1. a system level git configuration #this applies to all users on the system
+cat /etc/gitconfig #this is a the system level config
+2. there is a global configuration #this applies to you
+stored in the .gitconfig in your ~ dir
+you can also see you config with:
+git config --list
+
+3. and there is a local configuration
+
+the local config trumps global and global trumps system
+the more specific you get the more granular the more prescience
+
+we pass our configuration with --system or -- global
+
+after installation you have to set some global parameters
+
+git config --global user.name "youregithubusername"
+git config --global user.email "youreemail@email.com"
+git config --system core.editor "/bin/vim"
+
+stored in the .gitconfig in your ~ dir
+you can also see you config with:
+git config --list
+
+cat /etc/gitconfig #this is a the system level config
+
+you can add any value, but it wont work unless there is a hook for that value
+example
+git --system my.junk "myjunk"
+but you can also add values that are just informational too, git wont react to them but they are there
+
+ cat /home/joe/.gitconfig
+ [user]
+ 	name = Joe Wagner
+ 	email = joeywagner@gmail.com
+ [push]
+ 	default = matching
+ [core]
+ 	editor = vim
+
+you can add a custom header template into your config
+core.template
+
+you can also set a pager
+git config --global core.pager 'more' #or 'less'
+
+you can also add files that you want to exclude in the .gitignore
+vim .gitignore
+.DS_Store
+
+git config --global core.excludesfile ~/.gitignore
+
+##################################################
+Git Basics
+##################################################
+##################################################
+Empty Repositories
+##################################################
+all repos when they are created are empty
+
+creating a git repo
+
+mkdir gittest
+cd gittest
+gittest git init
+Initialized empty Git repository in /home/joe/gittest/.git/
+
+at this point all we have created is the stub directories in the repo
+
+all we have is the .git and the . git is never included in the repo, its already included in the .gitignore, if it was not it would be recrusive, we would include .git .git .git, it would never end
+its not part of the repo because .git is the repo
+if you want to delete a repo no matter what in the the directory all you have to do is delete the .git
+
+git status #means tell me the status of my .git repo
+
+echo "this is my first file" > test.text
+
+once we commit we git a commit id, this is how the these plain text delta dbs track transacions
+
+[master (root-commit) b1b4eed] this is the inital file commit for my new repo
+ 6 files changed, 177 insertions(+)
+ create mode 100644 hdparm.conf
+ create mode 100644 host.conf
+ create mode 100644 hostname
+ create mode 100644 hosts
+ create mode 100644 hosts.allow
+ create mode 100644 hosts.deny
+
+the 177 insertions is the point of reference for tracking
+
+##################################################
+Git Basics
+##################################################
+again git init initializes a empty repo
+
+git add stages files to be commited
+
+git commit -m "message"
+
+git works in terms of snapshots, we havent changed the repo as we have changed the snapshot
+
+we can also do a git delete
+rm -rf file.txt
+git rm file.txt
+
+
+##################################################
+Git Ignore
+##################################################
+in the repo create a file
+vim .gitignore
+*.mf #this will ignore amything with the .mf file extention
+
+git add build filename.txt
+
+##################################################
+Cloning
+##################################################
+##################################################
+Cloning: Local Repositories
+##################################################
+if youre cloning locally you dont have to worry about any security parameters
+
+but the disadvantage of going this that its no longer linked to the original repo
+not linked to the repo that you made a copy from
+this is not typical, you want to be able to work and push
+
+the correct way to copy locally
+git clone origrepo/ newrepo
+git clone /home/user/repo newrepo
+
+git pull /home/user/repo #this will pull the repo
+
+git status
+if you get the message your branch is ahead of origin master by 1 commit
+git push
+git status
+
+##################################################
+Cloning: Remote Repositories
+##################################################
+the most common method
+
+setup ssh key exchange
+ssh-keygen
+ssh-copy-id user@privateip
+it will ask for a pw
+
+once your key exchange has been set up you can now start git clone and get push without being prompted for a username and PW
+
+git clone user@ip:/dir
+
+
+##################################################
+Tagging, Branching and Merging
+##################################################
+##################################################
+Tags
+##################################################
+tags are similar to branches
+
+A tag represents a version of a particular branch at a moment in time.
+A branch represents a separate thread of development that may run concurrently with other development efforts on the same code base.
+Changes to a branch may eventually be merged back into another branch to unify them.
+
+2 types of tags
+annotated
+
+non-annotated
+
+create a tag
+git tag tag1
+
+git tag #lists tags
+
+git show tag1 #this will show you whats bee added since the tag was created
+
+git describe --tags
+
+git tag -a v1 -m "version 1.0 release" #
+
+tags are used within branches, most common to tag master branches
+
+tags are immutable references in time
+
+##################################################
+Branches
+##################################################
+git branch -a # will get all branches
+
+create a branch
+git checkout -b development #this will checkout and create a branch at one time
+
+
+##################################################
+Merging
+##################################################
+git merge development --no-ff #means retain all commit messages
+
+
+
+##################################################
+Logging and Repository Auditing
+##################################################
+##################################################
+Git Log
+##################################################
+git log #latest is the first thing at the top
+
+git log -p -2 #the -2 limits to the last 2 commits, the -p shows the difference that was introduced with each commit
+
+git log --stat #this will give us more information on the changes which were made
+
+git log --pretty=oneline #pretty formating with a common formating of oneline
+
+git log --pretty=format:"%h: %an, %ae, %cn, %cd, - %s" --graph
+
+##################################################
+Working with Github
+##################################################
+##################################################
+Introduction to Github
+##################################################
+the free accounts are public # you dont get private unless you pay
+
+##################################################
+Secure Communication
+##################################################
+ssh-keygen
+ll -al .ssh
+rsa.pub key
+cat rsa.pub
+copy that and paste it in github
+
+
+##################################################
+Working with Github
+##################################################
+git clone <ssh url from github>
+
+
+git push origin master
+
+git push origin dev #this will create the dev branch in our remote repo
+
+
+##################################################
+Working with Atlassian Bitbucket
+##################################################
+##################################################
+Intro to Bitbucket and Secure Communication
+##################################################
+
+
+
+##################################################
+Working with Bitbucket
+##################################################
+
+
+
+##################################################
+Gitlab: Installation, Configuration and Use
+##################################################
+##################################################
+Prerequisites
+##################################################
+yum install postfix
+
+systemctl enable postfix
+
+systemctl start postfix
+
+systemctl enable iptables
+
+systemctl start iptables
+
+cd /etc/selinux  #this is a secure services
+vim config
+change to disabled
+
+yum install httpd #aka apache2
+
+systemctl enable httpd
+
+##################################################
+Download, Install and Configure
+##################################################
+sudo apt-get install curl openssh-server ca-certificates postfix
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash
+sudo apt-get install gitlab-ce
+vim gitlab.rb #this is the gitlab configuration file
+
+
+find external_url attribute
+external_url = 'the external_url' #this will tell our system
+
+sudo gitlab-ctl reconfigure
+default   root/5ivel!fe
+setup a new password
+
+##################################################
+Architecture
+##################################################
+there is a screen shot of the architecture in the directory that this file is saved in
+
+cd /opt/gitlab/bin #this is where all the binaries are stored
+/opt/gitlab/service #this is where all the services that gitlab relies on
+
+##################################################
+User Administration and Secure Access
+##################################################
+
+##################################################
+Gilt Group Administration
+##################################################

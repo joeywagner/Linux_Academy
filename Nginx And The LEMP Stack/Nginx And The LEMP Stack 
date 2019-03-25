@@ -1,0 +1,890 @@
+##################################################
+Nginx And The LEMP Stack
+##################################################
+##################################################
+Introduction and Installation
+##################################################
+##################################################
+Lecture: Introduction
+##################################################
+Nginx is a opensource proxy server for http, https, smtp, pop3 and imap protocols as well as a load balancer http cache and a web server
+
+
+what makes nginx different from apache?
+mainly nginx differes in how it handles requests.  apache http servers default model of request handling is threaded or process oriented.
+instead of taking that approach nginx uses an asynchronous event-driven handler for requests.
+this allows nginx to more accurately provide predictable performance under very high loads
+
+nginx can handle very hight loads because of shared memory space
+
+##################################################
+Lecture: Installation and Basic Setup Tour
+##################################################
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
+
+cat /etc/issue
+
+rpm -Uvh epel-release-7-9.noarch.rpm.1
+
+yum repolist
+
+yum update
+
+yum install nginx
+
+chkconfig nginx
+
+systemctl start nginx
+systemctl status nginx
+
+yum install lynx
+
+lynx http://localhost
+
+ll /etc/nginx
+#the /etc/nginx/conf.d are important configuration files
+
+/etc/nginx/nginx.conf #this is the most important configuration file
+
+#default html location is:
+/usr/share/nginx/html
+
+
+##################################################
+Lecture: Configuration Optimization
+##################################################
+cd /ertc/nginx
+
+vim nginx.conf
+#common to run 1 worker process per core
+
+:wq
+
+cat /proc/cpuinfo | grep processor | wc -l
+
+#default connections are 768, generally open 2 or 3 connections to every server so you wan to half that number
+
+ulimit -n
+
+vim nginx.conf
+worker_processes
+worker_connections  #worker_connections * worker_processes
+
+#buffers
+#is the buffer size is too low it creates too much load
+#three types of buffers
+client body buffer size  =
+client header buffer size = client header size 1024
+client max body size = max allowed size for a client request, if a request is too large you will get a 413 error
+
+/client_body_buffer  #is wasnt there by default
+the bufferes are in the http directive under #gzip
+
+client_body_buffer_size 10k;
+client_header_buffer_size 1k;
+client_max_body_size 8m;  #if you see 413 you will need to increase
+large_client_header_buffers 2 1k;
+
+:wq
+
+nginx -t
+
+vim nginx.conf
+#timeouts
+#408 error is request timeout
+#under the buffer attributes
+client_body_timeout 12;  #12 is the max amount of time for a web page to draw
+client_header_timeout 12;
+keepalive_timeout 15;
+send_timeout 10;  #all these timeout are set to the max amount before we start seeing errors
+
+nginx -t
+#the keepalive_timeout was already in the conf
+
+service nginx restart
+
+
+
+##################################################
+VHosts and Directives
+##################################################
+##################################################
+Lecture: Standard Configuration
+##################################################
+cd /etc/nginx
+vim nginx.conf
+#in the https section below the include for the configuration files
+include /etc/nginx/vhost.d/*.conf;  #this is so we can host 1 or more domains
+
+:wq
+
+mkdir vhost.d
+mv ../conf.d/default.conf .
+
+vim default
+# include /etc/nginx/default.d/*.conf; #comment this line out
+
+#in location change:
+/usr/share/nginx/html
+to
+/var/www/html;
+
+:wq
+#leave the 404 and 500 errors in the same location
+
+mkdir -p /var/www/html
+
+lynx http://localhost
+
+echo "THIS IS OUT NEW CONFIG AND INDEX" > /var/www/html/index.html
+
+nginx -t
+
+nginx quit is a more graceful stop, it will safely close connections
+
+service nginx restart
+
+lynx http://localhost
+
+
+##################################################
+Lecture: Vhost Files
+##################################################
+vim /etc/host
+
+192.168.1.33 www.myexample.local
+
+mkdir /var/www/html/myexample
+echo "www.myexample.local" > /var/www.html/myexample/index.html
+cd /etc/nginx/vhost.d
+
+vim www.myexample.local.conf
+server{
+    listen 80;
+    root /var/www/html/myexample;
+    index index.html index.htm index.php;
+    server_name www.myexample.local myexample;
+}
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+lynx http://www.myxample.local
+
+##################################################
+Lecture: Upstream Directive
+##################################################
+#what the upstream module allows us to do is define groups of servers that we can manage with directives
+
+cd /var/www/html/node
+cat server.js
+var http = require("http");
+var server = http.createServer(function(request, response) {
+  response.writeHead(200, {"Content-Type": "text/html"});
+  response.write("<!DOCTYPE "html">");
+  response.write("<html>");
+  response.write("<head>");
+  response.write("<title>Hello World Page</title>");
+  response.write("</head>");
+  response.write("<body>");
+  response.write("Hello World!");
+  response.write("</body>");
+  response.write("</html>");
+  response.end();
+});
+
+server.listen(80);
+console.log("Server is listening");
+
+
+yum install nodejs npm -y
+
+
+vim /etc/hosts
+192.168.1.33 www.mynode.local mynode
+
+node server.js &
+
+echo "this is our ttest node file" > index.html
+
+lynx http://localhost:8888
+
+ping www.mynode.local
+
+cd /etc/nginx/vhost.d/
+vim www.mynode.local.conf
+upstream mynode {
+      server localhost:8888;
+}
+
+server {
+      server_name www.mynode.local;
+
+      location / {
+              proxy_pass http://mynode;
+      }
+}
+
+wq:
+
+nginx -t
+
+service nginx restart
+
+lynx http://localhost:8888
+lynx http://www.mynode.local
+
+
+
+##################################################
+Lecture: Basic Load Balancing
+##################################################
+cd /var/www/node/
+cp server.js server2.js
+
+vim server
+
+echo "this is server 1 " > index.html
+echo "this is server 2" > index2.html
+
+cd /etc/nginx/vhost.d/
+vim www.mynode.local
+
+server localhost 8889;
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+lynx http://localhost:8888
+cd /var/www/html/node
+node server2.js &
+
+lynx http://localhost:8889
+
+ps aux | grep node
+
+lynx htttp://www.mynode.local
+
+vim www.mynode.local.conf
+server localhost:8888 weight=1;
+server localhost:8889 weight=4;
+
+nginx -t
+
+service nginx restart
+
+lynx http://www.mynode.local
+
+
+
+##################################################
+Lecture: SSL Certificate Management
+##################################################
+#######this is from novice to pros
+#its a multi threaded web server, the NG in nginx is next generation
+
+#download the epel repo
+
+#install 3 packages, telnet, openssl, nginx
+yum install telnet openssl nginx
+
+cd /etc/nginx
+mkdis ssl
+cd ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt
+
+
+cd /etc/nginx/conf.d
+vim ssl.conf
+#uncomment everything thats in the file
+#correct the ssl_certificate file location and the certificate_key location
+
+#this is from this class
+cd /etc/nginx
+mkdir ssl
+cd ssl
+
+which openssl #to verify that openssl is installed
+
+openssl genrsa -des3 -out server.key 1024
+
+openssl req -new -key server.key -out server.csr
+
+#you want to remove the pass phrase from the key because every time nginx reboots its going to ask for that pass phrase
+cp server.key server.key.org
+#this step removes the pass phrase
+openssl rsa -in server.key.org -out server.key
+
+#this will sign our cert
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+cd ../vhost.d
+vim www.myexample.local.conf
+#all we are going to do is add another server section because what we are doing is creating another server thats going to answer for this content
+
+server {
+        listen 443;
+
+        root /var/www/html/myexample;
+        index index.html index.htm index.php;
+
+        server_name www.myexample.local myexample;
+
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.csr;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+}
+
+nginx -t
+
+service nginx restart
+
+lynx http://www.myexample.local
+
+lynx https://www.myexample.local
+
+
+
+##################################################
+Lecture: Location Directive
+##################################################
+cat etc/hosts
+
+cd /etc/nginx/vhosts.d
+
+vim www.myexample.local.com
+
+server{
+    listen 80;
+    root /var/www/html/myexample;
+    index index.html index.htm index.php;
+    server_name www.myexample.local myexample;
+      #add this block
+    location / {
+            root /var/www/html/myexample
+    }
+}
+
+:wq
+
+service nginx restart
+
+vim www.myexample.local.conf
+server{
+    listen 80;
+    root /var/www/html/myexample;
+    index index.html index.htm index.php;
+    server_name www.myexample.local myexample;
+      #add this block
+    location / {
+            root /var/www/html/myexample;
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+lynx http://www.myexample.local/google
+
+cd /var/www/html
+mkdir images
+echo "images" > images/images.txt
+
+cd /etc/nginx/vhost.d
+
+vim /www.myexample.local.conf
+
+location /images/ {
+            root /var/www/images;
+}
+
+wq!
+
+nginx -t
+
+service nginx restart
+
+lynx http://www.myexample.local/images
+
+
+
+##################################################
+Lecture: Return Directive
+##################################################
+cd /etc/nginx/vhost.d
+vim www.myexample.local.conf
+
+location /forum {
+          return 404;
+}
+
+:wq
+nginx -t
+
+service nginx restart
+
+lynx http://www.myexample.local/forum
+
+vim www.myexample.local.conf
+location /forum {
+          return 301 http://www.google.com;
+}
+
+mginx -t
+
+service nginx restart
+
+lynx http://www.myexample.local/forum
+
+
+##################################################
+Lecture: Basic Rewrites
+##################################################
+vim www.myexample.local.conf
+
+server{
+    listen 80;
+
+  #root /var/www/html/myexample;
+
+    index index.html index.htm index.php;
+
+
+    server_name www.myexample.local myexample;
+    #this is the rewrite block
+    location /forum {
+            rewrite ^/forum/(.*)$ http://www.myexample.forums/$1 permanent;
+    }
+
+    location / {
+            root /var/www/html/myexample;
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+:wq
+
+nginx -t
+
+cd /var/www/html/myexample
+ll
+mkdir forums
+cd forums
+echo "forums test file" > forums.txt
+
+lynx http://www.myexample.local/forum/forums.txt
+
+service nginx restart
+
+lynx http://www.myexample.local/forum/forums.txt
+
+##################################################
+Lecture: Custom Error Pages
+##################################################
+cd /var/www/html/myexample/
+echo "this is our custom content does not exist page www.myexample.local - 404 error" > 404.html
+
+cd /etc/nginx
+#if you want to implement the change across the board edit the nginx.conf
+
+#we have vhosts set up we will edit the specific vhost
+cd vhost
+vim www.myexample.local.conf
+
+error_page 404 = /404.html;
+location = /404.html {
+        root /var/www/html/myexample;
+        internal;
+        }
+:wq
+
+nginx -t
+
+service ngix restart
+
+lynx http://www.myexample.local/something
+
+
+##################################################
+Logging
+##################################################
+##################################################
+Lecture: Logging Directives
+##################################################
+vim nginx.conf  #because these are defined in the nginx.conf they apply to every domain in the system
+
+# For more information on configuration, see:
+#   * Official English Documentation: http://nginx.org/en/docs/
+#   * Official Russian Documentation: http://nginx.org/ru/docs/
+
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+
+cd vhost.d
+vim www.myexample.local.conf
+
+server{
+    listen 80;
+
+  #root /var/www/html/myexample;
+
+    index index.html index.htm index.php;
+
+
+    server_name www.myexample.local myexample;
+    #add these 2 lines
+    access_log /var/log/nginx/myexample.access.http.log;
+    error_log /var/log/mginx/myexample.error.http.log;
+
+    location /forum {
+            rewrite ^/forum/(.*)$ http://www.myexample.forums/$1 permanent;
+    }
+
+    location / {
+            root /var/www/html/myexample;
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+server {
+        listen 443;
+
+        root /var/www/html/myexample;
+        index index.html index.htm index.php;
+
+        server_name www.myexample.local myexample;
+        #add these 2 lines
+        access_log /var/log/nginx/myexample.access.https.log;
+        error_log /var/log/mginx/myexample.error.https.log;
+
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.csr;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+}
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+cd /var/log/nginx
+#we will see the 4 additional log files
+
+
+
+##################################################
+Lecture: Custom Log Levels
+##################################################
+vim /etc/nguinx/vhost.d/www.myexample.local.conf
+
+server{
+    listen 80;
+
+  #root /var/www/html/myexample;
+
+    index index.html index.htm index.php;
+
+
+    server_name www.myexample.local myexample;
+    #added combined buffer=32k to the line, this will improve performance because you are not constantly opening and closing the log file with writes, it will improve io
+    access_log /var/log/nginx/myexample.access.http.log combined buffer=32k;
+    #added the debug
+    error_log /var/log/mginx/myexample.error.http.log debug;
+
+    location /forum {
+            rewrite ^/forum/(.*)$ http://www.myexample.forums/$1 permanent;
+    }
+
+    location / {
+            root /var/www/html/myexample;
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+server {
+        listen 443;
+
+        root /var/www/html/myexample;
+        index index.html index.htm index.php;
+
+        server_name www.myexample.local myexample;
+
+        access_log /var/log/nginx/myexample.access.https.log;
+        error_log /var/log/mginx/myexample.error.https.log;
+
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.csr;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+}
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+#generate error level traffic
+lynx http://www.myexample.local/something
+lynx http://www.myexample.local/something.jpg
+
+cat /var/log/nginx/myexample.error.http.log
+
+
+
+##################################################
+Lecture: Custom Access Log Format
+##################################################
+vim /etc/nguinx/vhost.d/www.myexample.local.conf
+
+server{
+    listen 80;
+
+  #root /var/www/html/myexample;
+
+    index index.html index.htm index.php;
+
+
+    server_name www.myexample.local myexample;
+    #added this line
+    log_format myaccessformat 'Remote IP: $remote_addr - Time Request: $time_local - Browser Agent: $http_user_agent';
+    #added myaccessformat
+    access_log /var/log/nginx/myexample.access.http.log myaccessformat buffer=32k;
+
+    error_log /var/log/mginx/myexample.error.http.log debug;
+
+    location /forum {
+            rewrite ^/forum/(.*)$ http://www.myexample.forums/$1 permanent;
+    }
+
+    location / {
+            root /var/www/html/myexample;
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+server {
+        listen 443;
+
+        root /var/www/html/myexample;
+        index index.html index.htm index.php;
+
+        server_name www.myexample.local myexample;
+
+        access_log /var/log/nginx/myexample.access.https.log;
+        error_log /var/log/mginx/myexample.error.https.log;
+
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.csr;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+}
+
+:wq
+
+nginx -t
+
+service nginx restart
+
+##################################################
+Security
+##################################################
+##################################################
+Lecture: Blocking IPs
+##################################################
+cd /etc/nginx
+
+vim nginx.conf
+#below the includes
+include blockips.conf;
+
+wq:
+
+#to get your ip address whatsmyip.net
+
+vim blockips.conf
+deny <ipaddress>;
+
+nginx -t
+
+service nginx restart
+
+cd vhost.d
+
+vim www.myexample.conf
+server{
+    listen 80;
+
+  #root /var/www/html/myexample;
+
+    index index.html index.htm index.php;
+
+
+    server_name www.myexample.local myexample;
+
+    log_format myaccessformat 'Remote IP: $remote_addr - Time Request: $time_local - Browser Agent: $http_user_agent';
+
+    access_log /var/log/nginx/myexample.access.http.log myaccessformat buffer=32k;
+
+    error_log /var/log/mginx/myexample.error.http.log debug;
+
+    location /forum {
+            rewrite ^/forum/(.*)$ http://www.myexample.forums/$1 permanent;
+    }
+
+    location / {
+            root /var/www/html/myexample;
+            #added this line
+            deny <ipaddress>
+    }
+    location /google/ {
+              proxy_pass http://www.google.com;
+    }
+}
+
+server {
+        listen 443;
+
+        root /var/www/html/myexample;
+        index index.html index.htm index.php;
+
+        server_name www.myexample.local myexample;
+
+        access_log /var/log/nginx/myexample.access.https.log;
+        error_log /var/log/mginx/myexample.error.https.log;
+
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.csr;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+}
+
+nginx -t
+
+service nginx restart
+
+the advantage of implementing the ip block here is that you can get more granular
+
+
+##################################################
+LEMP Stack
+##################################################
+##################################################
+Lecture: LEMP Stack: Configuration Optimization
+##################################################
+cat /proc/cpuinfo
+
+
+
+##################################################
+Lecture: LEMP Stack: PHP
+##################################################
+linux nginx mariadb php
+
+yum install php
+
+yum install php-fpm
+
+cd /etdc/php-fpm.d
+# ; is comment out
+;listen = 127.0.0.1:9000
+listen = /var/run/php-fpm/www.sock
+
+:wq
+
+touch /var/run/php-fpm/www.sock
+chowm nginx:nginx /var/run/php-fpm/www.sock
+
+chkconfig php-fpm on #for centos6
+
+#below is for centos7
+systemctl enable php-fpm.service
+systemctl start php-fpm.service
+
+
+##################################################
+Lecture: LEMP Stack: MariaDB
+##################################################
+mariadb and mysql are the same through v5.6, at 10 they start to diverge
+
+#if you are using centos6 you will need to add the remi repo
+
+wget  http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+
+rpm -Uvh remi-release-6.rpm
+
+yum update
+
+yum --enablerepremi-test --disablerepo=remi install compat-mysql55
+
+#https://downloads.mariadb.org/mariadb/repositories/#mirror=jmu
+
+
+cd /etc/yum/repos.d
+vim maria.repo
+# MariaDB 5.5 CentOS repository list - created 2017-03-25 23:47 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/5.5/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+
+:wq
+
+yum upgrade
+
+yum install MariaDB-devel MariaDB-client MariaDB-server perl-DBD-MySQL
+
+service mysql start
+
+mysql_secure_installation
+
+mysql -u root -p
+
+service php-fpm restart
+
+
+
+
+##################################################
+Conclusion
+##################################################
+##################################################
+Lecture: Conclusion
+##################################################

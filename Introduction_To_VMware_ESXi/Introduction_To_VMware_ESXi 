@@ -1,0 +1,323 @@
+##################################################
+Introduction To VMware ESXi
+##################################################
+##################################################
+Lecture: Introduction
+##################################################
+
+
+##################################################
+Virtualization Types
+##################################################
+##################################################
+Lecture: Virtual Solutions
+##################################################
+virtualization in general refers to technology that is designed to provide a layer (or layers) of abstraction between computer hardware infrastructure and the software (operating system and applications) that are running on them.
+
+this allows each virtual machine that runs on the virtualized hardware to believe it is installed on a physical system.  Given that hardware is on avergage in heavy use less that 20% of each day, it allows organizations to maximize their inverstment in hardware
+
+"Different virtualization solutions take different approaches depending on the use case and vender"
+
+Virtualization solutions are available from a number of venders and can be divided into three main categories:
+desktop virtualization
+server virtualization
+storage virtualization
+
+finally virtualization types can vary depending on the vendor and the desired use case.
+
+hyperviser virtualization decouples the operating system and application from their underlying physical resources (memory, CPU, storage), it allows the entire operating system and all applications to function virtually.
+Examples include VMWare and Microsoft Virtual Server
+
+Application virtualization isolates applications from the hardware and operating system making them independent objects that can be moved around without affecting other applications running in the system.
+Examples:  Oracle, Citrix, and Amazon web services
+
+
+##################################################
+Lecture: Desktop Virtualization
+##################################################
+Desktop virtualization can actually have several meanings.  the primary meaning and the one we are talking about in this video is a software technology that separates the desktop environment (operating system and all associated or installed software) from the physical device used to access it.
+
+This is demonstrated by a number of virtual desktop venders like Virtualbox, VMWare workstation, Xen desktop or parallels for OSX.
+You install your operating system within the virtual container that these applications create for you
+
+Desktop virtualization comes in a few other types and can be classified in the following architectures:
+Remote desktop
+-operates as a client server environment where execution takes place on a remote operating system linked somehow to the local client over the network (using RDP or remote desktop protocol)
+Virtual Desktop Infrastructure
+-a desktop centric service that hosts a users desktop environment on a remote server(like blade PCs) and then accessed over the network using some protocol (RDP, VNC proprietary ones like Citrix)
+
+
+##################################################
+Lecture: Datacenter Virtualization
+##################################################
+Like desktop virtualization datacenter virtualization can actually have several meanings.
+the primary meaning and the one that we are talking about in this video is software technology that separates the server environment (operating system and all associated or installed software) from the physical device that it runs on.
+
+This is demonstrated by a number of virtual vendors like VMWare ESXi, Openstack, Google or AWS.
+You install your operating system within the virtual container that these applications create for you.
+once installed, you access these new virtual servers the same way you would access physical servers running those operating systems
+
+
+##################################################
+VMWare ESXi Architecture
+##################################################
+##################################################
+Lecture: The Hypervisor
+##################################################
+A hyperviser (sometimes called a virtual machine monitor) is software or firmware that creates and runs virtual machines
+
+a server that runs a hyperviser is referred to as a host machine.
+each virtual machine running on the host machine is referred to as a guest machine.
+
+In short a hyperviser is a layer of abstraction between the physical resources of a host machine (its CPU, memory, network, storage etc) and the guest operating systems that consume those resources.
+It allows the complete segregation of systems from each other as well as a segmentation of services assigned to each.
+
+over subscription
+
+a hyperviser fools a operating system into thinking that it has direct acces to all of the resources that you configure its instance with.
+
+The performance remains comparable (about 80% in most cases) to physical hardware because when you install the client tools and drives the communication with the physical hardware is so efficient through the hyperviser that almost nothing is lost
+
+
+##################################################
+Initial Setup and Configuration
+##################################################
+##################################################
+Lecture: Obtaining VMWare Products
+##################################################
+https://my.vmware.com/group/vmware/home
+
+##################################################
+Lecture: Installing VMWare VSphere
+##################################################
+vmware workstation to try things out before you put on a physical host
+
+#inastalling
+boot off iso
+leave defaults for name and location
+2 CPU
+4 GB ram
+use nat
+#Bridged would give you a ip address like the vm was on your network
+LSI logic
+SCSI
+new virt disk 40GB
+leave name
+FINISH
+
+The install can take 20+ min
+
+EXS is based on rhel
+
+set root password
+
+##################################################
+Lecture: Initial Configuration
+##################################################
+one the login prompt hit f2 and it will you can access the ESX configuration options
+
+
+##################################################
+Lecture: Installing the Client Software
+##################################################
+the prefered way to access vsphere is through the web client
+https://<ipofesxserver>
+download the vmware client #you can download it from the web page
+
+the fat client only work on windows
+
+#if you have a firewall ports 8443 9443 80 443 will have to be opened
+
+
+
+##################################################
+Lecture: Virtual Network Setup
+##################################################
+configuration tab -> on the left networking -> add networking -> select virtual machine network -> configure vmnic 0 -> network label, you can assign vlan ids -> properties -> vm network ->
+
+if you want the hyperviser to access isci or nfs on a separate network you select VMkernel
+
+##################################################
+Lecture: Overview of Storage Pools
+##################################################
+Storage pools are one or more disks that can be used by vmware to contain virtual machine disk files (VMDK)
+there are 3 kinds of storage pools:
+local
+SAN
+iSCSI
+NFS
+
+these pools can be for single machines or can be truly shared as a pool or resources for multiple hosts in a managed cluster
+
+
+##################################################
+Lecture: Create iSCSI Storage Pool
+##################################################
+Configuration tab -> storage tab -> rescan all #this is to add local storage
+starwind software fir iscsi
+Configuration tab -> storage addapters -> add -> add iscsi, on the adapter -> properties -> general tab -> configure -> enter name, you will get the target from starwind -> rescan adapter ->right click the device and select attach
+click on the storage tab -> rescan all -> then add the lun
+
+
+##################################################
+Lecture: Create NFS Storage Pool
+##################################################
+right click esxi host -> configuration tab -> storage -> add storage -> network file system mount -> ip address of the server with the nfs mount ->  name the storage -> finish
+
+
+
+##################################################
+Lecture: Storage Pool Management
+##################################################
+you need to upload isos to the storage pool
+
+
+
+##################################################
+Virtual Machine Deployments
+##################################################
+on the left -> right click on the physical host -> select add new virtual machine -> custom, next -> name the vm, next -> select virtual machine 8, that means it will run on esxi 5 and higher
+-> select the os type and distribution -> select the number of virtual sockets and cores -> select amount of ram -> select nic -> create a new virtual disk ->
+
+once the vm shell has been created we need select something to install from -> goto cd/dvd drive and give the location of the OS iso, make sure that the drive is selected to connect at power up
+
+once you power on the vm you have t
+
+
+##################################################
+Lecture: Virtual Machine Deployment: Windows 2k8 Server
+##################################################
+
+
+
+##################################################
+Lecture: Client Tools: Windows Installation
+##################################################
+ctrl+alt will pop the mouse out of the window
+
+select VM -> select guest -> install/upgrade vmware tools, the system has to be running for the tools install to take place
+for the system to take advantage of the tools the system needs to be rebooted
+
+
+##################################################
+Lecture: Client Tools: Linux Installation
+##################################################
+cd /media #we are looking for a cd rom drive that is mounted
+
+goto the vm button -> install upgrade vmware tools
+
+df -h
+we can see that the tools are now mounted
+
+mkdir /media/test
+mount /dev/sr0 /media/test
+df -h
+cd ~
+mkdir tmp
+cd tmp
+cp /media/test/vmwaretools.tar.gz .
+tar zxvf vmwaretools.tar/gz .
+cd vmwaretools
+sudo ./vmware-install.pl
+
+ps aux | grep vmware
+
+##################################################
+Lecture: Virtual Appliances
+##################################################
+a virtual appliance is popular among application vendors
+myvmware -> virtual appliances
+
+jeOS = just enough operating system, just enough to run
+
+the va marketplace will take us to the same place as the myvmware website
+
+deploy ovf template -> the rest of the setup is the same
+
+the ovf template is a xml file that tells vmware how to setup the vm
+
+
+##################################################
+Virtual Host Tools and Utilities
+##################################################
+##################################################
+Lecture: Creating and Using Snapshots
+##################################################
+a snapshot is how your system looks at a point in time
+right click any vm and you will see snapshots and snapshot manager, this will display any snapshots that are available to you
+
+if you havent install they vmware system tools a snapshot must be taken when the system is offline
+
+quiescing they file system:
+Quiesce is used to describe pausing or altering the state of running processes on a computer, particularly those that might modify information stored on disk during a backup, in order to guarantee a consistent and usable backup.
+quiescing is why if you dont have vmware tools installed you must stop the system to guarantee that the data is not corrupt
+
+##################################################
+Lecture: Snapshot Management
+##################################################
+anything that has changed on the system since you took the snapshot has consolidated into a file that is going to be named *-00000#.vmdk
+
+the larger your snapshot gets the longer it take to restore the delta
+
+you need twice the amount of space to integrate the snapshot into the system, thats why you dont want to leave snapshots around
+
+
+##################################################
+Lecture: Host Configuration Changes
+##################################################
+time - you can configure external ntp servers for the host servers to use
+
+
+
+##################################################
+Lecture: Performance Reporting
+##################################################
+the performance tab on the hosts we can see a number of performance graphs
+
+
+
+
+##################################################
+Cluster Tools
+##################################################
+##################################################
+Lecture: Resource Pools
+##################################################
+a resource pool is a way to artificially limit the hosts resouces, so that you wont over allocate resources
+
+
+
+##################################################
+Lecture: Datacenters
+##################################################
+a datacenter is a way of grouping hosts
+
+##################################################
+Lecture: Virtual Image Template
+##################################################
+a copy if an existing server that is used to deploy additional nodes
+
+
+##################################################
+Lecture: Obtain and Install vCenter Server
+##################################################
+
+
+
+##################################################
+Lecture: Cluster Reporting
+##################################################
+
+
+
+
+##################################################
+Lecture: vMotion
+##################################################
+
+
+
+
+##################################################
+Lecture: High Availability
+##################################################

@@ -1,0 +1,2037 @@
+##################################################
+A Linux introduction
+##################################################
+created in the early 1990s
+created by Linus torvals
+free of charge
+minux
+
+started with 3 basic utilities:
+bash-basic is the primary command line interface for terminal
+gcc- is the c++ compiler to complie code
+update-flushing the file system for buffers
+
+started the open source philosophy
+
+##################################################
+open source philosophy
+##################################################
+Why give away linux
+GNU-Gnus not unix!
+GNU/Linux
+GNU c Compiler - gcc
+GNU was started by richard stallman in 1983, focus on the free software foundation
+currently no stable version of GNU
+says that contributers assign the copy write for GNU packages to be free through the free software foundation
+GPL- GNU public license
+it is required that the source code remained freely available to anyone who wants it
+
+
+##################################################
+Distributions
+##################################################
+whats makes up a full linux distro
+kernel-the core
+core unix tools-critical management
+supplemental software
+startup scripts-the way by which its managed- moving to startup services
+installers-
+
+What might be right for our project
+what is the use
+for production a commercial distro might be best
+does your hardware support the distro that you are choosing
+
+
+
+##################################################
+Linux embedded systems
+##################################################
+consumer devices
+android is based on the linux kernel, designed for touch screen input
+debian linux distro on raspberry pie
+
+
+##################################################
+How And Where To Install Linux
+##################################################
+server lab button
+linux essentials lab server > play
+this is based on centos 7
+ssh to the node
+user@<IP>  PW:123456
+change user PW
+change root pw
+ls
+cat vnchowto
+vncpasswd
+su -
+reboot
+
+##################################################
+How to Install CentOS 7 with VirtualBox
+##################################################
+download virtual box
+download centos 7 iso
+
+in VB
+new
+linux essentials
+linux
+redhat 64 bit
+6 gb ram
+create a virtual HHD
+VDI
+#for vmware you can choose vmdk
+dynamically allocated hard drive # just create a 40 gb
+settings > advanced > clip board
+system > deselect floopy drive > give it more cpu
+display > enable 3d acceleration
+give it 32mb ram
+network > nat & paravirtualized network & get a new mac address from the refresh
+mount the os under storage
+power on
+arrow up to intall cent os 7
+
+when installing setup gnome desktop and a kde
+
+to install virtual box guest tools
+yum install kernel-devel
+
+yum install gcc* # to install the gcc compiler
+
+mount the insert guest additions cd
+
+dnf clean packages
+
+##################################################
+Desktop Applications
+##################################################
+Linux
+GNOME GTK widget set
+KDE
+LXDE x11
+Unity ubuntu much like gnome
+XFCE GTK+ widget set
+
+yum install gimp
+thunderbird
+audaci
+calibre
+pidgin
+blender
+
+
+##################################################
+Server Applications
+##################################################
+applications listen and bind in IP and  port
+22 ssh
+23 telnet
+25 smtp postfix, send mail
+53 dns  bind, named
+67 bootp dnsmasq, dhcpd
+80 http apache
+443 https apache
+
+basic computer server applications
+apache
+mysql
+zenos
+mono
+cups
+postfix
+
+##################################################
+Mobile Applications
+##################################################
+small applications
+linux can be ran for mobile applications
+
+##################################################
+Development Languages
+##################################################
+opensource development models
+cathedral model more organized,
+the bazaar model relies on more collaboration
+
+languages
+java
+c and c++
+
+types of languages
+compiled
+interpreted easier to develop
+assembly language low level, very efficient
+
+what does it mean to complie a program
+computers understand binary.
+
+##################################################
+Package Management Tools and Repositories
+##################################################
+what is a package
+dependency info
+version information
+architecture information
+binary packages are packages that have a executable built from source
+
+two common package management systems
+rpm
+debian
+
+steps:
+you issue the install command
+the software manager locates any dependencies
+after you approve the software the manager downloads and installs
+
+centos rpm
+debian debian
+ubuntu debian
+arch pacman
+fedora rpm
+redhat rpm
+slackware tarbals
+gentoo ebuild
+sude enter rpm
+opensuse rpm
+
+
+
+upgrading and removing is very similar as installing
+
+managing rpm systems
+text mode yum
+gui yumex
+
+suse
+zypper
+gui yast
+
+mandriva
+urpmi
+gut rpmdrake
+
+##################################################
+Hands-On - Package Management (APT, dpkg) - For Use with UBUNTU LAB SERVERS
+##################################################
+vi /etc/apt/sources.list
+
+apt-cache search <name_of_package>
+which <application>
+
+apt-get remove <package_name>
+
+apt-get remove --purge <package_name>
+
+apt-get autoremove
+
+apt-get upgrade
+
+upgrade linux os
+apt-get dist-upgrade
+
+#dpkg utility
+this is used to install .deb
+
+dpkg -i file.deb  this will not install dependencies
+do a apt-get update
+apt-get -f upgrade  #this will install the dependencies that you needed from the .deb
+
+dpkg --get-selections #will show what packages are already installed
+
+
+dpkg --remove <binary_name>  #this will only remove binaries not configs
+dpkg --purge <package_name>  #this will purge the config files
+
+##################################################
+Hands-On - Package Management (YUM, rpm) - For Use with Linux Essentials Lab Servers
+##################################################
+which nano
+
+yum remove nano
+
+rpm -ihv <package_name.rpm>    i=install h=shows progress  v=verbose
+
+whereis nano
+
+rpm -q <package_name>  q=query
+package_name-version.number-build.architecture_type
+
+rpm -qi <package_name>  q=query  i=information
+
+rpm -e <package_name>  e=uninstall
+
+rpm -qR <package_name> q=query  R=required dependencies
+
+
+cd /etc/yum.repos.d/  #there will be many repos
+
+yum update  #update the repos
+
+yum search <package_name>
+
+yum install <package_name>
+
+yum check-update <package_name>
+
+yum upgrade #upgrades all packages
+
+yum deplist <package_name>  #this will list all packages dependancies
+
+yum remove <package_name>
+
+yum clean packages
+
+yum clean all #will remove any temp files from packages that are no longer needed
+
+##################################################
+Understanding Open Source Software and Licensing
+##################################################
+##################################################
+Licensing
+##################################################
+
+software is a type of intellectual property
+open source beginnings
+fsf=free software foundation  #nothing propietart
+osi=opensource initative  #just open source
+creative commons
+
+a copy right is the legal right to make a copy
+
+
+trademark are names logos that can identify a product
+
+commercial software and shareware
+
+commercial is developed with the intent to sell for a profit, illegal to copy and give it to another person
+
+shareware similar to commercial but its typically trial
+
+freeware is like shareware but its always free and has no cost, freeware usually a striped down version
+
+The first to create a opensource operating system was Dr andrew tanenbaum
+
+##################################################
+Free Software Foundation (FSF), Open Source Initiative (OSI)
+##################################################
+##Under stand the differnent philosphies for FSF and OSI
+General public license GPL
+like the license used by the linux kernel
+gants you to redistribute the software as well as it binaries
+opensource licenses grant you additional rights
+a site license = based on the number of copies for an organization
+
+free software foundation FSF
+founded by richard stallman 1985
+driving force behine Gnu's not linuc GNU project
+free as in speach not free as in beer
+
+FSF is defined by four software freedoms
+freedom to use the software for any purpose
+freedom to examine the source code and modify it as you see fit
+freedom to redistribute the software
+freedom to redistribute your modified software
+
+free software and the GPL(legal expressions)
+this is known as the GNU GPL
+there are two versions used today
+GPLv2  1991
+GPLv3  2007  closed loopholes, clauses use of hardware
+
+version 1 of the GPL is rarely used today
+
+the lesser known LGPL    applied to libraries
+
+
+the opensource initative
+the OSI was founded by bruce perens and eric raymond 1998
+the approch of the FSF seemed to threatening to some businesses
+because the osi creators designed organizations as a way to advocate free software.
+they created this and used the term "open source" to soften what the FSF uses are moral imperative
+
+opensource development methods for software that harness the power of distributed peer review and the transparency of process
+the promise of opensource is better quality, higher reliability, more flexibility, lower cost, and an end to propietary lock-in
+
+licenses that fall under OSI
+GPL
+LGPL
+
+FOSS free and opensource software
+
+Creative commons
+founded by lawrence lessing
+enables free distribution of an otherwise copyrighted work
+
+##################################################
+Open Source Business Models
+##################################################
+opensource in a business world
+the are many approaches to making profit
+service and support
+dual licensing
+multiple products
+opensource drivers
+bounties  #offering to pay for new features to existing software
+donations
+
+FSF free software foundation
+OSI opensource initative
+CC creative commons
+FOSS free and open source software
+FLOSS free/libre open source software
+
+##################################################
+ICT Skills and Working in Linux
+##################################################
+##################################################
+Desktop Skills
+##################################################
+where is linux found
+server rooms and data centers
+cloud computing
+embeded devices like android, tivo, and gps
+airport signage, mars rover, and much more
+
+
+KDE is one of the most popular desktop built of the QT widget set
+SUSE and mandriva
+
+Gnome is kde's primary rival  built on the gimp tool kit, gtk+ widget set
+red hat centos and more use gnome
+
+ldxe light weight x11 desktop
+
+unity
+canonical, like gnome,
+
+xfce
+was modeled as a commercial desktop environment, provides more customization
+debian and xubuntu
+
+panels= the app bar
+
+context menus = right click stuff
+
+searching for programs
+
+terminals
+
+console is when you are at the device itself
+
+##################################################
+Desktop Skills Hands-On
+##################################################
+xubuntu
+http://xubuntu.org/
+kubuntu
+
+##################################################
+Getting to the Command Line
+##################################################
+
+
+##################################################
+Industry uses of Linux, Cloud Computing and Virtualization
+##################################################
+industry uses of linux OS
+web server
+mobile app servers
+SQL DB servers
+
+Cloud computing
+google apps
+dropbox
+evernote
+
+
+##################################################
+Finding Your Way on a Linux System
+##################################################
+##################################################
+Command Line Basics
+##################################################
+##################################################
+Basic Shell
+##################################################
+a shell is just a command line interpreter, those commands are sent to the operating system
+sh  bourne shell
+bash  bourne again shell
+csh  c shell
+tsch tsch cshell
+zsh   z shell
+ksh korn shell
+
+open a terminal
+echo $SHELL
+
+to change shell
+zsh
+
+cat /etc/passwd  #you can see the default shell for your user
+
+ctl + alt + f2..6  #this will create a new session
+
+ctl + alt + f1 will take use back to our original session
+
+##################################################
+Command Line Syntax - ls
+##################################################
+the list command
+ls  #listing of files and folders
+ls -a #all files including hidden files
+ls -l #long list of files
+ls -p #appends a / at the end of the file name so we know that they are a directory
+ls -R #recursive to display directory contents, tree looks a lot nicer
+
+##################################################
+Command Line Syntax - $PATH, Case Sensitivity
+##################################################
+linux does not check the current directory for a executable file only the $PATH
+echo $PATH
+
+you can type of the full file path
+./  #this means run from current directory
+or add your home to your path
+
+
+##################################################
+Command Line Syntax - Basic Commands
+##################################################
+halt  #if super or root, this will shut down the linux OS
+reboot # will shut down then restart
+init 0 #will shut down the os
+init 6 #will reboot
+shutdown -H #this will halt
+shutdown -p # power off
+shutdown -r #reboot
+shutdown -c #will cancel a shutdown
+shutdown -H #also power off
+
+exit #will close a termial session, or exit thats users session
+
+su #substitute user or super user
+
+su - #will become the root user
+
+env #will show our environment variables
+
+top #will show a list of applications and processes
+q to quit top
+
+clear #will clear the screen
+
+which <command> #will show us where the applications lives
+
+whoami #will show you the user name of the current logged in user
+
+netstat  #show us the status of our networks
+
+route #show us out routing table
+
+ifconfig #show us the nic configuration
+
+ip addr  #show use ip addresses
+
+
+##################################################
+Command Line Syntax - uname
+##################################################
+uname #show use the type of OS
+uname -s #show the linux kernel name
+uname -n # will show the host name
+uname -r #show the release number
+uname -v #version number
+uname -m #the cpu architecture
+uname -p #the processor type
+uname -i #hardware platform
+uname -o #the os
+uname -a #all information at once
+
+uname -a
+Linux joe-Ubuntu 4.4.0-57-generic #78-Ubuntu SMP Fri Dec 9 23:50:32 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
+➜  ~ cat /etc/issue
+Ubuntu 16.04.1 LTS \n \l
+
+
+
+##################################################
+Command Line Syntax - Command History, Command Completion
+##################################################
+history, saved in .bash_history
+uparrow to access previously run commands
+export HISTFILESIZE=<number> #you can change the hist file size scroll back
+
+command completion
+type a few letters and <tab>, this will auto complete  the command
+
+##################################################
+Command Line Syntax - cd and pwd
+##################################################
+cd #will bring you to home directory for the user
+cd <directory> #will move you to that directory
+pwd #will print the current directory that you are in
+
+##################################################
+Shell Configuration Files
+##################################################
+login shell vs terminal
+this is what dictates what configuration files are run
+/etc/bashrc/
+/etc/profile
+.bash_logout
+.bash_profile
+.bashrc
+runs the /etc/profile first
+no distribution uses all of these files
+fedora use the .bashrc .bash_profile .bash_logout
+the /etc/profile would change the login settings for all users
+the .bash_logout file usually isnt created by default any longer
+~./bashrc will be read/executed when logging into a shell that is considered to be a non-login shell
+
+
+##################################################
+Variables - Environment / System Variables
+##################################################
+a variable is a place holder for another variable
+user defined and system defined variables
+an environment is just a set of variables that are used in configuring the system computing environments
+
+cd ~ #this will switch use to where ever you are to your home directory this is saved in the $HOME variable
+
+commonly used env variables
+BASH and SHELL /bin/bash
+CPU #spec to your system
+DISPLAY #the local video card monitor
+ENV #/etc/bash.bashrc
+EUID #the user id of our current user
+HISTFILE #~.bash_history
+HISTSIZE #the size of the history by lines
+HOME #current users home directory
+HOST and HOSTNAME #system assigned host name
+LOGNAME #user name of current user
+MAIL #/var/spool/mail/username or /var/mail/username
+MANPTH #distribution dependent stores the path to out man files
+OLDPWD #prior current directory
+OSTYPE #linux
+PATH #distribution dependent stores a list of directories to be search when running a command from the shell prompt
+PSI #distribution dependent stores the charters to be used in the shell prompt
+PWD #depends on current directory within
+USER and USERNAME #username or current user
+
+to see whats stores in a env variable use the echo command
+echo $HOME #for example
+
+to view all variables
+env #this will print all th variables
+set #the same as env but will be done so in alphabetical order
+
+to set a variable
+VARIABLE=VALUE
+echo $PATH
+PATH=$PATH:/VAR/OPT/
+
+export PATH #this will make the path available to all other terminals
+
+to make the change persistent on reboots
+vim .bash_profile
+edit the path variable there
+
+to make the change for everyuser that uses this system edit the /etc/profile
+
+non interactive shell is one running  in the background that we cant interact with
+
+
+##################################################
+Variables - User Defined
+##################################################
+variable=value
+awesome="steven"
+echo $awesome
+steven
+user defined vars are only available in our currect shell, youd have to export them to access them from all shells
+should have been created with upper case
+var names can not contain spaces
+
+##################################################
+Globbing
+##################################################
+Wildcards in bash are referred to as pathname expansion. Pathname expansion is also sometimes referred to as globbing.
+
+*.txt #* can mean anything
+ls test* #any file that starts with test
+ls ?.txt #this will stand for 1 character, this will list any file with one character
+ls Monday-file?.txt
+ls [F]*.txt #a text file that begins with a capital F
+ls [f]*txt #a text file that beins with a lower case f
+ls f[igh][lfz]e*.txt
+
+##################################################
+Quoting
+##################################################
+double quotes
+substitutes the value of the variables and commands
+echo "Username is $USER" #this will print the current user name
+
+Single quote
+this preservers the literal meaning of each character of a given String
+this will turn off the (special) meanings of all characters
+echo 'Username is $USER'  #this will print Username of $USER
+
+backslash
+this takes away the special meaning from a single character and can be used as an escape character
+if we did not have the \character before $5.00 it would try to interpret the command as a variable
+
+echo "The cheese burger is going to cost you $5.00"
+
+echo "The cheese burger is going to cost you \$5.00"
+
+##################################################
+Formatting Commands
+##################################################
+operation for a linux command can be thought of in 3 ways:
+first the computer waits for the user input
+second, the user selects a command and enters it via the keyboard or mouse
+finally the computer then executes the command
+
+one space between commands can be as many as you want, one might as well be many
+
+ls \
+-al
+
+##################################################
+Working with Options
+##################################################
+
+linux commands can be divided into 2 types
+parameters with a - are called options
+parameters with no leading dash are called arguments
+
+ls -al #the -al are 2 options, -a -l are the same thing
+command=what to do
+options=how to do it
+arguments=what to do with it
+
+##################################################
+Using the Command Line to Get Help
+##################################################
+##################################################
+Man
+##################################################
+linux manual for commands, config files and more
+linux man pages are not meant to be a tutorial
+man pages are a reference format
+
+man page sections
+1 executable programs and shell commands
+2 system calls provided by the kernel
+3 library call provided by the program library
+4 device file (usually stored in /dev)
+5 file formats
+6 games
+7 miscellaneous (macro packages, conventions, and so on)
+8 system administration commands (programs run mostly or exclusively by root)
+9 kernel routines
+
+man cd
+man rm
+man cal  = calender
+
+man 5 passwd #this will goto the 5th section in the man page
+
+whatis <command> #this will show you what man pages are available for a command
+
+apropos <command> #this will return everything that has the command that you searched for
+
+man -k <command> #this will do the same thing as apropos
+
+man pages are organized into several sections
+name
+syno.proffipsis
+description
+options
+files
+see also
+bugs
+history
+author
+
+linux-PAM #plugable authentication process
+
+less #view less information from a file
+
+navigate the man pages
+h or H displays help
+page down, space bar, Ctl+V, Ctl+F moves down one screen
+page up, Sex+V, Ctl+B moves up one screen
+Down arrow, enter, ctrl+n, ctrl+E, ctrl+j moves down one line
+up arrow, y , ctrl+y, +p, +k moves up one line
+/pattern searches forward pattern, keyword
+?pattern searches backward pattern, keyword
+n or / repeats the previous search
+Q or ZZ quits
+
+##################################################
+Info
+##################################################
+info pages are similar to man but the goal is to support functions which man can not
+most notable are hyperlinks, info pages support hyperlinks
+you can use info to read every man page
+
+navigate info pages
+? #displays help informatiom
+N #moves to the next node in a linked series or level
+P #moves back a series or level
+U #moves up one level in the mode hierarchy
+Arrow keys #moves the curser around the screen to select links
+page up, page down #these keys scroll up and down within a single node
+Enter #moves to a new node once you have selected it
+L #displays the last ingo page you read
+T #displays the top page for a topic
+Q #exits from the info page
+
+##################################################
+locate, find, whereis, and using /usr/share/doc/
+##################################################
+other ways to get help:
+readme files
+
+if you extracted a file from a tar, the readme will probably be there
+
+if you installed from a binary the readme are usually found in:
+/usr/doc/packagename
+/usr/share/doc/packagename
+/usr/share/doc/packages/packagename
+
+many other formats of help files can be found as well using formats:
+postscript
+PDF
+HTML
+
+
+for a rpm based package try:
+rpm -ql packagename | grep doc
+
+
+other ways to find help:
+
+find /usr.share/doc -name "*passwd*"
+
+locate passwd
+whereis passwd
+
+
+##################################################
+Using Directories and Listing Files
+##################################################
+##################################################
+The Linux File System
+##################################################
+the role of the linux system
+where the data is stored on a storage device within a certain manner
+data is organized and easily located
+data can be saved in a persistant manner
+data integrity is preserved
+data can be quickly retrieved for a user in a later point in time
+
+the linux file system and the file system hierachy
+the linux file system uses a hierarchy structure to organize data
+linux system have a standard in which directory has several of the same sub directories in a certain fashion /root as in the directory not the user
+
+bin #contains executable files that run the linux system
+boot #contain the boot loader files that boot our system
+dev #various hardware devices
+etc # is text based configuration files
+  /etc/aliases  contains a table used to redirect all to local users
+  /etc/exports  configured file system to be exported to remove NFS clients
+  /etc/fstab  list partitions and file systems that will be automatically mounted when we boot out linux system
+  /etc/ftpusers  controls users access to FTP services running on a linux system
+  /etc/group   contains local group definitions
+  /etc/grub.conf   contains configuration parameters for the init process
+  /etc/hosts  this contains a list of hostname to ip address mappings that we can use to resolve
+  /etc/shadow   this conains encryped passwords for our user accounts file
+  /etc/resolve.conf   this is where we specify what dns server and domain suffix that our system is going to use
+  /etc/X11  has the x windows configuration.
+
+home #contains home directories for system users
+lib  #the library folder, contains code libraries that executables call
+media #this directory is used to mount external devices
+opt #is directory to install executables or programs
+proc #the proc dir isn't like any other directory, proc doesnt actually exist on the file system, its s pseudo file system that is dynamically created when it is accessed, it is used to access processes and other system information from the linux kernel.
+  with in proc there are more sub directories, the number dirs correspond to PIDs.
+root #is a dir that is the root users home directory, this user lives outside of home
+sbin #system management and information files, utilites
+srv #this is where services running on our system save their files
+sys #contains information about the hardware in our system
+tmp #contains temporary files that are created by our file system
+usr #contains application files
+/user/bin #is where most of the executable files live
+    /etc #
+    /games #
+    /include #
+    /lib #this is where library files are stored for the applications that live in the bin folder
+    /lib64 #is similar to the lib but they are 64 bit libraries
+    /local #is locally installed software that we created ourself
+    /sbin #is similar to bin only this is system administration programs
+    #this is where documentation and man pages reside
+var #contains linux variable data including linux log files
+
+the system needs to know where files are saved and where it can save files
+
+disk files systems
+ext2 #second extended file system, max file system supported is 2 TB, a volume can be 4Tb, file names can be up to 256 characters long, one of the fastest, must check the entire file system is the file system goes down uncleanly, ext2 can take hours to check, ext3 can take only a few seconds
+ext3 #the 3rd extended file system, the 2 are so similar that most of the file system utilities used by ext2 can be used by ext3, you can even upgrade ext2 to ext3, you can also downgrade ext3 to ext2, the 1 advantage ext3 has is journaling, eliminates the problem of needing to check the entire file system if it goes down uncleanly
+ext3 records transactions in a journal and makes them as incomplete, after the transaction is complete, the files system then marks the transaction as complete in our journal
+reiser #alternative to the ext3, utizes journaling to make crash recovery very fast, uses a dramatically different internal structure, max files system supported is 8TB with a max volume of 16TB, the structure lets it perform faster than ext2 or ext3
+ext4 #released late 2008, very similar to ext3 and ext2 and is backward compatible, allows files size of 16 Tb and volumes of 4EB, 4 billion files, 256bytes file name, uses checksums to verify the journal files its self
+
+##################################################
+Files, Directories
+##################################################
+pwd #print working directory
+cd ..
+cd ../..
+ls to list absolute paths
+ls  -a #show all files
+ls -l #long listing
+ls -R #recursive
+
+
+##################################################
+Hidden Files and Directories
+##################################################
+any file or folder that begins with a . is hidden
+touch .testfile.txt #created a hidden file
+
+
+##################################################
+Home
+##################################################
+
+##################################################
+Absolute and Relative Paths
+##################################################
+relative paths, the path that you are currently in
+absolute path is that file location from the root directory
+/ = root directory
+
+##################################################
+Creating, Moving and Deleting Files
+##################################################
+
+##################################################
+Files and Directories
+##################################################
+touch #create a empty text files, can also be used to update the access time stamp
+touch -d "Frebuary 1 2015" #to set the time stamp
+cp <file.name> <newfile.name>
+cp <file.name> <newdir/>
+cp <file.name> <newdir/newfile.name> #copy a file, move it into a dir and change the name of the file
+cp -f #force
+cp -i #interactive
+cp -p #preserve
+cp -R or -r #recursively
+cp -a #archive flag, works like -r but also preserves the owners and will copy over symbolic links
+cp -u #update, only if the original file is newer than the target file or the target file doesnt exist
+mv #this is the move command
+mv <file.name> <newfile.name>
+mv <file.name> <newdir/>
+mv <file.name> <newdir/newfile.name>
+rm <file.name> #
+rm <file.name>, <file2.name>, <file3.name>, <file4.name>
+mkdir <directoryname>
+mkdir -m #will set permissions
+mkdir -e  <directoryname/seconddir> #this will create the parent directory
+rmdir #this will not remove a directory if its not empty
+rm -rf #remove recursively force
+touch -d "january 27 2014" newdir #to update the time stamp
+
+##################################################
+Case Sensitivity
+##################################################
+
+##################################################
+Simple Globbing and Quoting
+##################################################
+ls *.txt #any text file
+ls ?.txt #any file with one character
+ls *.??? #any file with 3 character extension
+ls [a-z]*.txt #any file that starts with a-z
+rm [a-z]*.txt #delete
+echo "path is $PATH" #this will echo the contents of the path variable
+echo 'path is $PATH' #this will echo path is $PATH
+
+three different types of quotes we can use
+""
+'' #this is used to turn off special meaning of characters
+echo 'today is $(date)'
+
+the \ #backslash
+echo "path is \$PATH"
+the \ will escape the special meaning of a special character
+FILE ="/file/file"
+echo "file is \"$FILE\" "
+
+the process if expanding a non specific file name
+ls *.txt
+ls ?.txt
+
+touch a.txt
+now the ?.txt #will find one, ?=1 wild card character
+ls *.???  #this will find files with a 3 character file extension
+ls [a-z]*.txt #this will find a file that starts with a-z, anything after that and ends with .txt
+
+echo $PATH
+echo "the path is $PATH"
+echo 'the path is $PATH' #this will not pick up the special character $, this will print the path is $PATH
+
+the double quote, the double quote will protect everything enclosed between two double quote marks except $, ', ", \.
+use the double quotes when you want only variables and command substitution.
+echo "$SHELL"
+echo "/etc/*.conf"
+echo "today is $(date)"
+
+the single quote protects eveything enclosed between two single quote marks, it is used to turn off special meaning of all characters
+echo '$SHELL' #this will output $SHELL
+
+the backslash \ alters the special meaning of ' and " example it will escape or cancle the special meaning of the next character
+echo "path is \$PATH" = path is $PATH
+echo "file is \"$FILE\" "  #these \'s make is so the second set of quotes arent there
+
+\a alert
+\b backspace
+\e an escape character
+\f form feed
+\n new line
+\r carriage return
+\t horizontal tab
+\v vertical tab
+\\ backslash
+\' single quote
+\nnn the eight bit character whose valse is the octal value nnn
+\xHH the eight bit character whose value is the hexadecimal value HH
+\cx a control-x character
+
+we use the -e option of the echo command to enable interpretation of the backslash escapes
+echo "Chinese takeout was $30.00" = 0.00
+echo " the Chinese take out was \$30.00" = $30.00
+
+a samba network share
+echo "the CHIFS network share is \\shareserver\sharefile"
+the CHIFS network share is \shareserver\sharefile
+
+echo "the CHIFS network share is \\\\shareserver\sharefile"
+the CHIFS network share is \\shareserver\sharefile
+
+use the \ to continue a command onto a new line
+
+################################################
+The Power of the Command Line
+################################################
+################################################
+Archiving Files on the Command Line
+################################################
+################################################
+Files, Directories
+################################################
+file archives
+tar #a linux utility that archives things. it does not compress or compact files. it just sticks all your files together into one file
+traditionally tar was used to create tape backups.  we used it to archive data on a tape backup drives.  tar actually stands for "tape archive"
+
+7zip will work on linux
+
+tar
+tar -cf = create file
+tar -xf = extract file
+
+tar -cf <directoryname.tar>  # to create a file
+
+tar -xf <directoryname.tar>  # to extract a file
+
+tar -cf <files.tar> file.txt file2.txt #this is how to add individual files to a tar
+
+################################################
+Archives, Compression
+################################################
+3 primary ways to compress
+compress   uncompress
+gzip = gunzip
+bzip2 = bunzip
+zip = unzip
+
+zip zipfile.zip file.txt
+unzip zipfile.zip
+
+zip -r zipdirectory.zip directory
+unzip zipdirectory.zip
+
+these are the prefered methods to compress files in linux
+tar -cf directory.tar directory
+
+gzip directory.tar
+
+gunzip directory.tar.gz #we will get the tar file
+
+tar -xvf directory.tar #the v is for verbose, the order of operations matters with tar
+
+bzip
+bzip2 directory.tar.bz2
+
+bunzip2 directory.tar.bz2
+
+we can also call on the compression algorithm types when using the tar utility with option flags
+tar -zcf file.tar.gz  file.tgz
+tar -jcf file.tar.bz2 or file.tb2
+
+################################################
+Searching and Extracting Data from Files
+################################################
+################################################
+Commands (Revisited)
+################################################
+cat displays the contents of a file
+less reads a file
+head/tail reads the first 10 lines of a file or the last 10 lines of a file
+find locates files on a system
+grep searches a string in our file
+sort organizes text in a file
+cut manipulates data by columns
+wc can be used to word count on a file
+
+
+find . #means current directory, everything in it
+find . -type d #this would find only directories
+find . -type f #this would find only files
+find . -name "file.*" #this will find every file in the current directory with a name file and any file extention
+
+grep search_expression filename
+grep  DHCP /var/log/messages
+grep -i dhcp /var/log/messages #case insensitive
+grep -in dhcp /var/log/messages #gets the line number from what grep finds
+
+sort file.txt #this will sort the file sentences by the first file in the line
+sort -n file.txt #this will sort numerically
+
+cut -c2-4 file.txt
+cut -c2,4 file.txt
+
+cut -d" " -f2 file.txt
+cut -d" " -f-4 file.txt
+cut -d" " -f- file.txt
+
+word count
+wc file.txt
+wc -w file.txt #word count
+wc -c file.txt #character count
+
+################################################
+Command Line Pipes
+################################################
+standard bash file descriptors
+stdin #this mean we have standard input
+stdout #this means we have standard output
+stderr #this file descriptor stands for standard error
+
+input -> command -> output
+stdin 0             stdout 1
+                 |
+                 Error
+                 stderr 2
+
+pipes
+
+find . -type f | grep abc
+cat abc.txt | grep aa
+
+cat abc.txt | grep aa | grep b
+
+cut -d" "-f3 -c2 file.txt #this will not work
+cut -d" "-f3 file.txt | cut -c2
+
+wc -w file.txt
+wc -w file.txt | cut -d" " -f1
+
+################################################
+I/O Redirection
+################################################
+> #greater than
+output > file_name.txt
+tail /var/log/messages > logtemp.text
+
+tail /var/log/messages 1> logtemp.text #this will do the same thing as above
+cat myfile777,txt 2> myerrors
+
+>> #mean append
+ps >> runningprocess
+
+command 1> standard_file 2> standerr_file #this command will out put standard out to one file and standard err out to another file
+
+redirecting input
+command < input_file
+tail < /var/log/messages
+
+sort < words.txt
+
+
+################################################
+Regular Expressions
+################################################
+regular expressions
+* matches any character
+. matches a single character
+? matches zero or one of the proceeding characters
+^ matches expression if it appears at the beginning
+$ matches expression if it appears at the end
+[nnn] matches any character between the braces
+[^nnn] matches any expression if it doesnt contain one of the characters specified
+[n-n] matches any single character
+[1-10] matches any character between 1 and 10, or 0
+[ser] matches s then e then r
+
+
+################################################
+Turning Commands into a Script
+################################################
+################################################
+Basic Text Editing
+################################################
+nano
+kate for kde
+gedit for gnome
+vim
+pico
+
+nano
+ctl + k to delete a line, cut text
+ctl + u to uncut text
+ctl + x to save a file
+
+vi
+when you first enter you will be in command mode
+i will enter insert mode, so will the below
+insert
+s
+o
+a
+
+cant perform any file operations while in insert mode
+
+page down and page up to move to the top and bottom of the file
+
+esc will enter command mode
+: #will enter command line mode
+:w #will save the file
+:w newfile name #will save the file as a new file
+:exit #writes the file and closes
+:wq #this will save and close the file
+:q #closes vi and wont save the file
+
+wd #deletes word after the cursor including the space,
+de #delets the word after the cursor but leaves the space
+dd #deletes the entire line
+p #will paste the line you just deleted
+/searchforaterm
+n #will find the next instance of your search term
+
+First hit ESC key, then the shift + R keys
+
+################################################
+Basic Shell Scripting
+################################################
+scripts need an interpreter
+/bin/sh (rarely used these days, original bash shell)
+/bin/bash (Bourne again shell)
+
+variables
+$ANYMANE
+
+$1 -> first argument
+$2 -> second argument
+$? -> exit code/status (variable that stores 0 or non 0 numbers depending on if the previous statement was successful or not)
+
+#! (shebang)
+/bin/bash the bourne again shell
+variables we can pass variables or create arguments to pass to scripts
+arguments options we can pass to or scripts tht can also be variables
+echo prints/echos what we tell echo to print to the screen
+for loops through and iterates through data for us
+if used for conditional coding based on exit status code for example
+exit exit or stop a script function
+&& = and
+|| = or
+syntax using &&: #the second command runs only if the first exits with a exit code of 0
+syntax using ||:  # the second command will only run if the first exits with a command other than 0, non 0 exit status
+syntax using &&, ||:
+#rm file.txt ** echo "file was deleted" || echo "the file was not deleted"
+
+if/then
+
+if condition then
+          command
+else
+          command
+fi
+
+options for if/then/else
+-d checks to see if the specified directory exists
+-e checks to see if the specified file exists
+-f checks to see if the specified file exists and its a regular file
+-G checks to see if the specified file exists and its owned by a specific group
+-h or -L checks to see if the specified file exists and if its a symbolic link
+-O checks to see if the specified file exits and if its owed by a specific UID
+-r checks to see if the specified file exists and if the read permission is granted
+-w checks to see if the specified file exists and if the write permission is granted
+-x checks to see if the specified file exists and if the execute permissions is granted
+
+
+looping structures
+while loop
+until loop
+for loop
+while loops execute over and over until a specified condition is no longer true
+
+structure:
+
+while condition
+do
+  script command
+done
+
+until loops run over and over again as long as the condition is false and as soon as the condition is true it will stop
+
+structure:
+
+until condition
+do
+  script command
+done
+
+for loop will loop a specified number of times
+three options for creating a number with seq
+if specify a single value the sequence starts at one increments by one and ends at the specified value
+if specify two values the sequence starts with the first value and increments by one, and ends at the second value
+if specify three values the sequence starts at the first value increments by the second value and ends at the third value
+
+seq 5 15
+this will create a sequence
+
+for i in 'seq 15'
+  do
+    echo "the current number in the sequence is $i"
+  done
+exit 0
+
+
+first_script.sh
+#!/bin/bash
+#say hello world to the shell prompt and tell us what user it is
+
+echo hello world - this is the user $USER this is our first script
+
+chmod +x first_script.sh
+
+################################################
+Basic Shell Scripting, Continued
+################################################
+findlist.sh
+#!/bin/bash
+#list all the contents in a directory and write the output to a file
+
+ls >> dir_list.txt
+
+chmod +x
+
+#####
+#!/bin/bash
+#list all the contents in a directory and write the output to a file
+location=$1
+
+ls $location >> dir_list.txt
+echo "script is complete and indexed the $location"
+
+.findlist.sh /tmp #we passed the /tmp for the location, /tmp is a argument
+
+#########
+#!/bin/bash
+#list all the contents in a directory and write the output to a file
+location=$1
+filename=$2
+
+ls $location > $filename
+echo "script is complete and indexed the $location"
+echo "####################"
+echo "displying contents of our $filename"
+echo "###################"
+cat $filename
+
+.findlist.sh /var/log logfile.log #we passed the /var/log logfile.log for the location, /var/log logfile.log are arguments
+
+
+#############
+#!/bin/bash
+#list all the contents in a directory and write the output to a file
+location=$1
+filename=$2
+
+if [ -z "$location"] #if -z = null
+then
+    echo "please provide location argument"
+    exit
+fi
+
+if [ -z "$filename"]
+then
+  echo "please provide a filename"
+  exit 0
+fi
+
+ls $location > $filename
+echo "script is complete and indexed the $location"
+echo "####################"
+echo "displying contents of our $filename"
+echo "###################"
+cat $filename
+
+################################################
+The Linux Operating System
+################################################
+################################################
+Choosing an Operating System
+################################################
+################################################
+Windows, Mac, and Linux Differences
+################################################
+windows
+uses proprietary applications
+active directory #most widely used user management applications
+microsoft sql
+
+apple osx
+has their own hardware and software
+tight integration within its own ecosystem
+security-extremely difficult to lock down and manage
+
+linux
+desktop is freeing and personal
+server room flexibility
+seen everywhere in the mobile world (android)
+
+gui and cli
+all of these operating systems have guis and clis
+linux server can be administered by the cli with no gui overhead
+osx has unix under the hood and can manage it via cli for the most part
+windows can have both gui and cli. can use powershell to manage it via cli
+
+################################################
+Distribution Life Cycle Management
+################################################
+design
+develop
+deploy
+manage
+retire
+
+################################################
+Understanding Computer Hardware
+################################################
+################################################
+Hardware
+################################################
+processor = cpu = central processing unit
+intel or amd
+
+tablets and phones are made with ARM processors
+
+RAM random access memory
+stores not only the data being processed but also the running applications
+ram is not persistent
+dram - dynamic ram
+
+graphics card
+3d accleration
+
+mother board
+bios #provides the software for the keyboard
+
+power supply
+converts AC to DC
+
+hard disks
+sata
+sas=scsi
+
+ssd
+
+optical drives
+
+display
+crt
+lcd
+
+################################################
+Where Data is Stored
+################################################
+################################################
+Kernel
+################################################
+kernel
+the linux kernel is a unix like operating system
+linux was developed by linux torvals
+
+the linux kernel is the core of any linux installation
+the kernel is responsible for management every other piece of software on a running linux computer
+
+to maintain order on the chaotic linux system of processes the kernel imposes order by using hierarchy
+
+when the system boots typically one process called the init process starts up the /sbin/init that inturn manages the child process
+
+hierarchy tree type processes
+
+
+################################################
+Processes
+################################################
+every process has an associated process id (PID)
+every parent process has a parent id (PID)
+we can identify these pids and ppids with tools like ps
+
+ps -u stephen --forest
+
+ps u U stephen #this gives us much more information
+
+ps aux #gives us the user name option
+
+ps ax | grep vim
+
+top #is just an interactive version of ps
+top sorts its display by cpu use
+h or ? #this will display tops help information
+k #you can kill a process
+r #you can renice, change the processs priority
+p #sorts by cpu usage, this is the default display
+m #will sort by memory usage
+
+top will also provide load average by applications
+
+load average can reach the number of CPUs or cores before competing for CPU time even begins
+
+a program can consume too much memory if it has a memory leak
+
+free
+reveals the total ram statistics
+ free -h makes it human readable
+
+################################################
+syslog, klog, dmesg
+################################################
+logs are stored in /var/log
+boot.log #this logs
+cron #logs cron job logs
+syslog or messages #is a general purpose log
+secure #logs when root logs in
+
+tail #too read log files, this will show the last 10 lines of the file
+
+tail logfile.log
+
+less logfile.log
+
+typically only demons and server type applications long files
+
+grep sshd /var/log/*
+
+system log demon #creates the log files
+klogd #logs messeges from the kernel
+
+/etc/rsyslog.conf #usually configured there
+
+kernel ring buffer #this is stored in memory
+dmesg | less
+dmesg | grep console
+dmesg | grep user
+
+vim /etc/rc.d/local
+dmesg > /var/log/dmesg
+
+################################################
+/lib, /usr/lib, /etc, /var/log
+################################################
+data locations:
+/lib  #linked library files usd by binaries in /bin and /usr/bin
+/usr/lib #linked library files used by binaries in the /bin and usr/bin
+/etc/ #configuration files for the linux operating system
+/var/log #log files for our linux operating system
+
+
+################################################
+Your Computer on the Network
+################################################
+################################################
+Internet, Network, Routers
+################################################
+networking basics
+networks use protocols to talk to one another(think of a protocol as a language)
+computer systems need to speak the same language
+
+ip protocol:
+a network protocol used on the internet
+works with other protocols such as tcp (transmission control protocol)
+works with the udp (user datagram protocol)
+
+the osi reference model breaks down the overall communication process into specific tasks
+
+pc1                                 pc2
+7applications                   7applications
+6presentation                   6presentation
+5session                        5session
+4transport                      4transport
+3network                        3network
+2datalink                       2datalink
+1physial            ->          1physial
+
+the entire picture of the ip protocol and the transmission control protocol:
+tcp/ip
+
+tcp ensures data exchanges between two network hosts is exchanged reliably
+typically upper-layer applications use tcp are:
+web servers
+email servers
+ftp servers
+
+icmp  internet control message protocol
+icmp is for testing and verifying network communication between hosts
+
+ports
+tcp and udp both provide ports for upper layer protocols
+port numbers range from 0 up to 65536 for each individual ip address
+
+well known ports
+range 0-1023
+
+20 and 21 ftp
+23        telnet
+25        smtp
+80        http
+110       pop3
+137, 138, 138  netbios
+443       https
+
+
+registered ports
+range 1024-49151
+organizations can program their own network services and then apply for a registered port number to be assigned toit
+
+
+dynamic ports aka private ports
+range 49152-65535
+dynamic ports are available for use by any network service
+
+ipv4 is a 32 bit ip scheme
+ipv6 is a 128 bit ip scheme
+
+nat  network address translation
+
+subnet mask
+network vs node ip address
+(network 192.168.1)(.1 node)
+
+class A subnet mask
+default subnet mask class
+255.0.0.0
+
+class B subnet mask
+255.255.0.0
+
+class C mask
+255.255.255.0
+
+
+################################################
+Domain Name Service and the Default Gateway (Network Router)
+################################################
+when we lookup a URL or domain names we have to translate that domain name into the IP address of a web server
+
+linuxacademy.com to 54.165.61.14
+
+DNS servers translate domain names into IP addresses
+
+subnet mask can be typed shorthand
+192.168.1.1/24  this is the same as 192.168.1.1 255.255.255.0
+
+the dig command, this is located in the bind-utils
+this allows us to resolve web domain into their ip addresses
+dig (domain information groper) is a flexible tool for interrogating DNS name servers. It performs
+      DNS lookups and displays the answers that are returned from the name server(s) that were queried.
+      Most DNS administrators use dig to troubleshoot DNS problems because of its flexibility, ease of use
+      and clarity of output. Other lookup tools tend to have less functionality than dig.
+
+      Although dig is normally used with command-line arguments, it also has a batch mode of operation for
+      reading lookup requests from a file. A brief summary of its command-line arguments and options is
+      printed when the -h option is given. Unlike earlier versions, the BIND 9 implementation of dig
+      allows multiple lookups to be issued from the command line.
+
+What is an A record?
+An A record maps a domain name to the IP address (IPv4) of the computer hosting the domain. Simply put, an A record is used to find the IP address of a computer connected to the internet from a name.
+The A in A record stands for Address. Whenever you visit a web site, send an email, connect to Twitter or Facebook or do almost anything on the Internet, the address you enter is a series of words connected with dots.
+
+################################################
+Network Configuration
+################################################
+a few important networking tools
+ping #testing connectivity of a remote network device
+dig  #allows us to lookup ip addresses for DNS names
+netstat #lists network connections router info and nic info
+route #current route/net settings
+traceroute #traces the route a packet takes
+ifconfig #current network settings
+ip addr #current ip address and networking settings
+
+/etc/resolve.conf  #this is where our DNS server information is stored
+
+on centos the eth info is at /etc/sysconfig/network-scripts/ifcfg-eth0
+
+
+################################################
+Security and File Permissions
+################################################
+################################################
+Basic Security and Identifying User Types
+################################################
+################################################
+Root and Standard Users
+################################################
+linux uses files file system access controls to limit users access to files that they shouldnt be
+
+all users get their own user dir under the home dir
+root does not have a dir under home, roots is under /root
+
+finger — user information lookup program
+
+id tool - print real and effective user and group IDs
+no 2 users have the same user id
+
+three files where user information is stored
+/etc/passwd  #where the user account information is stored
+used for local authentication
+username:password:userid:groupid:thefullname:thehomedirectory:theusersdefaultshell
+the X in the users string is a legacy item, its no longer stored here, its in the shadow file
+
+/etc/shadow  #where user passwords are stored
+each user account has a entry in the shadow file
+username:encryptedpassword:lastmodifiedfield:maxdays:dayswarning:disableddays:expirefield
+lastmodifiedfield = the last time in linux epoc days that the password has been modified
+
+
+/etc/group   #where the system groups are stored
+
+
+
+pwck utility - verify integrity of password files
+
+pwconv The pwconv command creates shadow from passwd and an optionally existing shadow.
+The pwconv command creates shadow from passwd and an optionally existing shadow.
+
+the primary reason for root is a preventative measure to stop damaging the file system
+
+
+the # at the begining of a command prompt shows that you are root
+
+$ shows that you are a user
+
+su - username
+su - ====root
+
+sudo #similar to su but works one command at a time
+
+w command Show who is logged on and what they are doing.
+
+who command show who is logged on
+who -b  #show who is logged on
+who -m  #only hostname and user associated with stdin
+who -r #print current runlevel
+who -q #all login names and number of users logged on
+who -a # == all.  same as -b -d --login -p -r -t -T -u
+
+last command  -last  searches  back  through the /var/log/wtmp file (or the file designated by the -f
+       option) and displays a list of all users logged in (and out) since that file was  cre‐
+       ated.
+
+################################################
+System Users
+################################################
+system user accounts are not used for users to login, they are used for services
+
+
+################################################
+Creating Users and Groups
+################################################
+################################################
+User IDs
+################################################
+in linux every user account features a user id, and a username
+process data and ownership data use the id exclusively
+
+id <username> to get the users id and group id
+
+id -u #to get just he uid only
+id -g #will get just the group id
+id -G #print all group IDs
+id -Gn #print a name instead of a number
+
+groups command #user group file
+
+last command #last, lastb - show a listing of last logged in users
+
+the root users uid an group id are both 0, thats because the root use doesnt need any user privilages
+
+
+################################################
+User Commands
+################################################
+useradd - create a new user or update default new user information
+/etc/default/useradd
+
+useradd -D #allows you to change user defaults
+
+/etc/login.defs #this file contains default values used by the /etc/shadow
+this in now managed by the /etc/pam.d/ files
+
+the /etc/skeloton or /etc/skel/ for ubuntu #this is where files are stored when you create a new user
+
+useradd -c #Any text string. It is generally a short description of the login, and is currently
+           used as the field for the user's full name.
+
+useradd -e #The date on which the user account will be disabled. The date is specified in the
+           format YYYY-MM-DD.
+
+useradd -f #The number of days after a password expires until the account is permanently disabled.
+           A value of 0 disables the account as soon as the password has expired, and a value of
+           -1 disables the feature.
+
+
+useradd -g #The group name or number of the user's initial login group. The group name must exist.
+           A group number must refer to an already existing group.
+
+useradd -G #A list of supplementary groups which the user is also a member of
+
+
+useradd -M #Do no create the user's home directory, even if the system wide setting from
+           /etc/login.defs (CREATE_HOME) is set to yes.
+
+
+
+useradd -m # Create the user's home directory if it does not exist. The files and directories
+           contained in the skeleton directory
+
+
+
+useradd -p #The encrypted password, as returned by crypt(3). The default is to disable the
+           password.
+
+
+
+useradd -r #Create a system account.
+
+
+useradd -s #The name of the user's login shell.
+
+useradd -u #The numerical value of the user's ID.
+
+
+USERADD EXAMPLE
+useradd -c "steven Smith" -m -p "linux1234" -s "/bin/bash" ssmith
+
+
+passwd - change user password
+if we created a user and didnt used the -p flag, the user wouldnt have a password and the account would be locked, we would have to use the passwd command to give the user a password
+
+passwd -l #Lock the password of the named account. This option disables a password by changing it
+           to a value which matches no possible encrypted value (it adds a ´!´ at the beginning
+           of the password).
+
+passwd -w #Set the number of days of warning before a password change is required.
+
+passwd -i #This option is used to disable an account after the password has been expired for a
+           number of days.
+
+usermod -  modify a user account
+
+usermod -c #The new value of the user's password file comment field.  lets us edit the users full name
+
+usermod -e #The date on which the user account will be disabled.
+
+usermod -f #The number of days after a password expires until the account is permanently disabled.
+
+usermod -g #The group name or number of the user's new initial login group.
+
+usermod -G #A list of supplementary groups which the user is also a member of.
+
+usermod -l # The name of the user will be changed from LOGIN to NEW_LOGIN.  lets us change the user name of the user name
+
+usermod -L #Lock a user's password. This puts a '!' in front of the encrypted password,
+           effectively disabling the password
+
+usermod -m #Move the content of the user's home directory to the new location.
+
+usermod -p  #The encrypted password.  lets us change the users password
+
+usermod -u #The new numerical value of the user's ID.
+
+usermod -U #Unlock a user's password.
+
+
+
+userdel - delete a user account and related files #this will not delete th users home dir
+
+userdel -r #this will delete the users home folder
+
+
+################################################
+Group Commands
+################################################
+/etc/group
+group:password:gid:users  #some distributions allow group passwords
+
+/etc/gshadow #stores group passwords
+groupname:password:groupadmin:users
+
+groupadd - create a new group
+
+groupadd -g #The numerical value of the group's ID. creates a new group
+
+groupadd -p #The encrypted password
+
+groupadd -r #a system group
+
+
+to modify groups use the groupmod utility
+
+groupmod - modify a group definition on the system
+
+groupmod -g #setting the group id
+
+groupmod -p #sets a password for the group
+
+
+to delete users use the groupdel utility
+
+groupdel - delete a group
+
+use the groups command to see what groups a user is in
+
+groups joe
+
+
+################################################
+Managing File Permissions and Ownership
+################################################
+################################################
+File/Directory Permissions and Owners
+################################################
+permissions user group other
+drwxrwxr-x
+-rw-r--r--
+
+d = directory
+- = file
+
+r = read 4
+w = write 2
+x = execute 1
+
+on directories x means that you can cd into it
+on files x means that you can execute it
+
+777 means that a file has full permissions
+
+rw r r
+4  4  4  = 644
+
+before you can change the permissions of a file you first either need to be already be the owner of a file or you need to be the root accouint
+
+to change the ownership of a file we can user the chown command
+
+chown username.group filename
+chown stephen.accounting filename.txt
+
+removing permissions
+chmod o-r filename.txt  we removed the read permissions from the others
+chmod g-w filename.txt  we removed the write permission from the groups
+chmod u-r filename.txt  we removed the read permission from the user
+
+adding permission with octals:
+this means we are giving user read and write and no execute
+read for group and no write and no execute
+and for other we are giving no write and no execute but we are giving read
+
+chmod 644 filename.txt
+r = 4
+w = 2
+x = 1
+
+chmod +x filename.txt this will give executable permissions
+
+chmod ugo+rwx filename.txt  this will give user group and other read write execute permissions to the file
+
+chmod ugo+x filename  this will remove the execute permissions to all 3 groups
+
+chmod 644 filename.txt this will give user read write group read and other read
+
+chmod 555 filename.txt this give read and exexute to user group and other
+
+
+changing the ownership of a file
+chown stephen.stephen filename.txt
+
+chmod g+w filename.txt
+
+
+
+
+################################################
+Special Directories and Files
+################################################
+################################################
+Symbolic Links
+################################################
+ln -s origfile.txt filelink.txt  #the -s is for symbolic
+
+
+why would we want to do this?
+configuration files has a long file name to shorten the file name
+
+a symbolic link is the same file
+
+################################################
+System files, Special Files, and Sticky Bits
+################################################
+special directories and files
+previous lessons we learned about directories like /etc, /lib and /usr/lib
+
+other special directories and file
+/var #contains files that change often such as mail, logs, etc.
+
+/var/tmp  contains files that get deleted on reboot
+
+/tmp  contains files that do get deleted on reboot
+every user on a linux system can write and delete in the /tmp
+
+the problem with temporary folders that have permissions of 777
+
+the caveat:
+
+other users on the system could delete the other users files and vice versa
+
+
+sticky bit to the rescue
+we can add a sticky bit to a folder which makes it so that only users that create their own files and folders can delete theirs and not others, even if the folder has 777
+
+chmod o+t file . txt or dir  #the t means sticky bit
+
+
+remove the sticky bit
+chmod 0777 /dir #the new 4th place holder removes the stickbit, either a 1 or a 0
+
+
+chmod o-t /dir #this will remove the stickybit

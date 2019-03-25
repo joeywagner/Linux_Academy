@@ -1,0 +1,31 @@
+##################################################
+Java - Install or Add Oracle JDK
+##################################################
+##################################################
+Oracle JDK - Install Alone or Alongside Another Java Version
+##################################################
+sudo apt-get install openjdk-7-jre-headless
+java -version
+
+cd /etc/alternatives
+
+#to install java we need to grab it from oracle
+#there is no debian package, we need to grab the tar
+
+cd Downloads
+tar zxvf jdk.tar
+cd jdk/bin
+
+#rather than unistalling openjdk
+cd Downloads
+mv jdk/ /opt/java
+
+cd /etc/alternatives
+update-alternatives --install /usr/bin/java java /opt/java/bin/java 200000
+
+#if we were going to add a alerntaive for the java compiler
+update-alternatives --install /usr/bin/javac javac /opt/java/bin/javac 200000
+
+#javaws is java web start
+update-alternatives --install /usr/bin/javaws javaws /opt/java/bin/javaws 200000
+ll /usr/bin/jav*

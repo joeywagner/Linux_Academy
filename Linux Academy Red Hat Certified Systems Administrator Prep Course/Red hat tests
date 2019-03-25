@@ -1,0 +1,230 @@
+##################################################
+Lab: Comprehensive Review
+##################################################
+
+In this lab, you will practice and demonstrate your knowledge and skills.
+
+Outcomes:
+Complete the following tasks and successfully grade the serverX system with lab sa1-review grade as user root on serverX.
+
+Reset the serverX machine.
+
+Run the lab sa1-review setup as user root on serverX.
+
+Use Bash commands to complete the following tasks on the serverX machine:
+
+Display the first 12 lines of the /usr/bin/clean-binary-files file and send the output to the /home/student/headtail.txt file.
+hear -n 12 /usr/bin/clean-binary-files > /home/student/headtail.txt
+
+Display the last nine lines of the /usr/bin/clean-binary-files file and add the output to the /home/student/headtail.txt file.
+tail -n 9 /usr/bin/clean-binary-files >> /home/student/headtail.txt
+
+Ten new Linux systems require change documentation files. Carry out the following tasks on serverX to create them:
+
+Create the empty files with the file name system_changes-machineY-month_Z.txt in the /home/student directory on the serverX machine as user student. Replace Y with the machine number and replace Z with the months jan, feb, and mar.
+touch ~student/system_changes-machine{1..10}-month_{jan,feb,mat}.txt
+
+Create the /home/student/syschanges directory with the subdirectories jan, feb, and mar.
+mkdir -p /home/student/syschanges/{jan,feb,mar}
+
+Sort all newly created files by month into the corresponding subdirectory.
+
+Remove all newly created files related to machine 9 and 10, because the hardware has been replaced permanently.
+
+Use the man pages to research how to turn off the use of colors in the output. Put the relevant option of the ls command into the text file /home/student/lscolor.txt on serverX.
+
+Copy the file /home/student/vimfile.txt to /home/student/longlisting.txt on serverX. Use the vim editor to change the /home/student/longlisting.txt file according to the following requirements:
+
+Remove the file owner column. Do not remove any spaces.
+
+Remove the Documents and Pictures rows.
+
+Save the file when done with editing.
+
+Change configuration and add new users and a new group according to the following requirements:
+
+Change the default system settings for newly created users to ensure their passwords are changed at least every 60 days.
+
+Create a new group named instructors with a GID of 30000.
+
+Create three new users: gorwell, rbradbury, and dadams, with a password of firstpw.
+
+Add the new users to the supplementary group instructors. The primary group should remain as the user private group.
+
+Set the three newly created accounts to expire 60 days from today.
+
+Change the password policy for the gorwell account to require a new password every 10 days.
+
+Force all three newly created users to change their password on first login.
+
+Create the shared directory /home/instructors on serverX according to the following requirements:
+
+The directory is owned by user root and group instructors.
+
+Set permissions on the /home/instructors directory so it has the SETGID bit set on the directory, the owner and group have full read/write/execute permissions, and other users have read permission to the directory.
+
+Determine the process using the most CPU resources on serverX and terminate it.
+
+Stop the currently running cups printing service on serverX. The service should not get automatically started on system boot.
+
+Configure the ssh service on serverX according to the following requirements:
+
+User student on serverX can log in with a SSH public key to the student account on desktopX.
+
+Disable ssh login for the root user and password-based SSH authentication on serverX.
+
+Your serverX machine has been relocated to the Bahamas. The following changes have to be made on the serverX machine:
+
+Change the time zone on the serverX machine to Bahamas and verify the time zone has been changed properly.
+
+Record the command to display all systemd journal entries recorded between 9:05:00 and 9:15:00 in the /home/student/systemdreview.txt file.
+
+Configure rsyslogd by adding a rule to the newly created configuration file /etc/rsyslog.d/auth-errors.conf to log all security and authentication messages that get recorded in the authpriv facility with the priority alert and higher to the /var/log/auth-errors file as well. Test the newly added log directive with the logger command.
+
+Create a new static network connection using the settings in the following table. Be sure to replace the X with the correct number for your systems.
+
+Configure the new connection to be automatically started.
+
+Other connections should not start automatically.
+
+Modify the new connection so that it also uses the address 10.0.X.1/24.
+
+Configure the hosts file so that 10.0.X.1 can be referenced as "myhost".
+
+Set the host name to serverX.example.com.
+
+Parameter	Setting
+Connection name	review
+IP address	172.25.X.11/16
+Gateway address	172.25.X.254
+DNS address	172.25.254.254
+Synchronize the /etc directory tree on serverX to the /configbackup directory on serverX.
+
+Create an archive named /root/configuration-backup-server.tar.gz with the /configbackup directory as content.
+
+To prepare the archived directory tree for comparison with the currently actively used configuration files on serverX, extract the contents of the /root/configuration-backup-server.tar.gz archive to the /tmp/configcompare/ directory on serverX.
+
+Perform the following tasks on the serverX machine:
+
+Use ssh to execute the hostname command on desktopX as user student. Send the output of the hostname command to the /tmp/scpfile.txt file on desktopX.
+
+Use scp to copy the /tmp/scpfile.txt file from desktopX to /home/student/scpfile.txt.
+
+Create the file /etc/yum.repos.d/localupdates.repo to enable the “Updates” repository found on the content machine. It should access content found at the following URL: http://content.example.com/rhel7.0/x86_64/errata. Do not check GPG signatures.
+
+Configure serverX to adhere to specific software requirements:
+
+The kernel package should be updated to the latest version.
+
+The xsane-gimp package should be installed.
+
+The rht-system package should be installed.
+
+For security reasons, serverX should not have the wvdial package installed.
+
+Generate a disk usage report with the du command of the /usr/share/fonts directory on serverX and save the result in the /home/student/dureport.txt file.
+
+Identify and mount a newly added file system by UUID on the /mnt/datadump directory on serverX.
+
+Create the soft link /root/mydataspace, which points to the /mnt/datadump directory on serverX.
+
+Record the command to find all soft links on serverX that have data as part of their name in the /home/student/find.txt file.
+
+When you are ready to check your work, run lab sa1-review grade on serverX.
+
+
+
+
+##################################################
+Lab: Comprehensive Review of System Administration II
+##################################################
+
+In this lab, you will configure a system using the skills taught in this course.
+
+Resources:
+Files:	http://serverX.example.com/logfile
+Machines:	serverX and desktopX
+Outcomes:
+Two systems configured according to the specified requirements that follow.
+
+Reset your serverX system.
+
+Log into and set up your serverX system.
+
+[student@serverX ~]$ lab sa2-review setup
+Reset your desktopX system.
+
+You have been tasked with configuring a new system for your company: desktopX. The system should be configured according to the following requirements.
+
+The system should authenticate users using LDAP and Kerberos using the following settings:
+
+Name	Value
+LDAP server
+
+classroom.example.com
+
+Search Base
+
+dc=example,dc=com
+
+Use TLS
+
+Yes
+
+TLS CA Cert
+
+http://classroom.example.com/pub/example-ca.crt
+
+Kerberos Realm
+
+EXAMPLE.COM
+
+Kerberos KDC
+
+classroom.example.com
+
+Kerberos Admin Server
+
+classroom.example.com
+
+For testing purposes, you can use the user ldapuserX, with the password kerberos.
+
+Home directories for your LDAP users should be automatically mounted on access. These home directories are served from the NFS share classroom.example.com:/home/guests.
+
+serverX exports a CIFS share called westeros. This share should be mounted automatically at boot on the mount point /mnt/westeros. To mount this share, you will need to use the username tyrion with the password slapjoffreyslap. This password should not be stored anywhere an unprivileged user can read it.
+
+serverX exports an NFSv4 share called /essos. This share needs to be mounted read-write at boot on /mnt/essos using Kerberos authentication, encryption, and integrity checking.
+
+A keytab for your system can be downloaded from http://classroom.example.com/pub/keytabs/desktopX.keytab.
+
+Configure a new 512 MiB logical volume called arya in a new 2 GiB volume group called stark.
+
+This new logical volume should be formatted with an XFS file system, and mounted persistently on /mnt/underfoot.
+
+Your system should be outfitted with a new 512 MiB swap partition, automatically activated at boot.
+
+Create a new group called kings, and four new users belonging to that group: stannis, joffrey, renly, and robb.
+
+Create a new directory /ironthrone, owned by root:root with permissions 700.
+
+Configure this directory so that users in the kings group have both read and write privileges on it, with the exception of the user joffrey, who should only be granted read privileges.
+
+These restrictions should also apply to all new files and directories created under the /ironthrone directory.
+
+Install the httpd and mod_ssl packages, then enable and start the httpd.service service.
+
+Open up port 12345/tcp in the default zone for the firewall running on your system.
+
+Create a new directory called /docroot. Make sure that the SELinux context for this directory is set to public_content_t, and that this context will survive a relabel operation.
+
+http://serverX.example.com/logfile contains the logs for a recent project. Download this file, then extract all lines ending in ERROR or FAIL to the file /home/student/errors.txt. All lines should be kept in the order in which they appear in the log file.
+
+Your system should have a new directory used to store temporary files named /run/veryveryvolatile. Whenever systemd-tmpfiles --clean is run, any file older than 5 seconds should be deleted from that directory.
+
+This directory should have permissions 1777, and be owned by root:root.
+
+All changes must survive a reboot. When you are done configuring your system, you can test your work by rebooting your desktopX machine and running the following command:
+
+
+
+for i in stannis joffrey renly robb; do useradd -G kings $i; done

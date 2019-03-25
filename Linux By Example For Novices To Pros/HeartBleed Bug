@@ -1,0 +1,41 @@
+##################################################
+HeartBleed Bug
+##################################################
+##################################################
+HeartBleed Bug Scenario: Assessment and Mitigation
+##################################################
+#effects openssl
+#verify openssl is running
+telnet localhost 443
+
+sudo openssl version
+
+
+sudo apt-get install gcc automake make checkinstall fakeroot dpkg-dev -y
+
+
+sudo apt-get source openssl
+
+#heart bleed is a buffer overrun because on the way back the package is size is not getting checked
+#you will have to take an outage
+
+#stop the apache server
+sudo apache2 stop
+
+cd openssl
+cat INSTALL
+
+sudo ./config --prefix=/usr --openssldir=/usr/lib/ssl -DOOPENSSL_NO_HEATBEATS
+sudo make
+
+#now we need to regenerate out keys
+sudo make test
+
+
+sudo mv /usr/bin/openssl /root
+
+which openssl #will output nothing
+
+#at this point restart the server, its not popular but thats the only way the caches are cleared
+
+sudo service apache2 start

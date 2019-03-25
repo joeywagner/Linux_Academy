@@ -1,0 +1,427 @@
+##################################################
+Google Cloud Platform for the AWS User
+##################################################
+##################################################
+Course Introduction
+##################################################
+##################################################
+Lecture: Course Introduction and Prerequisites
+##################################################
+##################################################
+Lecture: Linux Academy Course Features
+##################################################
+##################################################
+Lecture: What is GCP?
+##################################################
+What is Google Cloud Platform?
+
+• Google Cloud Platform offers a competitive array of services to meet the needs of on-demand compute, storage and networking infrastructure to act as the delivery platform for your applications.
+• Internally, Google uses this infrastructure for several high-traffic and global-scale services, including Gmail, Maps, YouTube, and Search.
+Similarities to AWS
+• Just like AWS, Google offers a collection of managed and unmanaged services which can be consumed and delivered on-demand.
+• Just like AWS, Google Cloud Platform offers elasticity to both scale out and scale in.
+• Both Amazon Web Services and Google Cloud Platform offer a shared security responsibility environment.
+
+
+How do you use it?
+
+Just like AWS there is an entire ecosystem that is associated with Google Cloud Platform services.
+• SDK Client libraries with support for multiple languages
+• Management tools including web based and Cloud SDK command line interfaces
+• Cloud SDK emulators for Google Cloud Pub/Sub and Google Cloud Datastore allow you to simulate services in your environment for local development, testing and validation
+• Cloud Shell command-line from any browser, anywhere with an internet connection
+
+
+##################################################
+Lecture: How to Create a GCP Account
+##################################################
+cloud.google.com
+
+sign in/sign up
+
+##################################################
+Lecture: Have to Use/Navigate the GCP Console
+##################################################
+left corner 3 bars = services
+
+google cloud shell = management console
+
+help menu = search for anything
+
+notifications = anything important
+
+ancillary items
+
+##################################################
+AWS Compared to GCP
+##################################################
+##################################################
+Compute
+##################################################
+##################################################
+Lecture: Service and Feature Comparison
+##################################################
+Google compute engine is a direct competitor to ec2
+
+both offer:
+ondemand access to virtual machine instances
+temporal virtual machines
+policy driven auto scaling
+
+ec2
+additional pricing options for persistent and non-persistent workloads
+more instance types
+auto scaling can be done manually or scheduled in addition to dynamic scaling based on the value of a metric
+
+GCE
+custom machine types variable core counts and memory capacity
+instance live migration avoids downtime for infrastructure maintenance events
+cloud shell browser based command line access to your instances
+sub-hour billing and simple sustained use discount
+
+
+
+PaaS
+Elastic beanstalk vs google app engine
+
+both:
+autoscaling, load balancing and monitoring included
+managed platform
+
+Elastic Beanstalk:
+behine the scenes if you choose to deploy to docker ECS is leveraged making it a natural transition if more control over the application environment is necessary
+SDK is specific to elastic beanstalk
+
+Google App Engine:
+Customized CPU and memory for the instances whick run your app engine
+flexible environment, uses standard docker containers
+custom runtimes are only available in flexible environments
+Standard environment users custom built Google containers
+SDK is specific to GAE
+
+
+
+EC2 container service vs Google container engine
+
+both:
+a platform to manage containers
+docker support
+a variety of supported OS
+integrated logging and monitoring
+
+EC2 container service:
+AWS ECS agents can only be run exclusively on EC2 instances
+
+Google container engine:
+Kubernetes for orchestration
+google container engine charges an additional flat fee per hour per clusters for larger than 5 nodes
+google container engine instances run wherever kubernetes can run which includes EC2
+
+
+##################################################
+Lecture: Pricing
+##################################################
+IaaS
+
+EC2 Vs GCE
+on demand instance pricing
+temporal instance pricing
+
+
+EC2:
+Charged by the hr, rounding up to the nearest hour
+reserved instances
+  standard
+  convertible
+  scheduled
+dedicated instances
+dedicated hosts
+pay some, none or all up front for reserved instances
+
+
+GCE:
+Charged per minute minimum
+pixed pricing with no restrictions
+sustained usage discount
+sizing recommendations to reduce costs
+no upfront cost commitment
+inferred instances
+
+
+Elastic beanstalk vs google app engine
+
+Both:
+Pricing determined by resource usage
+
+Elastic beanstalk:
+
+you pay for AWS resources you create to run your application
+
+google app engine:
+a free but limited quota is granted daily
+you begin to incur a cost as the free quota is exceeded
+
+
+EC2 container service vs Google container engine
+
+Both:
+pricing determined by resource usage
+
+
+EC2 container service:
+you pay for AWS resources you create to run your application
+
+
+Google container engine
+Google container engine uses google compute engine instances for nodes in the cluster
+there is an additional fee for cluster sizes greater than 5 nodes
+
+##################################################
+Lecture: Best Use Cases
+##################################################
+Know your workload...
+
+• Understanding your workload is key to ensure you get the most out of either Google Cloud Platform or Amazon Web Services
+
+How?
+• Collect metrics from CloudWatch
+• Examine AWS Config for an inventory
+• Review your past billing statements
+• Check Trusted Advisor for cost and resource optimization
+New project?
+• Estimate usage and growth and use pricing calculators
+• Understand project requirements
+
+
+
+Google Compute Engine Best Use Cases
+
+Do you have fault tolerant or single-point-of-failure workloads?
+Instance live migration during Google Compute Engine infrastructure maintenance could prevent an outage.
+Do you expect your workload instances to run for at least one year or more? If your project lasts longer than a month, but less than a year it might be less expensive.
+Are your workloads typically underutilized? Google Compute Engine offers rightsizing advice.
+Do you have a use case for non-overlapping instances with the same configuration? You would receive an inferred instance discount.
+
+
+Google App Engine Best Use Cases
+
+Can you accept some tradeoffs?
+App Engine is a mature product but with less mature supporting services, compare to AWS RDS.
+Are you willing to accept a mature platform with less customization options?
+If you are comfortable with a managed platform service, it may not matter to you. Or, you may choose the flexible environment which is still in beta.
+It may be easier to scale your application.
+If you can design for App Engine infrastructure you may have an easier time with scaling your application.
+
+
+Google Container Engine Best Use Cases
+
+Do you already run Kubernetes?
+If you already run Kubernetes in your datacenter or on EC2 but don’t want the overhead of managing it.
+Are you concerned about vendor lock-in? ECS only runs within Amazon Web Services
+
+##################################################
+Networking
+##################################################
+##################################################
+Lecture: Service and Feature Comparison
+##################################################
+
+                      Networking                  Load Balancing          CDN      On- Premises Connection   DNS
+Amazon Web Services     VPC                           ELB               CloudFront      Direct Connect      Route53
+Google Cloud Platform Cloud VirtualNetwork      Cloud LoadBalancing     Cloud CDN       Cloud InterConnect  Cloud DNS
+
+Load Balancing Feature Comparison
+                    Network Load Balancing      Support for Static IP Address   Content- Based Load Balancing   Cross- Region Load Balancing      Scaling Pattern
+AWS Elastic LoadBalancing    YES                          NO (ALIAS)             YES APPLICATION LOAD BALANCER          NO                            LINEAR
+Google Cloud Platform         YES                             YES                           YES                         YES                             REAL-TIME
+
+
+Hybrid Deployment and Peering Comparison
+                          VPN             Carrier Peering         Direct Peering    CDN Peering
+AWS                      VPC-VPN          Direct Connect              N/A               N/A
+Google Cloud            Cloud VPN       Carrier Interconnect      Direct Peering     CDN Interconnect
+
+
+DNS
+
+                  Latency- Based Routing        Geo- Based Routing      DNSSEC
+AWS Route53           YES                             YES                 NO
+Google Cloud DNS      YES                              NO                 NO
+
+
+Deployment Technology
+                  Pricing                     Formatting        Declarative?
+AWS CloudFormation  Free                        YAML/JSON         Yes
+Google Deployment Manager  FREE                   YAML            YES
+
+
+AWS CloudWatch
+CloudWatch works only for AWS resources.
+
+Google Stackdriver
+Stackdriver is a universal product that works for any service. There are other services, such as DataDog, that are similar for AWS but not Amazon branded.
+
+
+IP Addressing
+                            Permanent Address       Ephemeral Addressing      Internal Address
+Amazon Web Services           Elastic IP              Ephemeral IP            Dynamic IP
+Google Cloud Platform         Static IP               Ephemeral IP            Dynamic IP
+
+
+##################################################
+Lecture: Pricing
+##################################################
+
+##################################################
+Lecture: Best Use Cases
+##################################################
+AWS
+  AWS has more international datacenters than Google.
+  AWS has more robust Route53 routing policies, including geo-routing.
+Google Cloud Platform
+  Google Cloud Platform does not require “pre-warming” of load balancers.   Google Cloud Platform includes direct peering to CDN edge locations.
+
+Best Use Cases
+  AWS is more suited for international businesses that require more points-of- presence around the world and appropriate geo-routing policies to take advantage of their global presence.
+  Google Cloud Platform is more suited for US-based businesses that require quick scaling, robust caching and simpler pricing.
+
+##################################################
+Storage
+##################################################
+##################################################
+Lecture: Service and Feature Comparison
+##################################################
+Service                           Object          Block                   Cold                     File
+Amazon Web Services               Amazon S3       Amazon EBS            Amazon Glacier            Amazon EFS
+Google Cloud Platform   Cloud StorageCompute  Engine Persistent Disks   Cloud Storage Nearline    ZFS/Avere
+
+
+Comparison of S3 to Google Cloud Storage
+
+Both:
+Bucket storage with unique key and associated metadata
+Host static web content and media
+
+
+S3:
+Does not support conditional updates
+• Ability to set policies to automatically migrate objects across
+storage classes
+• Destination for notifications:
+• Amazon SNS
+• Amazon SQS
+• AWS Lambda
+
+
+Google Cloud Storage:
+Name of an object does not affect performance or scalability of accessing bucket objects
+• Supports conditional updates for PUT and DELETE
+• Post notifications to:
+• Target URL
+• Webhook that handles notification payload
+
+
+Comparison of EBS to Compute Engine Persistent Disks
+
+Both:
+Built-in redundancy, snapshotting, and ease of disk detachment and reattachment
+
+
+Elastic Block storage:
+An EBS volume can be attached to only one EC2 instance at a time
+• Attach up to 40 disk volumes to a Linux instance
+• Available in only one region by default
+• Local disks are called instance store or ephemeral store
+• Can either HDD or SSD
+
+Compute engine persistant disks
+Persistent disks in read-only mode can be attached to multiple instances simultaneously
+• Attach up to 128 disk volumes
+• Snapshots are global and can be used in any region without
+additional operations or charges
+• Local disks are referred to as local SSD
+• SSD only and do incur additional expense
+
+
+Comparison of Glacier & S3 to Cloud Storage Nearline
+
+All 3:
+Infrequently accessed cold storage
+
+
+S3 Standard - Infrequent Access Storage
+First-byte latency period of several milliseconds
+• Minimum storage 30 days
+
+Glacier:
+Fist byte latency period of 4 hours
+min storage 90 says
+
+Cloud storage nearline
+First-byte latency period of approximately 3 seconds
+• Minimum storage 30 days
+
+Comparison of EFS to ZFS/Avere
+
+
+ZFS/Avere
+
+Used as a bridge to ensure latency and elasticity
+• Specific technology to handle storage bursting from on premise environments to GCP
+• Provides application access to Google Cloud Storage via NAS protocols (NFS & SMB)
+
+##################################################
+Lecture: Pricing Model Comparison
+##################################################
+
+
+
+
+
+##################################################
+Lecture: Best Use Cases
+##################################################
+When to Use S3 or Google Cloud Storage
+
+Do you need to support conditional updates?
+Google Cloud Storage Supports conditional updates for PUT and DELETE
+
+Do you need to migrate across storage classes?
+In Amazon S3 you can also set policies to automatically migrate objects across storage classes
+
+
+When to Use EBS or Compute Engine Persistent Disks
+
+Do you need to attach to multiple instances?
+Persistent disks in read-only mode can be attached to multiple instances simultaneously
+
+How many disk volumes do you need to attach?
+In Compute Engine you can attach up to 128 disk volumes
+
+Do you need snapshots to have global availability?
+Compute Engine persistent disk snapshots are global and can be used in any region without additional operations or charges
+
+Do you need disks to be HDD or SSD?
+With Amazon, disks can either be HDD or SSD
+
+
+When to Use S3, Glacier, or Cloud Storage Nearline
+
+How often do you need to retrieve objects?
+Less than 30 days use S3 Standard – Infrequent Access Storage or Cloud Storage Nearline
+
+What are your latency requirements?
+Amazon S3 Standard - Infrequent Access Storage has an advertised first-byte latency period of several milliseconds
+
+When to Use EFS or ZFS/Avere
+
+Do you want to involve a 3rd party solution?
+EFS is the more comprehensive solution out of the box
+
+
+##################################################
+Database
+##################################################
+##################################################
+Lecture: Service and Feature Comparison
+##################################################

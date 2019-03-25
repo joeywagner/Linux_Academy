@@ -1,0 +1,3309 @@
+##################################################
+RHCSE Excercises, Hands on Labs and Quizs
+##################################################
+##################################################
+Exercise: Understanding umask
+##################################################
+1. View current umask permissions and then, for the current shell session, set umask permissions to 0.
+
+[root@localhost ~]# umask
+0022
+[root@localhost ~]# umask 0
+[root@localhost ~]# umask
+0000
+Note: umask adds leading zeros
+
+2. Navigate to the /tmp directory and touch file1 and mkdir dir1. View current permissions.
+
+[root@localhost user]# cd /tmp
+[root@localhost tmp]# touch file1
+[root@localhost tmp]# mkdir dir1
+[root@localhost tmp]# ls -l
+total 0
+drwxrwxrwx. 2 root root 6 May  1 11:10 dir1
+-rw-rw-rw-. 1 root root 0 May  1 11:10 file1
+3. Mask permissions for the "other" users to write a file when created, then touch file2 and view permissions.
+
+Tip: If file permissions start at 666, and you want to "remove/mask" permissions for other users to write, then you need to subtract the octoal notation representing write permissions, which is 2.
+
+[root@localhost tmp]# umask 002
+[root@localhost tmp]# touch file2
+[root@localhost tmp]# ls -l
+total 0
+drwxr-xr-x. 2 root root 6 May  1 11:10 dir1
+-rw-rw-rw-. 1 root root 0 May  1 11:10 file1
+-rw-rw-r--. 1 root root 0 May  1 11:13 file2
+4. Mask write access for group members and the write for "other" permissions, then touch file3 and view permissions.
+
+[root@localhost tmp]# umask 022
+[root@localhost tmp]# touch file3
+[root@localhost tmp]# ls -l
+-rw-r--r--. 1 root root 0 May  1 11:16 file3
+[root@localhost tmp]#
+5. Mask read and write permissions for the owner of a file, then touch file4 and mkdir dir3 and view permissions.
+
+[root@localhost tmp]# umask 600
+[root@localhost tmp]# touch file4
+[root@localhost tmp]# mkdir dir3
+[root@localhost tmp]# ls -l
+total 0
+d--xrwxrwx. 2 root root 6 May  1 11:18 dir3
+----rw-rw-. 1 root root 0 May  1 11:18 file4
+6. Mask all permissions, including execute permissions, on new directories, then touch file5.
+
+[root@localhost tmp]# umask 777
+[root@localhost tmp]# touch file5
+Tip: Setting umask 666 would mask all permissions on files but leave execute on directories. Directories need execute permissions for someone to change into the directory.
+
+7. Mask read/write access for group for non-privileged users and other permissions and make these changes persistent.
+
+[root@localhost ]#vim /etc/bashrc
+if [ $UID -gt 199 ] && [ "`id -gn`" = "`id -un`" ]; then
+    umask 066
+else
+    umask 022
+fi
+[root@localhost ]#vim /etc/profile
+if [ $UID -gt 199 ] && [ "`id -gn`" = "`id -un`" ]; then
+    umask 066
+else
+    umask 022
+fi
+Note: For users to have sudo privileges (be a privileged user), they generally have a primary group of "wheel". What the script says, is if the primary/effective group does not match the username (and remember generally users primary/effective group will be the same as the username), then consider the user a privileged user.
+
+
+##################################################
+Exercise: Archiving and Compressing Files
+##################################################
+1. While working in the user root's home directory, create a tar archive of the entire /var/log directory and name the tar file "logs.tar".
+
+[root@localhost ~]# tar -cvf logs.tar /var/log
+2. List the contents of the tar archive into standard output.
+
+[root@localhost ~]# tar -tf logs.tar
+3. Using gzip, compress the tar file.
+
+[root@localhost ~]# gzip logs.tar
+4. Extract the contents of the "log.tar.gz" directory into /root/var/log.
+
+[root@localhost ~]# tar -zxvf logs.tar.gz
+5. Using star, create an archive of the contents of the newly-created log directory in /root/var/log into a file called "user-logs.tar". Be sure to preserve the entire path structure so that the archive indicates exactly where the file belonged. i.e. /root/var/log should preceed every file in the archive.
+
+[root@localhost ~]# yum install star
+[root@localhost ~]# star -c /root/var/log f=user-logs.tar
+star: 205 blocks + 0 bytes (total of 2099200 bytes = 2050.00k).
+6. List the contents of the tar file.
+
+[root@localhost ~]# star -t f=user-logs.tar
+7. Compress the star archive into a bzip2 compressed file.
+
+[root@localhost ~]# yum install bzip2
+[root@localhost ~]# bzip2 user-logs.tar
+8. Decompress the star archive into the /root home directory.
+
+[root@localhost root]# star -bz -x f=user-logs.tar.bz2
+
+
+
+##################################################
+Exercise: Finding Files with locate and find
+##################################################
+1. Download and install the locate utility.
+
+[root@anthony1 ~]# yum install mlocate
+2. Using the locate utility, search for the "motd" file on the system.
+
+[root@localhost ~]# locate motd
+/etc/motd
+...
+3. Add a new user on the system called "mary".
+
+[root@localhost ~]# useradd mary
+4. Using the find utility, remove all files owned by mary.
+
+[root@localhost ~]# find / -user mary -exec rm {} \;
+5. Using the find utility, find all files that were modified in the last 3 days.
+
+[root@localhost ]# find / -mtime -3
+
+
+##################################################
+Quiz: Understand and use essential tools
+##################################################
+
+
+
+
+
+
+
+
+##################################################
+Exercise: Working with Systemd and Targets
+##################################################
+1. Install the httpd package.
+
+[root@localhost]# yum install httpd
+2. View all active targets on the system.
+
+[root@localhost]# systemctl list-units --type=target
+3. View all targets installed on the disk.
+
+[root@localhost]# systemctl list-units --type=target --all
+4. Display the current default target.
+
+[root@localhost]# systemctl get-default
+5. Change the default target to the multi-user target if the multi-user target is available.
+
+[root@localhost]#  systemctl list-units --type=target | grep multi-user.target
+multi-user.target   loaded active active Multi-User System
+root@localhost]# systemctl set-default multi-user.target
+6. View all available systemd configuration units.
+
+[root@localhost]# systemctl -t help
+7. Find the status of the sshd service.
+
+[root@localhost]# systemctl status sshd.service
+8. List all active service unit configuration files.
+
+[root@localhost]# systemctl --type=service
+or
+
+[root@localhost]# systemctl list-units --type=service
+9. Determine if the httpd service is active.
+
+[root@localhost]# systemctl is-active httpd
+10. Determine if the httpd service is enabled, and, if it is not, enable it.
+
+[root@localhost]# systemctl is-enabled httpd
+11. View enabled and disabled settings for all units of the type "service".
+
+[root@localhost]# systemctl list-unit-files --type=service --all
+12. List all service unit configuration files, whether they are active or not.
+
+[root@localhost]# systemctl list-units --all
+OR
+[root@localhost]# systemctl list-units --type=service --all
+
+
+
+##################################################
+Exercise: Recovering the Root Password
+##################################################
+1. Start or reboot a system to get into the boot menu.
+
+2. Press any key to stop the auto selection of a menu item.
+
+3. Ensure the kernel you intend to boot into is highlighted and press the E key to edit the entry.
+
+4. Navigate to the "linux16" kernel line and hit the End key to go to the end of the line.
+
+5. Append rd.break to the linux16 kernel line.
+
+6. Hit Ctrl + X to continue.
+
+7. The system boots into an emergency mode that has the /sysroot directory mounted as read only.
+
+8. Mount the /sysroot directory with read and write permissions.
+
+mount -oremount, rw /sysroot
+9. Switch into chroot jail and set the /sysroot as the root file system.
+
+chroot /sysroot
+10. Reset the root password.
+
+passwd root
+11. Clean up. Make sure that all unlabled files get relabeled during the boot process for SELinux.
+
+touch /.autorelabel
+12. Exit chroot jail.
+
+exit
+13. Exit the initramfs debug shell.
+
+exit
+Troubleshooting Notes
+If the password did not change after reboot:
+
+The touch /.autorelabel command was missed or performed incorrectly.
+The file system was not mounted as read/write so the changes made were not persistent.
+
+
+
+
+
+
+##################################################
+Exercise: Interrupting the Boot Process to Change the Boot Target
+##################################################
+1. Start or reboot a system to get to the boot menu.
+
+2. Press any key to stop the auto selection of a GRUB item.
+
+3. Ensure the kernel you intend to boot into is highlighted and press the E key to edit the entry.
+
+4. Navigate to the "linux16" kernel line and hit the End key to go to the end of the line.
+
+5. Append the new target to the linux16 kernel line.
+
+systemd.unit=rescue.target
+6. Continue booting into the system with Ctrl + X.
+
+
+
+
+
+##################################################
+Exercise: Powering Off Systems
+##################################################
+1. Using the shutdown command, schedule a shutdown for five minutes from now and notify all users on the system of the shutdown.
+
+[root@localhost]# shutdown +5 shutdown messages goes here
+2. Using the shutdown command, reboot the machine immediately without delay.
+
+[root@localhost]# shutdown -r now
+[root@localhost]# shutdown -r
+3. Using systemctl, shutdown the system.
+
+[root@localhost]# shutdown now
+or
+
+[root@localhost]# shutdown +0
+Alternatively, not using the shutdown command:
+
+[root@localhost]# init 0
+[root@localhost]# systemctl halt
+4. Schedule the system for a shutdown at 1:00 A.M. in the morning.
+
+[root@localhost]# shutdown 01:00
+5. Cancel the scheduled 1:00 A.M. shutdown.
+
+[root@localhost]# shutdown -c
+6. Using systemctl, reboot the the system.
+
+[root@localhost]# systemctl reboot
+7. Using any method of your choice, power off the system.
+
+[root@localhost]# systemctl halt
+[root@localhost]# systemctl poweroff
+[root@localhost]# shutdown -P
+[root@localhost]# init 0
+
+
+
+
+
+
+##################################################
+Exercise: Pgrep, pkill, kill and jobs
+##################################################
+
+
+Exercise 1
+1. As the root user, create a job running in the background of your current terminal. Execute the script for that program process to be created.
+
+[root@localhost]# (while true; do echo "My program" > ~/output.file; done) &
+2.
+View the current jobs running in the background of your terminal.
+
+[root@localhost ~]# jobs
+[1]-  Running   ( while true; do< echo -n "My program" >> ~/output.file; done ) &
+3. Stop the process from running, without killing the process, using the kill command.
+
+[root@localhost]# kill -SIGSTOP %1 (%1 is the job number, if the job was 2 it would be %2)
+4. View the stopped jobs in the background.
+
+[root@localhost ~]# jobs
+[1]+  Stopped     ( while true; do echo -n "My program" >> ~/output.file; done ) &
+5. Start the process again using the kill command.
+
+[root@localhost]# kill -SIGCONT %1
+6. Kill the process without allowing any blocking of the kill command.
+
+[root@localhost]# kill -SIGKILL %1
+Exercise 2
+1. Download and install the httpd service.
+
+[root@localhost]# yum install httpd
+2. Start the httpd service (or ensure that it is running).
+
+[root@localhost]# systemctl start httpd
+3. As the root user, grep for all processes that are running as the root user and display the process names.
+
+[root@localhost]# pgrep -u root -l
+4. As the user user, start the vi program at the terminal.
+
+[user@localhost]# vi
+5. As the root user, in your second terminal window, grep for all processes running under the user "user" and include the process names.
+
+[root@localhost ~]# pgrep -u user -l
+3690 dconf-service
+3694 vim
+...etc additional output cut off.
+6.
+As the root user, grep for the "httpd" process.
+
+[root@localhost]# pgrep httpd
+7. As the root user, kill all of the "user" user's processes and boot that user from the system.
+
+[root@localhost ~]# w
+ 14:15:59 up 20:55,  4 users,  load average: 0.00, 0.01, 0.05
+USER     TTY        LOGIN@   IDLE   JCPU   PCPU WHAT
+user pts/0     Mon22    2:58m  0.05s  0.05s bash
+[root@localhost ]# pkill -t pts/0
+This kills every process started from the user's terminal, but it does not boot the user. Now find all running processes left, which should either be Bash or SSH.
+
+[root@localhost]# pgrep -u user
+[root@localhost]# pkill -u user ssh
+
+
+
+
+
+##################################################
+Exercise: Nice, renice and ps
+##################################################
+1. Ensure that you have the httpd package installed on the system.
+
+[root@localhost]# yum install httpd
+2. Ensure the httpd service is not running.
+
+[root@localhost]# systemctl stop httpd
+3. Start the httpd service with the most favorable nice possible.
+
+[root@localhost]# nice -n -20 httpd
+4. View the current nice of the httpd service using the ps command and grep command together.
+
+[root@localhost]# ps axo pid,comm,nice | grep httpd
+or
+[root@localhost]# ps axo pid,comm,nice --sort=-nice | grep httpd
+This allows you to sort by nice level.
+
+5. Renice all httpd processes and set the nice level to 0.
+
+[root@localhost]# renice -n 0 $(pgrep httpd)
+
+
+
+
+##################################################
+Exercise: Monitoring and Calculating CPU Load Averages
+##################################################
+1. View the system uptime and load average.
+
+[root@localhost ~]# uptime
+ 09:53:07 up 16:32,  3 users,  load average: 1.02, 1.00, 0.69
+2. View the system uptime and load average in such a way that it also shows what users are logged in to the system and what the user is doing.
+
+[root@localhost ~]# w
+ 09:53:37 up 16:33,  3 users,  load average: 1.01, 1.00, 0.70
+USER     TTY        LOGIN@   IDLE   JCPU   PCPU WHAT
+user  pts/1     09:18    1.00s  0.10s  5.32s /usr/libexec/gnome-terminal-server
+3. Using the proc file system and wc, display the number of processors your system has. This is important to calculate the load average of the system.
+
+[root@localhost]# grep "model name" /proc/cpuinfo | wc -l
+4. Calculate the 1, 5, and 15 minute CPU load averages for the system.
+
+There are two processes as a result of our previous command.
+
+[root@localhost ~]# grep "model name" /proc/cpuinfo | wc -l
+2
+For each, processor 1 is 100%. If you have 1 processor and your load average is 1.2 then your load is greater than 100%. If you have 2 processors and your load is 2 then your load is 100%.
+
+[root@localhost ~]# uptime
+ 09:42:20 up 16:21,  3 users,  load average: 1.04, 0.72, 0.35
+Per CPU load average calculation formula: load average / # of cpu
+Per CPU load average calculation 1 Minute load average: 1.04 / 2 = 52%
+Per CPU load average calculation 5 Minute load average: .72 / 2 = 36%
+Per CPU load average calculation 15 Minute load average: .35 / 2 = 17.5%
+
+
+
+
+
+
+##################################################
+Exercise: Working with top
+##################################################
+
+
+1. On a LinuxAcademy.com lab server start the top program.
+
+[root@localhost]# top
+2. The top program shows all running processes on the system but sorts them. Using your keyboard, browse up and down to view the processes.
+
+Use the keyboard up and down arrows to navigate
+
+3. Sort all processes by memory percentage.
+
+Press "Shift" + "M"
+
+4. Sort all processes by CPU usage.
+
+Press "Shift" + "P"
+
+5. Renice the process for the script started at the beginning of the exercise. The command is  "bash", as displayed in the top program. Set the nice level to -20.
+
+Press the "R" key, enter the process id of the process you want to renice, and set the nice level.
+
+6. Kill the bash script using top.
+
+Press the "K" key and enter the process ID of the process you wish ti kill, then press enter.
+
+
+
+
+##################################################
+Exercise: Virtual Machines
+##################################################
+1. Download and install the proper packages to manage virtual machines on a Red Hat 7 machine. Ensure you install the GUI as well as the command line interface.
+
+[root@localhost]# yum install virt-manager qemu-kvm qemu-img libvirt libvirt-python python-virtinst libvirt-client
+or
+
+[root@localhost]# yum grouplist hidden // This will show virtualization packages
+[root@localhost]# yum groupinstall "Virtualization Client"
+[root@localhost]# yum groupinstall "Virtualization Tools"
+[root@localhost]# yum groupinstall "Virtualization Platform"
+Note: This can prevent you from having to memorize packages or as a backup in the exam if you forget the packages required.
+
+2. Ensure that the virtual machine services start when the system boots and is currently running.
+
+[root@localhost]# systemctl start libvirtd
+[root@localhost]# systemctl enable libvirtd
+Tip: In the exam, if you have to start a service, ALWAYS enable the service.
+
+3. Create a CentOS-based virtual machine using the GUI.
+
+[root@localhost]# virt-manager
+4. Configure the virtual machine to auto start whenever the system starts.
+
+[root@localhost]# virsh
+[root@localhost]# virsh autostart vmname
+or, at the virsh commandline:
+
+Virsh # autostart vmname
+5. Reboot and test the configuration.
+
+[root@localhost]# reboot
+
+
+
+
+
+##################################################
+Hands-on Lab: Kill or Adjust Process Priorities
+##################################################
+Overview
+In this lab, we identify and report on high CPU/memory utilization and kill or adjust process priorities.
+
+
+In order to do that, we need to generate a process that will cause high CPU utilization. Before you begin the scenario below, be sure to do the following. Note that this is also covered in the video and lab guide.
+
+
+1. Create a file with the following command:
+
+
+dd if=/dev/urandom of=testfile count=20 bs=1024k
+
+2. Create a file called cputest.sh with the following code:
+
+
+#!/bin/sh
+i=0
+while [ 1 ]
+do
+md5sum testfile
+i=`expr $i + 1`
+echo "Iteration: $i"
+done
+
+3. Make the script executable:
+
+
+chmod 755 cputest.sh
+
+4. Run the command:
+
+
+sh ./cputest.sh
+
+##########################
+
+Killing a Command Process
+There are a few different ways we can end a command and lower the CPU usage. The first is by
+using CTRL+C, which will appear as ^C on the terminal, to kill the ./cputest.sh script in our
+first tab. This command will end any process running in the terminal; in this case, cputest.sh.
+[user@linuxacademy ~]# ./cputest.sh
+ ^C
+
+The other is to find the Process ID (PID) for the command in tab 2. Using top, search for
+cputest.sh under COMMAND. Execute a kill command for the PID, replacing 156241 with the
+PID used on your server. Note that each time you restart a process, the PID will change.
+[user@linuxacademy ~]# kill 15624
+
+Go back to the first tab. You will see that the program has stopped.
+The last way we can kill the process is to use the killall command. This is especially useful
+if we have multiple of the same command running at once.
+[user@linuxacademy ~]# killall cputest.sh
+All versions of the program will end.
+
+Changing a Process’ Priority
+Now say that instead of wanting to kill a process, we want to change its priority. Using the nice
+Kill or Adjust Process Priorities Linux Academy + Cloud Assessments
+
+command allows you to do just that. The default priority for a program is 20, with numbers
+higher than 20 being lower priorities, and numbers lower than 20 being higher priorities. For
+now, we are going to change the process to be a lower priority with the nice command in tab 1.
+[user@linuxacademy ~]# nice -12 ./cputest.sh
+
+Go to tab 2 and enter the top command. The -12 will change the PR for cputest.sh to 32, and
+the number 12 will appear in the NI column. Now, you can continue to change the priority for
+the process by using renice. For this example, we’ll make the new priority 32. Remember, a
+larger number means a lesser priority. Note that the PID will have changed; this is because we
+ended the process before and are starting a new run of the process. Use the new PID for your
+process in the following command:
+[user@linuxacademy ~]# renice 16 –p 10851
+
+A noticeable difference between nice and renice is that in nice must have a - before the
+number to create a lesser priority. With renice we do not add - before the number to create a
+lower priority. In renice a - before the number will subtract it from the default NI number, 20,
+making it smaller instead of larger, and therefore raising the priority.
+This time let’s change the priority to higher than twenty. Now, normal users will not be able to
+complete this action. To allow the change in priority, use the sudo command in conjunction with
+renice and enter the root user password. This will be the same password you created when
+starting the lab.
+
+[user@linuxacademy ~]# sudo renice -16 –p 10851
+[sudo] password for user: $PASSWORD
+18051 (process ID) old priority 16, new priority -16
+Now the NI will appear as -16 and the PR number will be 4. To reset the priority back to 20,
+simply enter 0, making it so there is no value added or subtracted from the default priority.
+[user@linuxacademy ~]# renice 0 –p 10851
+Review
+Having completed this lab, you now have the know-how to
+
+
+
+##################################################
+Quiz: Operate running systems
+##################################################
+
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Managing Logical Volumes on Red Hat Enterprise 7
+##################################################
+SCENARIOS
+One of the virtual servers in your environment needs to have changes made to the storage subsystem.
+The new physical drives have been provisioned (installed) and are available for your use.
+You will need to identify the new drives and incorporate them into the existing Logical Volumes and be sure they are mounted for use.
+
+
+Preparing the Physical Disks
+The physical disks we are working with are located in the /dev directory, xvdf and xvdg. Navigate to /dev and list the contents.
+
+We are creating LVM partitions on each disk with gdisk. For this lab, each partition should be the size of the entire disk.
+To partition the xvdf disk, run:
+gdisk xvdf
+
+The terminal prompts you to enter a command. Since we are creating a new partition, that command is `n`.
+Input the letter and press enter.
+We want to use the default settings for Partition number, First sector, and Last sector. For the Hex code
+or GUID, we want to set it to 8e00. This outputs:
+Changed type of partition to ‘Linux LVM’
+And then asks for another command. We want to write our changes with the w command. Con rm the changes.
+Repeat this process for the xvdg disk
+
+Initializing the Disk
+Although our disks are listed as Linux LVM disks, they still need to be initialized as a physical volume for use by the LVM. To do this, we use the pvcreate command:
+[root@linuxacademy1 ~]# pvcreate /dev/xvdf1 /dev/xvdg1 To view the physical volumes, run:
+[root@linuxacademy1 ~]# pvdisplay
+
+
+Creating a Volume Group
+A volume group is just that — a group of physical volumes that make up the allocated disk space for the logical volume.
+We are creating a volume group called battlestar that uses both of the disks we just initialized:
+[root@linuxacademy1 ~]# vgcreate battlestar /dev/xvdf1 /dev/xvdg1
+
+Similar to before, you can run vgdisplay to see your available volume groups
+
+Creating the Logical Volume
+With our physical volumes prepared and in a volume group, we can now create a logical volume. This uses space from the volume group, which is mapped to the physical disks.
+To create the logical volume:
+
+ lvcreate -n galactica -L 20G battlestar
+
+The -n  flag, above, denotes the name of the logical volume; we choose galactica because it  t our naming
+convention; you do not need to follow the same conventions.
+The -L  ag de nes the size to allocate for the volume. battlestar is the name of the volume group. Following the above trend, run lvdisplay to display the logical volumes you have.
+With this  nished, we can use the volume as we would a regular disk.
+
+Viewing Your Work
+You can view your  nished device in the `/dev` directory. Here you should  nd a directory called *battlestar*:
+[root@linuxacademy1 ~]# cd battlestar [root@linuxacademy1 ~]# ls
+From here, you can see the galactica logical volume.
+
+
+Mounting the Logical Volume
+While still in the /dev/battlestar directory, we need to create a  le system and mount the disk. Commonly, when creating a  lesystem on LVM disks, we use the XFS  le system. This allows LVM to
+scale up and down with data, although it does not allow you to shrink your device size. Create the  le system:
+[root@linuxacademy1 ~]# mkfs -t xfs /dev/battlestar/galactica
+
+We now want to create the /mnt/mydir directory and mount our  lesystem:
+
+[root@linuxacademy1 ~]# mkdir /mnt/mydir
+[root@linuxacademy1 ~]# mount /dev/battlestar/galactica /mnt/mydir To see if the logical volume has mounted successfully run:
+[root@linuxacademy1 ~]# df -h
+You should see your mounted system; this can also be added to the /etc/fstab for it to act as a regular file system.
+
+Extending Logical Volumes and Volume Groups
+There is a third available device in the /dev directory that we did not use thus far in this lab, xvdj. We want to take this disk and add it to our initial volume group (battlestar). Then, we want to extend our logical volume (galactica) to be 60G in size by using all three physical disks available.
+Partition the new disk:
+[root@linuxacademy1 ~]# gdisk xvdj
+Run partprobe to register the new partition with the kernel.
+
+Create the physical volume:
+[root@linuxacademy1 ~]# pvcreate /dev/xvdj1
+We now need to add this to the battlestar group. To do this, we use the vgextend command:
+[root@linuxacademy1 ~]# vgextend battlestar /dev/xvdj1
+Should you now run vgdisplay, the VG size is close to 60G, versus the 40 we had initially set.
+We also want to expand the galactica logical volume to use the whole volume group — all 59.99 GiB. This means we want to extend the volume to be 59G in size:
+[root@linuxacademy1 ~]# lvextend -L 59G /dev/battlestar/galactica Alternately, we can add the 39G of additional storage with the following command:
+[root@linuxacademy1 ~]# lvextend -L +39G /dev/battlestar/galactica
+
+Note the addition of the addition sign (+) to the beginning of the size.
+Uselvdisplaytocon rmthesizechanges.However,ifyourundf -hyouseethattheoperatingsystem still only recognizes 20G of that. We need to use XFS’s grow  le system command to extend this:
+[root@linuxacademy1 ~]# xfs_growfs /mnt/mydir Run df -h again to con rm.
+
+
+
+##################################################
+Hands-on Lab: Add and Remove Volumes, Partition Disks, and Work with LVM
+##################################################
+SCENARIOS
+You have been tasked with adding a new mount point on a server that uses lvm to combine 2 drives to create a folder to store logfiles in. You wont use all of the space on the new drives so that it can be used for something else later if required.
+
+The 2 new drives are located at /dev/sdb and at /dev/sdc (change as required)
+
+As a result, you will need to create new LVM partitions on both disks and initialize them for use with LVM. Once initialized, you will create the volume group to hold the new disks and ensure it has been successfully created.
+
+In order to test, create a 10gb Logical Volume and then confirm successful creation of the expected size. Format the filesystem and mount it and then verify it appears as intended.
+
+Once testing is complete, you will completely undo all of the Logical Volumes and Volume Groups you created above in order to make the entire amount of newly provisioned space available for use. Verify all groups have been removed.
+
+
+Add Partitions
+Log in to the lab using the credentials provided on the Hands-on Lab page. Switch to the root user (sudo su -).
+Two additional devices have been added to this lab for use with LVM. To see what these devices are called, run:
+[root@LinuxAcademy ~]# ls /dev/xvd* /dev/xvdf and /dev/xvdj are the two additional disks.
+Check to see if gdisk is installed: [root@LinuxAcademy ~]# gdisk
+    -bash: gdisk: command not found
+Since it is not, we need to install it before we can continue:
+[root@LinuxAcademy ~]# yum install gdisk
+Now we can use gdisk to partition and format one of our provided drives. We’ll start with /dev/
+xvdf:
+[root@LinuxAcademy ~]# gdisk /dev/xvdf
+This drops us into the gdisk con guration prompt, wherein we’ll be asked to specify the settings we want to use for our disk.
+In this instance, we want to create a new partition, set the partition number to 1, partition the entire provided device, set the  file system type to LVM (8e00), and write the changes to the disk.
+Many of these settings are the default.
+
+Creating new GPT entries.
+    Command (? for help): n
+    Partition number (1-128, default 1):
+    First sector (34-41943006, default = 2048) or {+-}size{KMGTP}:
+    Last sector (2048-41943006, default = 41943006) or {+-}
+    size{KMGTP}:
+    Current type is 'Linux filesystem'
+    Hex code or GUID (L to show codes, Enter = 8300): 8e00
+    Changed type of partition to 'Linux LVM'
+    Command (? for help): w
+    Final checks complete. About to write GPT data. THIS WILL
+    OVERWRITE EXISTING
+    PARTITIONS!!
+    Do you want to proceed? (Y/N): y
+    OK; writing new GUID partition table (GPT) to /dev/xvdf.
+    The operation has completed successfully.
+We can now partition our second device. We again want to do this with gdisk:
+[root@LinuxAcademy ~]# gdisk /dev/xvdj
+
+As before, we want to create a new partition using the defaults for partition number,  rst sector, and last section.
+We also want to continue using the Linux  le system for our  le system type. Write the changes and proceed:
+
+Command (? for help): n
+    Partition number (1-128, default 1):
+    First sector (34-41943006, default = 2048) or {+-}size{KMGTP}:
+    Last sector (2048-41943006, default = 41943006) or {+-}
+    size{KMGTP}:
+    Current type is 'Linux filesystem'
+    Hex code or GUID (L to show codes, Enter = 8300): 8e00
+    Changed type of partition to 'Linux LVM'
+    Command (? for help): w
+    Final checks complete. About to write GPT data. THIS WILL
+    OVERWRITE EXISTING
+    PARTITIONS!!
+    Do you want to proceed? (Y/N): y
+    OK; writing new GUID partition table (GPT) to /dev/xvdj.
+    The operation has completed successfully.
+
+Create the Physical Volumes, Volume Group, and Logical Volume
+
+Prepare the partitions by initializing them as a physical volume using the pvcreate command:
+[root@LinuxAcademy ~]# pvcreate /dev/xvdf1 /dev/xvdj1 Physical volume "/dev/xvdf1" successfully created Physical volume "/dev/xvdj1" successfully created
+Con rm that the volumes have been created, and review their settings:
+[root@LinuxAcademy ~]# pvdisplay
+
+
+Here we can see that both 20 GB volumes, /dev/xvdf1 and /dev/xvdj1 are available as physical volumes for LVM to use.
+We can now create our volume group, comprised of both physical volumes. We called our olume group log_vg:
+[root@LinuxAcademy ~]# vgcreate log_vg /dev/xvdf1 /dev/xvdj1 Volume group "log_vg" successfully created
+
+Review the volume group:
+[root@LinuxAcademy ~]# vgdisplay
+
+Notice that the size of our volume group is about 40 GB – a combination of the two 20 GB volumes we included in the group.
+Now we can create our logical volume from this volume group. To do this, we use the lvcreate command:
+[root@LinuxAcademy ~]# lvcreate -n log_lv -L 10GB log_vg Logical volume "log_lv" created.
+The -n  ag denotes that we’re naming the logical volume log_lv, while the -L  ag sets the volume size – in this case, 10 GB. log_vg references back to the volume group we are working from.
+Review the newly-created logical volume:
+[root@LinuxAcademy ~]# lvdisplay
+
+From here, we can see our logical volume’s path (/dev/log_vg/log_lv), as well as general information about the logical volume itself, including name, size, write access, creation host, and more. Copy the LV path.
+We now need to format our volume to work as an ext4  le system:
+[root@LinuxAcademy ~]# mkfs -t ext4 /dev/log_vg/log_lv Create a mount point for the  le system:
+[root@LinuxAcademy ~]# mkdir /mnt/log_files Finally, mount the  le system:
+[root@LinuxAcademy ~]# mount /dev/log_vg/log_lv /mnt/log_files/ Con rm that the  le system mounted successfully:
+[root@LinuxAcademy ~]# df -h
+
+Remove the Logical Volume
+Now that we know how to create and mount logical volumes, we also need to review how to remove them. To do this, we can remove the volume group:
+[root@LinuxAcademy ~]# vgremove log_vg
+Do you really want to remove volume group "log_vg" containing 1
+
+logical volumes? [y/n]: y
+      Logical volume log_vg/log_lv contains a filesystem in use.
+However, this fails, outputting the error Logical volume log_vg/log_lv contains a filesystem in use..Thisisbecauseour lesystemisstillmounted.Unmountthe lesystem:
+[root@LinuxAcademy ~]# umount /mnt/log_files/ We also need to remove the logical volume:
+[root@LinuxAcademy ~]# lvremove /dev/log_vg/log_lv
+Do you really want to remove active logical volume log_lv? [y/n]:
+y Logical volume "log_lv" successfully removed
+Finally, we can rerun the vgremove command to remove the volume group:
+[root@LinuxAcademy ~]# vgremove log_vg
+Volume group "log_vg" successfully removed
+Con rm the removal of the volume with the vgdisplay command: [root@LinuxAcademy ~]# vgdisplay
+Although we’ve removed the volume group, we do still have the two physical volumes left over. We can remove these, too, using the pvremove command:
+[root@LinuxAcademy ~]# pvremove /dev/xvdf1 /dev/xvdj1
+Labels on physical volume "/dev/xvdf1" successfully wiped Labels on physical volume "/dev/xvdj1" successfully wiped
+Review
+We have now walked through the process of setting up physical volumes, volume groups, and logical volumes using a series of Logical Volume Manager commands, as well as how to remove these volumes and groups when  nished with them. With LVM, we can merge physical disks into single volumes, easily resize our devices, and —if needed— manage large farms of disks.
+
+
+##################################################
+Exercise: Working with MBR Partitions
+##################################################
+1. Start a Red Hat 7 lab server and mount a new disk. Once completed, log in to the system and navigate to the /dev directory.
+
+[root@localhost] cd /dev
+2. Create a primary Linux partition that is 500M in size on the attached disk.
+
+[root@localhost] fdisk xvdf
+
+Command (m for help): n
+Partition type:    p   primary (0 primary, 0 extended, 4 free)    e   extended Select (default p): p
+Partition number (1-4, default 1):
+First sector (2048-2097151, default 2048):
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-2097151, default 2097151): +500M
+Partition 1 of type Linux and of size 500 MiB is set
+Command (m for help):
+3. Set the partition type for a basic Linux volume.
+
+Command (m for help): t
+Selected partition 1 Hex code (type L to list all codes): 83
+Changed type of partition 'Linux' to 'Linux' (notice the default is already Linux).
+
+4. Write changes and exit.
+
+Command (m for help): w
+The partition table has been altered! Calling ioctl() to re-read partition table. Syncing disks.
+5. Issue the command to list the block device and it's UUID (Universally Unique Identifier).
+
+[root@localhost] blkid
+6. Create an XFS filesystem on the disk.
+
+[root@localhost] mkfs -t xfs /dev/xvdf1
+7. Mount the partition to /mnt/mymount.
+
+[root@localhost] mkdir /mnt/mymount
+[root@localhost] mount /dev/xvdf1 /mnt/mymount
+[root@localhost] df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/xvda2      6.0G  3.9G  2.1G  65% /
+devtmpfs        482M     0  482M   0% /dev
+tmpfs          497M     0  497M   0% /dev/shm
+tmpfs           497M   13M  484M   3% /run
+tmpfs          497M     0  497M   0% /sys/fs/cgroup
+/dev/xvdf1 497M   26M  472M   6% /mnt/mymount
+8. Configure the disk to mount to the /mnt/mymount mount point automatically during system boot.
+
+[root@localhost] blkid
+/dev/xvdf1: UUID="" TYPE="xfs"
+[root@localhost] vim fstab
+UUID="your uuid here" /mnt/mymount xfs defaults 1 1
+[root@localhost] umount /mnt/mymount
+[root@localhost] mount -a
+[root@localhost] df -h
+Filesystem Size Used Avail Use% Mounted on
+/dev/xvda2 6.0G 3.9G 2.1G 65% /
+devtmpfs 482M 0 482M 0% /dev
+tmpfs 497M 13M 484M 3% /run
+tmpfs 497M 0 497M 0% /sys/fs/cgroup
+/dev/xvdf1 497M 26M 472M 6% /mnt/mymount
+
+
+
+
+
+
+##################################################
+Exercise: Working with GPT Partitions
+##################################################
+1. Start a Red Hat 7 LinuxAcademy.com lab server and "mount" a new disk. Once completed, log in to the system and navigate to the /dev directory.
+
+[root@localhost]# cd /dev
+2. Create a primary Linux partition that is 500M in size on the attached disk.
+
+[root@localhost]# gdisk xvdf
+GPT fdisk (gdisk) version 0.8.6
+Partition table scan:
+  MBR: not present
+  BSD: not present
+  APM: not present
+  GPT: not present
+Creating new GPT entries.
+Command (? for help): n
+Partition number (1-128, default 1):
+First sector (34-2097118, default = 2048) or {+-}size{KMGTP}
+Last sector (2048-2097118, default = 2097118) or {+-}size{KMGTP}: +500M
+Current type is 'Linux filesystem'
+Hex code or GUID (L to show codes, Enter = 8300): 8300
+Changed type of partition to 'Linux filesystem'
+3. Write changes and exit.
+
+Command (? for help): w
+Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+PARTITIONS!!
+Do you want to proceed? (Y/N): Y
+OK; writing new GUID partition table (GPT) to xvdf.
+The operation has completed successfully.
+4. Issue the command to list the block device and its UUID.
+
+[root@localhost]# blkid
+5. Create an XFS filesystem on the disk.
+
+[root@localhost]# mkfs -t xfs /dev/xvdf1.
+6. Mount the partition to /mnt/mymount.
+
+[root@localhost]# mkdir /mnt/mymount
+[root@localhost]# mount /dev/xvdf1 /mnt/mymount
+7. Configure the disk to mount automatically during system boot to the /mnt/mymount mount point.
+
+[root@localhost]# blkid
+/dev/xvdf1: UUID="" TYPE="xfs"
+[root@localhost]# vim /etc/fstab
+UUID="your uuid here" /mnt/mymount        xfs     defaults 1 1
+[root@localhost]# umount /mnt/mymount
+[root@localhost]# mount -a
+[root@localhost]# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/xvda2      6.0G  3.9G  2.1G  65% /
+devtmpfs        482M     0  482M   0% /dev
+tmpfs           497M   13M  484M   3% /run
+tmpfs           497M     0  497M   0% /sys/fs/cgroup
+/dev/xvdf1      497M   26M  472M   6% /mnt/mymount
+
+
+
+##################################################
+Exercise: Creating Persistent Mounts with File System Labels
+##################################################
+1. Attach a LinuxAcademy.com external device (mount) to the lab server.
+
+2. Create two partitions, 500M each, on the device.
+
+[root@localhost dev]# fdisk /dev/xvdfWelcome to fdisk (util-linux 2.23.2).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+Command (m for help): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p):
+Using default response p
+Partition number (1-4, default 1):
+First sector (2048-2097151, default 2048):
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-2097151, default 2097151): +500M
+Partition 1 of type Linux and of size 500 MiB is set
+
+Command (m for help): n
+Partition type:
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended
+Select (default p):
+Using default response p
+Partition number (2-4, default 2):
+First sector (1026048-2097151, default 1026048):
+Using default value 1026048
+Last sector, +sectors or +size{K,M,G} (1026048-2097151, default 2097151): +500M
+Partition 2 of type Linux and of size 500 MiB is set
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+3. On the "xvdf1" partition, create an XFS file system.
+
+[root@localhost dev]# mkfs -t xfs xvdf1
+4. On the "xvdf2" partition, create an EXT4 file system.
+
+[root@localhost dev]# mkfs -t ext4  xvdf2
+5. On the "xvdf1" partition, label the filesystem as "filesystem1".
+
+[root@localhost dev]# xfs_admin -L "filesystem1" /dev/xvdf1
+[root@localhost dev]# xfs_admin -l /dev/xvdf1
+label = "filesystem1"
+6. On the "xvdf2"partition, label the filesystem as "filesystem2".
+
+[root@localhost dev]# tune2fs -L "filesystem2" /dev/xvdf2
+or
+[root@localhost dev]# e2label /dev/xvdf2
+filesystem2
+7. Create a persistent mount in the /etc/fstab file with defaults as the mount option for the xvdf1 partition and use the mount point /mnt/mount1.
+
+LABEL=filesystem1 /mnt/mount1 xfs defaults 1 2
+8. Create a persistent mount in the /etc/fstab file with defaults as the mount option for the xvdf2 partition and use the mount /mnt/mount2. Set the fsck check to 2 and the dump to 1.
+
+LABEL=filesystem2 /mnt/mount2 ext4 defaults 1 2
+
+
+
+##################################################
+Exercise: Creating Swap Space
+##################################################
+1. Create a LinuxAcademy.com lab server and mount a disk.
+
+2. The LinuxAcademy.com lab servers already have swap enabled, so first run swapoff to disable the /swapfile in the /etc/fstab file.
+
+[root@localhost etc]# swapoff -a
+Note: swapoff -a disables the swap space listed in /etc/fstab.
+
+3. Remove the entry /swapfile from the /etc/fstab file.
+
+[root@localhost etc# vim fstab
+#
+# /etc/fstab
+# Created by anaconda on Fri Oct 17 18:33:48 2014
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=668dbd02-c201-44bc-be76-f606fc9ab8db /                       xfs     defaults        1 1
+4. Verify there is no current swap space available
+
+[root@localhost etc]# free -m
+             total       used       free     shared    buffers     cached
+Mem:           992        225        767         12          1         82
+-/+ buffers/cache:        141        851
+Swap:            0          0          0
+5. Using fdisk, create a partition that uses the entire /dev/xvdf disk; make sure to label the device correctly.
+
+[root@localhost dev]# fdisk xvdf
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x69baf224.
+
+Command (m for help): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p):
+Using default response p
+Partition number (1-4, default 1):
+First sector (2048-2097151, default 2048):
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-2097151, default 2097151):
+Using default value 2097151
+Partition 1 of type Linux and of size 1023 MiB is set
+
+Command (m for help): t
+Selected partition 1
+Hex code (type L to list all codes): 82
+Changed type of partition 'Linux' to 'Linux swap / Solaris'
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+6. Format the device with the swap signature.
+
+[root@localhost dev]# mkswap /dev/xvdf1
+Setting up swapspace version 1, size = 1047548 KiB
+no label, UUID=5713eae2-de6b-4485-af5d-1c659765cd92
+7. Activate the swap space.
+
+[root@localhost dev]# swapon /dev/xvdf1
+[root@localhost dev]# free -m
+             total       used       free     shared    buffers     cached
+Mem:           992        216        776         12          0         79
+-/+ buffers/cache:        135        857
+Swap:         3046          0       3046
+8. Add swap space to the /etc/fstab so that it is a persistent mount.
+
+[root@localhost dev]# blkid
+/dev/xvda2: UUID="" TYPE="xfs" PARTUUID="9146b810-9a31-4c10-a206-01b0bbaca807"
+/dev/xvdf1: UUID="" TYPE="swap"
+Grab the UUID to mount the swap device.
+[root@localhost dev]# vim /etc/fstab
+#
+# /etc/fstab
+#
+UUID=668dbd02-c201-44bc-be76-f606fc9ab8db /                       xfs     defaults        1 1
+UUID=YOUR-UUID swap  swap    defaults 0 0
+9. Activate the swap space that is added in the /etc/fstab file.
+
+Since we activated it manually already, this manually deactivates it, then activates it based on the /etc/fstab file.
+
+[root@localhost dev]# swapoff /dev/xvdf1
+Now activate it persistently based off the /etc/fstab entry:
+
+[root@localhost dev]# swapon -a
+-a activates all swap spaces located in the /etc/fstab.
+
+
+
+
+##################################################
+Exercise: Creating Swap Space from a LVM Volume
+##################################################
+1. Start the LinuxAcademy.com lab server and mount a new disk; ensure LVM utilities are installed on the system.
+
+[root@localhost #] yum install lvm2
+2. Create a partition that uses the entire disk space on /dev/xvdf.
+
+[root@localhost dev]# fdisk /dev/xvdf
+Welcome to fdisk (util-linux 2.23.2).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+Device does not contain a recognized partition table.
+Building a new DOS disklabel with disk identifier 0x0631abd7.
+Command (m for help): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+
+Select (default p):
+Using default response p
+Partition number (1-4, default 1):
+First sector (2048-2097151, default 2048):
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-2097151, default 2097151):
+Using default value 2097151
+Partition 1 of type Linux and of size 1023 MiB is set
+Command (m for help): t
+Selected partition 1
+Hex code (type L to list all codes): 8e
+Changed type of partition 'Linux' to 'Linux LVM'
+Command (m for help): w
+The partition table has been altered!
+Calling ioctl() to re-read partition table.
+Syncing disks.
+3. Create a physical volume and a new volume group named "battlestar" out of the /dev/xvdf1 partition.
+
+[root@localhost #] pvcreate /dev/xvdf1
+[root@localhost #] vgcreate battlestar /dev/xvdf1
+4. Create a new LVM volume that is approximately 500M in size (generally, you want it to be 2 to 2.5 times the size of your physical memory; however, this is a lab environment).
+
+[root@localhost dev]# lvcreate -n swap -L 500M battlestar
+5. Format the new LVM volume with a swap signature.
+
+[root@loclhost dev] #  mkswap /dev/battlestar/swap
+Setting up swapspace version 1, size = 511996 KiB
+no label, UUID=679ea5a2-c652-458a-8726-6e3970d1f58f // (Note use your UUID provded not the one here)
+6. Add an entry into the /etc/fstab file using the UUID of the LVM device to create a persistent swap mount.
+
+#
+# /etc/fstab
+UUID=668dbd02-c201-44bc-be76-f606fc9ab8db /                       xfs     defaults        1 1
+UUID=679ea5a2-c652-458a-8726-6e3970d1f58f swap swap defaults 0 0
+7. Run the swapon command that enables all swap entires in the /etc/fstab file.
+
+[root@localhost dev]# swapon -a
+8. Verify swap space is working.
+
+[root@localhost dev]# free -m
+or
+
+[root@localhost dev]# swapon -s
+[root@localhost dev]# cat /proc/swaps
+9. Reboot and test.
+
+[root@localhost dev]# reboot
+
+
+
+
+##################################################
+Quiz: Configure local storage
+##################################################
+
+
+
+
+
+
+
+
+
+##################################################
+Exercise: Filesystem ACLs
+##################################################
+1. Create a second user on the system called "starbuck".  Open a second terminal window for the lab server, and connect as the user starbuck. Ensure you're working as a priviledged user (sudo) or root user while perofrming the lab. The starbuck user will be used to test setting the permissions.
+
+[root@localhost ~]# useradd starbuck; passwd starbuck
+Changing password for user starbuck.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+2. Navigate into the /tmp directory, create two new directories named "dir1" and "dir2" and two files called "file1" and "file2".
+
+[root@localhost tmp]# mkdir {dir1,dir2}; touch {file1,file2}
+3. Idenity if any of the files currently have extended access control lists associated with them.
+
+[root@localhost tmp]# ls -l
+total 0
+drwxr-xr-x. 2 root root 6 May  5 20:00 dir1
+drwxr-xr-x. 2 root root 6 May  5 20:00 dir2
+-rw-r--r--. 1 root root 0 May  5 20:00 file1
+-rw-r--r--. 1 root root 0 May  5 20:00 file2
+Note: The files have base ACLs but do not have extended ACLs. We know they do not have extended ACLs because of the lacl of "+" at the end of the permissions listed.
+
+4. Set an ACL for the starbuck user to read and write for file1.
+
+[root@localhost tmp]# setfacl -m u:starbuck:rw file1
+[root@localhost tmp]# getfacl file1
+# file: file1
+# owner: root
+# group: root
+user::rw-
+user:starbuck:rw-
+group::r--
+mask::rw-
+other::r--
+5. Set the mask on the file1 to read only, then as the starbuck user, attempt to execute the following command: echo "test" > /tmp/file1. Why does this fail?
+
+[root@localhost tmp]# setfacl -m m::r file1
+[root@localhost tmp]# getfacl file1
+# file: file1
+# owner: root
+# group: root
+user::rw-
+user:starbuck:rw- #effective:r--
+group::r--
+mask::r--
+other::r--
+Starbuck's Terminal
+[starbuck@localhost tmp]$ echo "test "> /tmp/file1
+-bash: /tmp/file1: Permission denied
+Summary: Starbuck was unable to write to file1 even though they had an ACL with rw, because the mask was setting the "maximum" permissions to r and was masking w.
+
+6. Set the default permissions on dir1 to read, write and execute for the starbuck user; execute only if it is a directory.
+
+[root@localhost tmp]# setfacl -d -m u:starbuck:rwX dir1
+[root@localhost tmp]# getfacl dir1
+# file: dir1
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+default:user::rwx
+default:user:starbuck:rwx
+default:group::r-x
+default:mask::rwx
+default:other::r-x
+7. Using setfacl, change the "other" permissions to none on file1.
+
+[root@localhost tmp]# setfacl -m o::- file1
+[root@localhost tmp]# ls -l
+total 8
+drwxr-xr-x+ 2 root root 6 May  5 20:00 dir1
+drwxr-xr-x. 2 root root 6 May  5 20:00 dir2
+-rw-rw----+ 1 root root 0 May  5 20:00 file1
+-rw-r--r--. 1 root root 0 May  5 20:00 file2
+8. Remove the default permissions from dir1.
+
+[root@localhost tmp]# setfacl --remove-default dir1
+[root@localhost tmp]# getfacl dir1
+# file: dir1
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+9. Remove all ACLs on file1.
+
+[root@localhost tmp]# setfacl --remove-all file1
+[root@localhost tmp]# getfacl file1
+# file: file1
+# owner: root
+# group: root
+user::rw-
+group::r--
+other::---
+
+
+
+
+#install aproprate packages
+yum install nfs-utils nfslock rpcbind
+
+#make a file to share
+mkdir /nfs_shared
+
+#create a file
+touch /nfs_shared/testfile
+
+ifconfig
+
+#go to the second lab server
+vim /etc/hosts
+#add the ip from server 1
+
+<ip_address> <server_name>
+
+#do the samething for server 1
+
+
+vim /etc/exports
+/nfs_shared  <hostname>(rw,sync,no_root_squash,no_subtree_check)
+
+
+#go to our second server
+yum install nfs_utils nfslock rpcbind -y
+
+mkdir /nfs_shared
+
+
+#go to server 1
+systemctl restart nfs
+
+exportfs -a
+
+#to show whats being shared
+exportfs
+
+#go to server 2
+mount -t nfs <hostname>:/nfs_shared /nfs_shared
+
+df -h
+
+touch /nfs_shared/test1
+
+umount /nfs_share
+
+vim /etc/fstab
+<sourcehostname>:/nfs_shared  nfs  rsize:8192,wsize=8192,timeo=14,intr
+
+
+mount /nfs_shared
+
+
+
+##################################################
+Hands-on Lab: Create and Mount SAMBA and CIFS Fileshares
+##################################################
+#Start with the server
+yum install samba samba-client samba-common cifs-utils -y
+
+cd /etc/samba
+
+#we want to look at both
+cat smb.conf.example
+
+#The default configuration that is basically ok for implementation
+vim smb.conf
+[global]
+#workgroup is a windows term, if youre going to be working with windows you want to share the workgroup name, it makes the communication easier to discover using netbios
+#security is how we are going to determine who has access to what
+#passwd backend, tdbsam is the default for all samba dbs, youre rarely if ever going to change it
+#load printers, its either yes or no
+
+[homes]
+#this give you the ability to share users home directories by default
+
+
+[printers]
+#path, is the path for the cups spool, /var/spool/cups
+
+[print$]
+#this gives us the ability to share specific share drivers
+#path = /var/lib/samba/drivers
+
+#This next section we are building
+[myshare]
+  comment = This is our test share
+  path = /myshare
+  guest ok = no
+  writeable = yes
+
+:wq
+
+#just because you have reed/write access to a share the underlying file system permissions are going to apply
+
+mkdir /myshare
+chmod 777 /myshare
+echo "test file" > /myshare/testfile.txt
+
+#the two commands below are for selinux
+setenforce 0
+getenforce
+
+
+cd /etc/samba/smb.conf
+#change load printers to no
+
+:wq
+
+testparm  #this will test our configuration items in out smb.conf
+
+systemctl start smb
+
+systemctl start nmb
+
+systemctl status -l smb
+
+systemctl status -l nmb
+
+
+
+nmblookup SAMBA
+
+
+
+
+
+##################################################
+Hands-on Lab: Extending Existing Logical Volumes
+##################################################
+
+ fdisk /dev/xvdf
+n
+p
+enter
+enter
+w
+
+
+pvcreate /dev/xvdf1
+pvdisplay
+
+
+vgcreate battlestar /dev/xvdf1
+lvcreate -n galactica -L 1G battlestar
+
+
+mkfs -t xfs /dev/battlestar/galactica
+
+mkdir -p /mnt/myvolume
+
+mount /dev/battlestar/galactica  /mnt/myvolume
+
+cd /mnt/myvolume; touch {file1,file2}
+
+
+#adding another disk
+gdisk /dev/xvdg
+n
+enter
+enter
+enter
+8e00
+w
+y
+
+
+pvcreate /dev/xvdg1
+
+
+vgextend battlestar /dev/xvdg1
+
+
+vgdisplay
+
+
+#moving physical extents
+
+pvmove /dev/xvdf1
+
+
+vgreduce battlestar /dev/xvdf1
+
+
+#extending logical volumes
+lvextend -L 5G /dev/battlestar/galactica
+
+
+df -h
+
+xfs_growfs /mnt/myvolume
+
+
+
+
+
+
+##################################################
+QUIZ: CREATE AND CONFIGURE FILE SYSTEMS
+##################################################
+
+1) In Red Hat 7 EXT4, file systems have support for ACLs but generally need the option specified during mount time.
+
+Incorrect
+
+Correct answer
+True
+
+2) Which of the following command(s) can be used to reduce the volume group by removing the /dev/xvdg1 partition from the volume group "battlestar"?
+
+Correct
+
+Correct answer
+vgreduce battlestar /dev/xvdg1
+
+3) Which of the following commands would be used to extend an existing logical volume with the name of "galactica" to a total size of 5GiB if the current size is 1GiB using the volume group "battlestar"?
+
+Correct
+
+Correct answer
+lvextend -L 5G /dev/battlestar/galactica
+
+4) Some file systems must be mounted with ACL support enabled for ACLs to work on the filesystem.
+
+Correct
+
+Correct answer
+True
+
+5) Which file system has built-in ACL support?
+
+Correct
+
+Correct answer
+XFS
+
+6) Which command(s) are used when dealing with LVM?
+
+Correct
+
+Correct answer
+vgextend, vgcreate
+
+7) After using lvextend to increase the size of a logical volume, how can you modify the file system to reflect the changes? Assume the device is mounted at /mnt/myvolume and the logical volume is /dev/battlestar/galactica.
+
+Correct
+
+Correct answer
+xfs_growfs /mnt/myvolume
+
+8) Which command would move the physical extents off of the /dev/xvdg1 physical volume disk onto another physical volume associated with the battlestar volume group?
+
+Correct
+
+Correct answer
+pvmove /dev/xvdg1
+
+
+##################################################
+Exercise: Scheduling Tasks on Red Hat Systems
+##################################################
+1. Write a command that issues a statement to the system log with the current uptime information. Schedule this command to run one minute from now.
+
+[root@localhost]# at now +1 minute
+at> logger "The system current uptime is $(uptime)"
+2. Wait one minute and check the system log to view the entry.
+
+[roo@localhost]# journalctl -f
+3. Create a new at job that runs at teatime but performs the same log entry as step 1.
+
+[root@localhost]# at teatime
+at> logger "The system current uptime is $(uptime)"
+4. Turn the uptime script from step one into an executable script file located in /home/user/ called "uptimelog".
+
+[root@localhost]# vim /home/user/uptimelog
+logger "The system current uptime is $(uptime)"
+[root@localhost]# chmod +x /home/user/uptimelog
+5. Schedule an anacronjob so that the script runs every 5 days if it has not currently been run; make sure the job name is "uptimelog".
+
+Note: place the entry at the top of the other entries so it is run first.
+
+[root@localhost]# vim /etc/anacrontab
+5       0       uptimelog       /home/user/uptimelog
+6. Run all anacronjobs regardless of their last run timestamp.
+
+[root@localhost] anacron -f
+7. View the anacron timestamps for your uptimelog job.
+
+[root@localhost]# cat /var/spool/anacron/uptimelog
+
+
+
+
+
+##################################################
+Exercise: Working with Time Services
+##################################################
+1. Log in to the lab server and determine which timezone should be used based on your location.
+
+[root@localhost]# tzselect
+or
+
+[root@localhost]# timedatectl list-timezones
+2. Update the system's timezone to America/Chicago.
+
+[EXAMPLE]
+[root@localhost]# timedatectl set-timezone America/Chicago
+3. Update the system time to match your current local time. Remember you need to turn off NTP first for this to work.
+
+[root@localhost]# timedatectl set-ntp false
+[root@localhost]# timedatectl set-time 02:00:00
+4. Display current time and date information.
+
+[root@localhost]# timedatectl
+5. Update the NTP time services to be 0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, and 3.pool.ntp.org.
+
+[root@localhost]# vim /etc/chrony.conf
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+server 0.pool.ntp.org iburst
+server 1.pool.ntp.org iburst
+server 2.pool.ntp.org iburst
+server 3.pool.ntp.org iburst
+6. Turn NTP back on and apply the changes to the chronyd service.
+
+[root@localhost]# timedatectl set-ntp true
+[root@localhost]# systemctl restart chronyd
+7. Verify the new time servers are properly working with chronyd.
+
+[root@localchost] chronyc sources -v
+
+
+
+
+
+##################################################
+Exercise: Working with Yum
+##################################################
+1. Updating your system is an important part of being a systems administrator. However, sometimes just blindly performing a "yum update" on your system to update all packages is ill-advised. Issue the proper command to view all packages that have an available update, but do not update all packages.
+
+[root@localhost ~]# yum check-update
+2. Search the yum repository for the Apache web server.
+
+[root@localhost ~]# yum search apache http server
+3. View information about the Apache web server package.
+
+[root@localhost ~]# yum info httpd
+4. Download and install the Apache web server.
+
+[root@localhost ~]# yum install httpd
+5. List the installed packages and verify the Apache web server is in fact installed.
+
+[root@localhost ~]# yum list installed httpd
+or
+
+[root@localhost ~]# yum list installed | grep httpd
+6. Issue the proper command to show all packages that provide the /var/www/html directory.
+
+[root@localhost ~]# yum provides /var/www
+or
+
+[root@localhost ~]# yum whatprovides /var/www
+7. Issue the command to update the Apache web server package.
+
+[root@localhost ~]# yum update httpd
+8. Remove the Apache web server package.
+
+[root@localhost ~]# yum remove httpd
+
+
+
+##################################################
+Exercise: Working with Yum Groups
+##################################################
+1. List available groups.
+
+[root@localhost ~]# yum group list
+2. List all packages that belong to the "Security Tools" group. When looking at this, what packages will be installed?
+
+[root@localhost ~]# yum group info "Security Tools"
+3. Install the "Security Tools" group.
+
+[root@localhost ~]# yum group install "Security Tools"
+4. Undo the install of the "Security Tools" group.
+
+[root@localhost ~]# yum history
+Loaded plugins: amazon-id, rhui-lb
+ID     | Login user               | Date and time    | Action(s)      | Altered
+-------------------------------------------------------------------------------
+    17 |                    | 2015-05-02 11:10 | Install        |    3
+    16 |                    | 2015-05-02 10:55 | Erase          |    1
+    15 |                    | 2015-05-02 10:51 | Install        |    5
+
+[root@localhost ~]# yum history info 17
+Loaded plugins: amazon-id, rhui-lb
+Transaction ID : 17
+Begin time     : Sat May  2 11:10:49 2015
+Begin rpmdb    : 666:2f8b0d9de8e03b35809bb3623696ba61ab589deb
+End time       :            11:10:51 2015 (2 seconds)
+End rpmdb      : 669:84e7861867838346e3c843a204e1ad2b5a0cc4ba
+User           :
+Return-Code    : Success
+Command Line   : group install Security Tools
+[root@localhost ~]# yum history undo 17
+
+
+
+##################################################
+Exercise: Working with RPM
+##################################################
+1. Download the "nano" RPM package using yumdownloader and change the package name to nano.rpm for this exercise.
+
+[root@localhost ~]# yumdownloader nano
+
+[root@localhost ~]# mv nano-2.3.xxxxx.rpm nano.rpm
+
+2. Install the nano program.
+
+[root@localhost ~]# rpm -ivh nano.rpm
+
+3. Query to see if nano is in fact installed.
+
+[root@localhost ~]# rpm -qa nano
+
+4. List all files installed as part of nano.
+
+[root@localhost ~]# rpm -ql nano
+
+5. List all documentation parts of the RPM package and it's location.
+
+[root@localhost ~]# rpm -qd nano
+
+6. Remove the nano package.
+
+[root@localhost ~]# rpm -e nano
+
+7. Query to see if the package is installed.
+
+[root@localhost ~]# rpm -qa | grep nano
+
+
+##################################################
+Exercise: Managing Third Party Repositories
+##################################################
+1. Using the yum config manager, enable the epel repository without gpg.
+
+yum-config-manager --add-repo=http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+[root@anthony1 ~]# yum-config-manager --add-repo=http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+2. View and verify that the repository is in fact enabled on the system.
+
+[root@anthony1 ~]# yum repolist
+
+Loaded plugins: amazon-id, rhui-lb
+
+repo id                                                          repo name                                                                  status
+
+dl.fedoraproject.org_pub_epel_7_x86_64_                          added from: http://dl.fedoraproject.org/pub/epel/7/x86_64/                 7,753
+
+rhui-REGION-rhel-server-rh-common/7Server/x86_64                 Red Hat Enterprise Linux Server 7 RH Common (RPMs)                           131
+
+repolist: 7,884
+
+3. Using yum config manager, disable the epel repository.
+
+[root@anthony1 ~]# yum-config-manager --disable dl.fedoraproject.org_pub_epel_7_x86_64_
+
+4. Verify the repository is disabled.
+
+[root@anthony1 ~]# yum repolist
+
+5. Using yum config manager, delete the repository from the system.
+
+There is not a command for removing the repository only disabling.
+
+[root@anthony1 yum.repos.d]# rm -rf /etc/yum.repos.d/dl.fedoraproject.org_pub_epel_7_x86_64_.repo
+
+6. Instead of using config manager, manually create the repo config file and enable the repository with the repo name "fedora-epel.repo".
+
+[root@anthony1 yum.repos.d]# vim /etc/yum.repos.d/fedora-epel.repo
+
+[EPEL]
+
+name=Fedora EPEL 7
+
+baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+enable=1
+
+gpgcheck=0
+
+7. View and verify that the repository is in fact enabled on the system.
+
+[root@anthony1 yum.repos.d]# yum repolist
+
+Loaded plugins: amazon-id, rhui-lb
+
+EPEL                                                                                                                       | 4.4 kB  00:00:00
+
+(1/2): EPEL/group_gz                                                                                                       | 257 kB  00:00:00
+
+(2/2): EPEL/primary_db                                                                                                     | 4.2 MB  00:00:01
+
+(1/2): EPEL/updateinfo                                                                                                     | 370 kB  00:00:00
+
+(2/2): EPEL/pkgtags                                                                                                        | 1.4 MB  00:00:00
+
+repo id                                                              repo name                                                              status
+
+EPEL                                                                 Fedora EPEL 7                                                          7,753
+
+rhui-REGION-rhel
+
+8. Download the GPG key from the epel repository and configure the .repo file to use the GPG key
+
+[root@localhost]# cd /etc/pki/rpm-gpg; wget https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+
+[root@localhost]# vim /etc/yum.repos.d/dl.fedoraproject.org_pub_epel_7_x86_64_.repo
+
+[dl.fedoraproject.org_pub_epel_7_x86_64_]
+
+name=added from: http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+enabled=1
+
+gpgcheck=1
+
+
+
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+Note: You can also take the URL of the gpg key and import it with the rpm command [root@localhost]# rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+
+9. Disable the repository on the system and verify that it is disabled.
+
+[EPEL]
+
+name=Fedora EPEL 7
+
+baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
+
+enable=0
+
+gpgcheck=0
+
+[root@anthony1 yum.repos.d]# yum repolist
+
+10. Remove the repository from the system.
+
+[root@anthony1 yum.repos.d]# rm -rf /etc/yum.repos.d/dl.fedoraproject.org_pub_epel_7_x86_64_.repo
+
+
+
+##################################################
+Exercise: Creating a Local Repository
+##################################################
+1. Mount the rhel-server-7.1-x86_64-dvd.iso located in /root home directory to /repos/local (be sure to create /repos/local).
+
+[root@localhost ~]# mkdir -p /repos/local
+
+[root@localhost ~]# mount -o loop rhel-server-7.1-x86_64-dvd.iso /repos/local
+
+mount: /dev/loop0 is write-protected, mounting read-only
+
+2. Manually create the repo configuration file in the proper location with the proper information, assume no GPG.
+
+[root@localhost ~]# vim /etc/yum.repos.d/local.repo
+
+[local-repo]
+
+name=Red Hat Linux Local Repo
+
+baseurl=file:///repos/local
+
+enabled=1
+
+gpgcheck=0
+
+3. For testing, disable or delete all other repos except the local repo. Please note, if you delete them you will need to rebuild your lab server.
+
+4. Clean previous yum repo information (clean the cache)
+
+[root@localhost ~]# yum clean all
+
+5. View all enabled repos.
+
+[root@localhost ~]# yum repolist
+
+6. Download and install emacs and, on the install screen, verify it is being installed from the local-repo.
+
+[root@localhost ~]# yum install emacs
+
+7. Remove emacs.
+
+[root@localhost ~]# yum remove emacs
+
+8. Configure the local.repo to use GPG to verify that the packages are legitimate. (This is most commonly used for remote repositories. However, for the exercise it will be easier since it's all included as part of the iso and local machine.)
+
+[local-repo]
+
+name=Red Hat Linux Local Repo
+
+baseurl=file:///repos/local
+
+enabled=1
+
+gpgcheck=1
+
+ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+
+
+##################################################
+Exercise: Networking
+##################################################
+1. View the current hostname.
+
+[root@anthony1 ~]# hostname
+
+2. Set temporary hostname in the shell to "myserver.domain.com".
+
+[root@anthony1 ~]# hostname myserver.domain.com; exec bash
+
+3. For the "System eth0" connection, add the following DNS for the resolv.conf file 8.8.8.8. Ensure the changes are persistent after a reboot.
+
+[root@anthony1 ~]# nmcli con mod "System eth0" +ipv4.dns 8.8.8.8
+
+4. Modify your hostname to ensure it is a permanent change on the system (persistent and will survive reboots).
+
+Note: You can edit the /etc/hostname file or perform the following command.
+
+[root@anthony1 ~]# hostnamectl set-hostname myserver.domain.com
+
+5. Add a file based host entry so the domain linuxacademy.com points to 10.0.0.1
+
+[root@anthony1 ~]# echo "10.0.0.1 linuxacademy.com" >> /etc/hosts
+
+[root@anthony1 ~]# getent hosts linuxacademy.com
+
+10.0.0.1        linuxacademy.com
+
+6. Open the correct file that determines the lookup order of DNS (file based vs external).
+
+[root@anthony1 ~]# vim /etc/nsswitch.conf
+
+7. View TCP ports on the system that are listening for connections and view ports that have established connections.
+
+[root@anthony1 ~]# ss -tan
+
+
+
+
+
+##################################################
+Hands-on Lab: Initializing Network Connectivity
+##################################################
+SCENARIOS
+A new virtual machine was provisioned in your environment with a 2nd network interface that remains unconfigured.
+You will need to assign an IPv4 address and subnet mask as well as applying a public DNS server and then verify the interface is available.
+
+<ipaddress>:5901
+
+pw: vncpass
+
+virt-manager
+
+click start
+
+login: root/linuxacademy
+
+nmcli connection show eth0 | less
+
+nmcli con mod eth0connection.autoconnect yes
+
+nmcli connection up eth0
+
+ping 192.168.122.1  #that is our host
+
+yum -y install httpd   #lets try installing a web server, we can see that we can not download the packages
+
+curl google.com  #we can see that we can not resolve the host, we need to add a name server to our resolv.conf
+
+vim /etc/resolv.conf
+nameserver 192.168.122.1
+
+:wq
+
+curl google.com  #we can see that its now resolving google.com
+
+yum -y install httpd
+
+
+
+##################################################
+Hands-on Lab: Update the Kernel Package to Ensure a Bootable System
+##################################################
+SCENARIOS
+One of the systems in your inventory needs to have a kernel update applied. However, it cannot use the YUM package management systems to apply the update.
+You will need to manually download the RPM file for the appropriate kernel update and then apply it at the command line.
+
+While in most instances, you can update your Red Hat system’s kernel with yum, downloading and installing the latest kernel using RPM is an alternative method for keeping your kernel up-to-date.
+yum -y update kernel  #this is not how we are going to be updating
+
+#Obtaining a new kernel
+yum clean all
+yum list kernel
+
+#Download the kernel
+yumdownloader kernel
+
+#Install the kernel
+rpm -ivh kernel-3.10.0-693.21.1.el7.x86_64.rpm
+
+##We ran into a issue with dependencies
+yum localinstall kernel-3.10.0-693.21.1.el7.x86_64.rpm
+
+##Or
+yum install linux-firmware dracut
+
+#Verify that the vmlinux for the kernel is in /boot  , if its not you can create it with the dracut command
+
+reboot
+
+uname -r  #to get the kernel version
+
+#to designate what kernel to boot from
+
+
+yum list kernel
+
+grub-set-default 1  #0 denotes the first kernel in the list
+
+reboot
+
+uname -r
+
+
+
+##################################################
+Hands-on Lab: Installing and Updating Software
+##################################################
+SCENARIOS
+You have been given responsibility for a new server. This server needs to have some packages installed for use as well as maintenance done on the available repositories for system installation.
+
+This server will be used for local development of websites and should have a local text-only web browser (elinks) as well as the Apache web server. Verify the Apache installation once complete by starting the appropriate service and using the 'elinks' browser to display the default site on 'localhost'.
+
+Additional software not available in the standard repositories is needed. The repository is called 'epel' and will need to be created in a file called 'epel.repo' in the appropriate repository directory on your system (see the repository configuration text in the description for this lab). Once you have the repository created, you will need to import the repository keyfile to verify packages with when you install them (see the repository key file command in the description above).
+
+After updating your system to verify the new repository, search for a package called 'audacity' and display information about that package and verify the repository it is available from.
+
+Overview
+This lab covers how to find and install a new package onto a server, how to check that a package installed correctly, and how to add and delete packages from a server. For this lab, we will be extracting the packages Apache and Audacity, as well as deleting and then re-creating an EPEL package.
+
+
+Repository Configuration:
+
+
+[epel]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+Repository Key File Command:
+
+
+wget -O /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 https://getfedora.org/static/352C64E5.txt
+
+
+###### Installing and Updating Software
+
+yum -y update
+
+yum install elinks
+
+yum install httpd
+
+yum provides /etc/hosts  #to see that packages provides the hosts file
+
+#check to see if apache has been installed
+ll /var/www
+
+systemctl httpd #start the apache server
+
+elinks http://localhost  #we can verify that its running
+
+#verify that the epel repo is installed
+ll /etc/yum.repos.d
+
+#we are going to delete the repo to recreate it
+rm /etc/yum.repos.d/epel*
+
+#recreate the repo
+vim /etc/yum.repos.d/epel.repo
+[epel]
+name=Extra Packages for Enterprise Linux 7 - $basearch
+
+baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+
+:wq
+
+#the gpg key is located here
+/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+#delete the key
+rm /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+#add the key
+
+sudo rpm --import http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+
+#clean out the cache
+yum clean all
+
+yum search audacity
+
+#lets check and see what repo audacity is coming from
+yum info audacity
+
+#remove apache
+yum remove httpd
+
+
+
+
+
+##################################################
+Quiz: Deploy, configure, and maintain systems
+##################################################
+1) The /var/www/html directory has mysteriously shown up on your system. What command could you issue to determine what software package created it? Please note: This does not search your system but instead searches a repository for files that are created by the package.
+
+Correct
+
+Correct answer
+yum provides /var/www/html
+
+2) Repos listed in the /etc/yum.repos.d/ must end in .repo for them to be recognized.
+
+Correct
+
+Correct answer
+True
+
+3) By default, chronyd is the default ntp deamon on a Red Hat Enterprise 7 install.
+
+Correct
+
+Correct answer
+True
+
+4) Given the following group info, what packages were installed as part of the group? Group: Security Tools Group-Id: security-tools Description: Security tools for integrity and trust verification. Default Packages: =scap-security-guide +openscap -hmaccalc openscap-utils
+
+Correct
+
+Correct answer
+scap-security-guide
+
+5) Yum packages cannot be removed without having the package dependencies removed when the package was originally installed.
+
+Correct
+
+Correct answer
+True
+
+6) The "at" utility wasn't installed on your Red Hat distribution by default. After running yum install at, you notice that the at service is not running. Which command(s) could you issue to start the service?
+
+Correct
+
+Correct answer
+systemctl start atd, systemctl restart atd
+
+7) The command systemctl set-default multi-user.target changes the system so that your default target at boot time is the multi-user.target.
+
+Correct
+
+Correct answer
+True
+
+8) Which yum command, when provided the proper argument, displays all packages on the system installed by yum?
+
+Correct
+
+Correct answer
+yum list
+
+9) Where are anacron jobs configured?
+
+Correct
+
+Correct answer
+/etc/anacrontab
+
+10) A script located in the /etc/cron.daily directory runs how often?
+
+Correct
+
+Correct answer
+Once a day
+
+11) You've just updated the server sources in the /etc/chrony.conf configuration file. How do you apply the changes so NTP is not looking at those sources?
+
+Correct
+
+Correct answer
+systemctl restart chronyd
+
+12) If you forget yum commands on the exam, which are ways to get help?
+
+Correct
+
+Correct answer
+yum help, man yum, info yum
+
+13) Which command(s) displays all documentation files associated with the pykickstart package?
+
+Correct
+
+Correct answer
+rpm -qd pykickstart
+
+14) What is the best method for setting the timezone?
+
+Correct
+
+Correct answer
+Use timedatectl set-timezone
+
+15) You've successfully modified the /etc/chronyd.conf configuration file to reflect a new ntp server. How do you view and make sure the changes applied correctly?
+
+Correct
+
+Correct answer
+chronyc sources
+
+16) Select the true statement(s) given symbols as they relate to packages and groups.
+
+Correct
+
+Correct answer
+- means the package is not installed and will not be installed if the group is installed or updated, = Means the package is installed and was installed as part of the group
+
+17) List all enabled and disabled repos on your Red Hat machine.
+
+Correct
+
+Correct answer
+yum repolist all
+
+18) If a package installed on the system needs a required cron job scheduled, where is the cron config file for the package located when the package is downloaded and installed?
+
+Correct
+
+Correct answer
+/etc/cron.d/
+
+19) The user "anthony" is located in the /etc/deny.cron file. This means that all users on the system except anthony are denied access to use the cron utility.
+
+Correct
+
+Correct answer
+False
+
+20) Which command and option would be used to display the current kernel version?
+
+Correct
+
+Correct answer
+uname -r
+
+21) Non-privileged users on the Linux system can schedule anacron jobs.
+
+Correct
+
+Correct answer
+False
+
+22) How do you view the status of time synchronization?
+
+Correct
+
+Correct answer
+timedatectl
+
+23) You've installed the httpd package on your Red Hat Linux system. How might you view all available or associated documentation locations that were installed with the package?
+
+Correct
+
+Correct answer
+rpm -qd httpd
+
+24) The tzselect command is a tool used to help "guide" you through choosing which timezone you should configure your server for.
+
+Correct
+
+Correct answer
+True
+
+25) How can you determine if the httpd package is installed on a system?
+
+Correct
+
+Correct answer
+yum list installed httpd, yum list installed | grep httpd
+
+26) Which yum command(s) shows all currently installed kernels and all available kernels for a system?
+
+Correct
+
+Correct answer
+yum info kernel, yum list kernel
+
+27) The "at" utility wasn't installed on your Red Hat distribution by default. After running yum install at, you notice that the at service is not running. After starting the service you want to be sure that the atd service is enabled to start when the system boots. Which command(s) should you issue to enable this?
+
+Correct
+
+Correct answer
+systemctl enable atd
+
+28) Which command(s) allows you to list all available time zones?
+
+Correct
+
+Correct answer
+timedatectl list-timezones
+
+29) Kickstart documentation files can be found where?
+
+Correct
+
+Correct answer
+/usr/share/doc
+
+##################################################
+Hands-on Lab: User Groups and Accounts Tasks
+##################################################
+You must adjust the aging for profiles. 60 days before a password change, 10 days notice. min 10 characters for password. We dont want to have the users profiles become inactive. Just force a password change.
+
+1. Change the system to enable password aging as specified above.
+vim /etc/login.defs
+
+2. Create these users. Add their full name as part of the comment field for the user.
+Sam Browne, username sbrow
+Caius Marco, username cmarc
+Usko Stylianos, username ustyl
+Duane Aleksandro, username dalek
+
+useradd -c "Sam Brown" sbow
+useradd -c "Caius Marco" cmarc
+useradd -c "Usko Stylianos" ustyl
+useradd -c "Duane Aleksandro" dalek
+
+
+3. Change the passwords for the new users to be 10 characters. The passwords may be anything that complies with the rules that are set.
+passwd sbow
+passwd cmarc
+passwd ustyl
+passwd dalek
+
+tail /etc/shardo
+
+
+4. Create the following groups.
+marketing
+sales
+creative
+
+groupadd marketing
+groupadd sales
+groupadd creative
+
+tail /etc/groups
+
+5. Create the following folders.
+Create a folder called /groups
+under groups will be the following folders that are owned by the relevant group.
+marketing
+sales
+creative
+
+mkdir /groups
+mkdir /groups/{marketing,sales,creative}
+
+6. Set the folders so that any files created under them are owned by the relevant group.
+chgrp -R creative creative
+chgrp -R marketing marketing
+chgrp -R sales sales
+
+chmod g+srw creative
+chmod g+srw marketing
+chmod g+srw sales
+
+7. Add sam and caius to marketing
+usermd -G marketing cmark
+usermd -G marketing sbrow
+
+
+8. Add Usko to sales.
+usermod -G sales ustyl
+
+
+9. Add duane to creative.
+usermod -G creative dalek
+
+tail groups
+
+10. Make your current user usko.
+su - ustyl
+
+11. As Usko. You should not be able to create files under with marketing or creative.
+cd /groups/sales
+touch testfile
+
+cd ../marketing
+touch testfile
+
+exit
+
+userdel -r ustyl
+
+12. As Usko. You should be able to create files under sales.
+su -
+
+13. Delete the user usko and delete his home folder.
+
+14. Check to see if usko's home folder has been deleted.
+
+
+
+
+
+
+##################################################
+Hands-on Lab: Using an Existing Authentication Service
+##################################################
+SCENARIOS
+One of the servers in your environment needs to be connected to an existing AD LDAP Domain (see the description above or the Lab Guide for details).
+
+You will configure the user to authenticate via Kerberos and for the home directory of the domain user to mount via NFS dynamically on sign in.
+
+Once you have verified the user(s) are able to sign in, you will display the remote filesystem mounts and verify they are from the anticipate LDAP server.
+
+##################################################
+#testin the environment
+yum upgrade
+
+ping ad.linuxacademy.com
+
+#Binding the AD domain
+yum install realmd
+
+reboot  #this is just for linux academy
+
+realm discover ad.linuxacademy.com
+
+#install required packages
+yum install oddjob -y
+yum install oddjob-mkhomedir -y
+yum install sssd -y
+yum install adcli -y
+yum install samba-common-tools -y
+
+#join the domain
+realm join ad.linuxacademy.com
+Password:
+Domain Administrator: Administrator
+Domain Admin Password: LinuxAcademy123!
+
+#Run the discover command agin to verify that the domain has been discovered
+realm discover ad.linuxacademy.com
+
+#allow AD users to access
+realm permit --realm ad.linuxacademy.com --all
+
+#Now we need to edit the kerberos config in /etc/ssh/sshd_config
+# Kerberos options
+KerberosAuthentication yes
+KerberosOrLocalPasswd yes
+KerberosTicketCleanup yes
+KerberosGetAFSToken yes
+KerberosUseKuserok yes
+
+:wq
+
+#Restart the sshd daemon
+systemctl restart sshd
+
+#Testing
+#open a new terminal and login as the test user
+ssh -l test@ad.linuxacademy.com <ip_address>
+
+
+LinuxAcademy123
+##################################################
+Hands-on Lab: Use Existing LDAP Credentials For Single Sign-On
+##################################################
+#connect to the test server
+
+#test connectivity
+ping ldap.linuxacademy.com/
+
+
+#bind the member to the ldap server
+yum install -y authconfig-gtk
+
+yum install -y nss-pam-ldapd
+
+yum install -y pam_krb5
+
+With the LDAP dependencies installed, we can now enter our LDAP information under the Identity & Authentication tab.
+The LDAP Search Base DN is dc=linuxacademy,dc=com, and the LDAP Server is ldap://ldap.linuxacademy.com.
+Check the box for Use TLS to encrypt connections.
+
+Press Download CA Certi cate.... The URL for the certi cate is http://ldap.linuxacademy.com/pub/cert.pem
+
+Leave Authentication Method as Kerberos password.
+
+Move to the Advanced Options tab. Check Create home directories on the  rst login. Apply the changes.
+
+
+
+#Auto mount a home directory
+yum install -y autofs nfs-utils openldap-clients
+
+vim /etc/auto.master.d/ldap.autofs
+/home/guests /etc/auto.ldap
+
+:wq
+
+
+vim /etc/auto.ldap
+* -rw ldap.linuxacademy.com:/home/guests/&
+
+:wq
+
+#we need to enable LDAP credentials
+vim /etc/pam.d/sshd
+auth sufficient pam_ldap.so
+
+auth sufficient pam_permit.so
+
+:wq
+
+systemctl start autofs &&  systemctl enable autofs
+systemctl restart sshd
+
+
+#login to the server and test
+
+ldapuser1@54.165.137.73
+L1nUxAcaD3meee
+
+
+
+##################################################
+Exercise: Managing Users And Groups
+##################################################
+1. Create two new users called starbuck and apollo. For each user, assign the password "student" without quotes.
+useradd starbuck
+passwd starbuck
+
+useradd apollo
+passwd apollo
+
+
+2. Modify starbuck's GECOS to say "pilot".
+usermod -c pilot starbuck
+
+
+3. View apollo's user id and group id information.
+id apollo
+
+4. Create a third account as a system account named "viper".
+useradd viper
+
+5. Create a new group called "galactica" and a folder named galactica in /home/groups/.
+groupadd galactica
+mkdir -p /home/group/galactica
+
+6. Create a second new group called "colonial-one" and a folder named colonial-one in /home/groups/.
+groupadd colonial-one
+mkdir -p /home/groups/colonial-one
+
+7. Modify starbuck's account so her primary group is "galactica".
+usermodd -g galactica starbuck
+
+8. Modify viper's account so that its primary group is "viper" and it belongs to both the "galactica" and "colonial-one" supplementary groups.
+usermod -aG galactica,colonial-one viper
+
+
+9. Modify directory permissions for each group directory so that the respective group name owns the group and has read/write/execute permissions on the directory.
+chown :galactica /home/group/galactica
+chown :colonial-one /home/groups/colonial-one
+chmod g+rwX galactica/
+chmod g+rwX colonial-one/
+
+10. Apply special permission bits to the "galactica" folder so that, regardless of the user's primary group, any directories or files created in the "galactica" folder are owned by the "galactica" group.
+chmod g+s galactica/
+
+
+11. Change the "viper" user password and login to the system as the viper user. Notice viper's primary group is "viper". Navigate into the /home/groups/galactica directory and touch file1 then view permissions.
+passwd viper
+cd /home/groupsd/galactica
+
+12. Modify the user apollo so that the user has authentication but cannot login to a shell terminal
+usermod -s /sbin/nologin apollo
+
+
+##################################################
+1. Create two new users called starbuck and apollo. For each user, assign the password "student" without quotes.
+[root@localhost user]# useradd starbuck
+[root@localhost user]# passwd starbuck
+Changing password for user starbuck.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+[root@localhost user]# useradd apollo
+[root@localhost user]# passwd apollo
+Changing password for user apollo.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+[root@localhost user]#
+
+2. Modify starbuck's GECOS to say "pilot".
+[root@localhost user]# usermod -c pilot starbuck
+
+3. View apollo's user id and group id information.
+[root@localhost user]# id apollo
+uid=1003(apollo) gid=1003(apollo) groups=1003(apollo)
+Note: Your gid/uid might not match that of what is displayed in this lab. You can modify that using the usermod command and groupmod command.
+
+4. Create a third account as a system account named "viper".
+[root@localhost user]# useradd -r viper
+
+5. Create a new group called "galactica" and a folder named galactica in /home/groups/.
+[root@localhost user]# groupadd galactica; mkdir -p /home/groups/galactica
+
+6. Create a second new group called "colonial-one" and a folder named colonial-one in /home/groups/.
+[root@localhost user]# groupadd colonial-one; mkdir -p /home/groups/colonial-one
+
+7. Modify starbuck's account so her primary group is "galactica".
+[root@localhost user]# usermod -g galactica starbuck
+[root@localhost user]# usermod -g galactica starbuck
+[root@localhost user]# groups starbuck
+starbuck : galactica
+[root@localhost user]# id starbuck
+uid=1002(starbuck) gid=1005(galactica) groups=1005(Galactica)
+[root@localhost user]#
+
+8. Modify viper's account so that its primary group is "viper" and it belongs to both the "galactica" and "colonial-one" supplementary groups.
+Note: when we created the viper user, it created a group called viper and assigned it as the viper user's primary group.
+[root@localhost user]# usermod -aG galactica,colonial-one viper
+[root@localhost user]# id viper
+uid=1004(viper) gid=1004(viper) groups=1004(viper),1005(galactica),1006(colonial-one)
+[root@localhost user]#
+
+9. Modify directory permissions for each group directory so that the respective group name owns the group and has read/write/execute permissions on the directory.
+[root@localhost groups]# chown :colonial-one -R colonial-one
+[root@localhost groups]# chown :galactica -R galactica
+[root@localhost groups]# chmod g+rwX colonial-one/
+[root@localhost groups]# chmod g+rwX galactica/
+
+10. Apply special permission bits to the "galactica" folder so that, regardless of the user's primary group, any directories or files created in the "galactica" folder are owned by the "galactica" group.
+[root@localhost groups]# chmod g+s galactica/
+
+11. Change the "viper" user password and login to the system as the viper user. Notice viper's primary group is "viper". Navigate into the /home/groups/galactica directory and touch file1 then view permissions.
+[viper@localhost galactica]$ touch file1
+[viper@localhost galactica]$ ls -al
+total 0
+drwxrwsr-x. 2 root     galactica 29 Apr 28 11:36 .
+drwxr-xr-x. 4 root     root      41 Apr 28 11:12 ..
+-rw-rw-r--. 1 viper    galactica  0 Apr 28 11:36 file1
+[viper@localhost galactica]$
+You will notice that even though vipers current logged in/primary group is "viper", when the file was created it was created with the permissions of the "parent" directory since the SGID bit was set.
+
+12. Modify the user apollo so that the user has authentication but cannot login to a shell terminal
+[root@localhost ~]# usermod -s /sbin/nologin apollo
+
+
+
+##################################################
+Quiz: Manage Users And Groups
+##################################################
+1) Which command would be used to add a supplementary group called developers to the user jeff? Note: Jeff already has supplementary groups and he needs to stay a member of those groups.
+
+Correct
+
+Correct answer
+usermod -aG developers jeff
+
+2) Given the domain "ad.linuxacademy.com", which command will discovery if the domain exists and return the packages needed to be installed?
+
+Correct
+
+Correct answer
+realm discover ad.linuxacademy.com
+
+3) What would you edit in order to ensure that all new users have a password expiration of 30 days?
+
+Correct
+
+Correct answer
+/etc/login.defs file and the PASS_MAX_DAYS to 30
+
+4) Which UID ranges are reserved for system users? Or users used by the system for processes that do not own files on the file system?
+
+Incorrect
+
+Correct answer
+201-999
+
+5) Which package is required for using the realm command when joining/discovering available SSSO domains?
+
+Correct
+
+Correct answer
+yum install -y realmd
+
+6) Which command will set the expire date for the user jeff to be 90 days from today?
+
+Correct
+
+Correct answer
+chage -E $(date -d "+90days" +%F) jeff
+
+7) What UID ranges are reserved for regular users?
+
+Correct
+
+Correct answer
+1000+
+
+8) Which command would you use to set the maximum amount of time between password changes for the user jeff to 60 days?
+
+Correct
+
+Correct answer
+chage -M 60 jeff
+
+9) The UID range for Red Hat assigned system users is:
+
+Correct
+
+Correct answer
+1-200
+
+10) Red Hat 7 UID for the root account is:
+
+Correct
+
+11) Which flag (argument), when passed to the chage command, will force a user to change their password every 30 days?
+
+Incorrect
+
+Correct answer
+-M
+
+12) Which flag (argument), when passed to the useradd command, will set the supplemental group for a user?
+
+Correct
+
+Correct answer
+-G
+
+
+
+##################################################
+Hands-on Lab: Red Hat Security With FirewallD
+##################################################
+yum install -y firewalld httpd
+
+#lets check if iptables it setup, if it is setup we need to mask it
+systemctl status iptables
+
+#to mask iptables
+systemctl mask iptables
+
+#Check firewalld
+systemctl status firewalld
+
+#Start apache
+systemctl start httpd
+
+yum install elinks
+
+elinks http://localhost  #we can see that its running
+
+
+#lets take a look at the services
+firewall-cmd --list-services
+
+#verify the zone that you are in, the default zone should be public
+firewall-cmd --get-default-zone
+
+#list the rules that are setup for the public zone
+firewall-cmd --zone=public --list-all
+
+#go to the second server and see if we can connect to the first server
+yum install -y elinks
+
+elinks http://<1st_server_ip>  #we cant connect, lets test if its firewalld thats stopping us by going to the first server and stopping the firewalld service
+
+#back on the first server
+systemctl stop firewalld
+
+#go back to the second node and check again
+elinks http://<1st_server_ip>  #we can now connect, so firewalld is what is stopping us
+
+#back on the first server
+systemctl start firewalld
+
+
+#now lets add the post 80tcp for the rules
+
+firewall-cmd --zone=public --add-port=80/tcp  #but the rule is not persistant
+
+#list the rules that are setup for the public zone
+firewall-cmd --zone=public --list-all
+
+
+#go back to the second node and check again
+elinks http://<1st_server_ip>  #we can now connect
+
+
+#make the rule permanent, the rule will now be saved
+
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+
+#lets verify that the rule is persistent by doing a reload
+firewall-cmd --reload
+
+#test the webpage again
+elinks http://<1st_server_ip>  #we can now connect
+
+
+#Remove the port
+firewall-cmd --remove-port=80/tcp
+
+#to make the change permanent
+firewall-cmd --permanent --remove-port=80/tcp
+
+firewall-cmd --reload
+
+firewall-cmd --list-all
+
+
+##################################################
+Hands-on Lab: Regaining Access to a System
+##################################################
+One of the systems in your inventory needs to be accessed, but the root password was changed and is no longer known. You have access to the console however and can regain access by booting to a special mode.
+
+Change the boot parameters for the kernel and gain access to the command prompt. Change the root password and notify the system to reapply security contexts on the subsequent system boot to allow the changed password to apply.
+
+
+#connect to the node using vnc
+#open a terminal
+
+#open the virtual machine manager
+virt-manager
+
+#click start to start the guest os
+
+#press the up or down arrow in the grub menu to stop the countdown and press E to edit
+
+#Scroll down till you see linux16 line
+
+#press ctrl+e to goto the end of the line
+#remove the console information and the rhgb section
+#add to the end of the line where rhgb was
+rd.break
+
+crtl+x #to continue intramfs
+
+
+#mount the file sytem
+mount -o remount,rw /sysroot
+
+chroot /sysroot
+
+#now we need to change the root password
+passwd root
+#enter the new password
+
+#now we need to instruct the system to update out selinux
+touch /.autorelabel
+
+exit
+exit
+
+#Once the system finishes booting we can login with the new password
+
+
+
+
+
+##################################################
+Hands-on Lab: Configure SELinux and Add - Restore Security Contexts
+##################################################
+#verify that selinux is enforcing
+getenforce
+
+#We can see that it is enforcing
+#if it wasnt
+setenforce 1
+Or
+vim /etc/selinux/config
+#set to enforcing
+:wq
+
+systemctl reboot
+
+
+ls -Z /root
+
+yum install https elinks -y
+
+systemctl start httpd
+
+systemctl enable httpd
+
+elinks http://localhost  #we can see that its working
+
+#lets look at the security contexts in /var
+cd /var
+ls -Z
+
+cd
+
+vim echo 'this is my web page' > index.html
+
+ls -Z index.html
+
+mv index.html /var/www/html
+
+chown apache:apache /var/www/html/index.html
+
+chmod 775 /var/www/html/index.html
+
+
+elinks http://localhost/index.html  #we will see that we do not have permission to access it, this is because of the security context that the file is in
+
+restorecon index.html
+
+ls -Z
+
+elinks http://localhost/index.html   #now we can access it
+
+#Now we want to create a file that contains our security context in /root
+
+ls -Z index.html > /root/context.txt
+
+
+
+##################################################
+Hands-on Lab: Allowing Programs Through the Firewall
+##################################################
+#login with VNC
+#Open a terminal
+virt-manager
+
+#start the virtual machine
+
+#open the terminal
+
+#login
+root
+#pw is linuxacademy
+
+#verify that we do have a webpage to serve
+curl localhost
+
+#now try to access the vm from the main lab servers web browser
+
+#go back to the vim, lets add a rule
+
+firewall-cmd --state
+
+firewall-cmd --add-service=http --permanent
+
+firewall-cdm --reload
+
+#go back to the main lab server and test with the browser again
+
+
+
+
+
+##################################################
+Hands-on Lab: Accessing Systems and Working With Files
+##################################################
+ssh-keygen
+
+cd .ssh
+#we can see the public and private keys here
+
+#now we need to copy the key to the server we want to connect to
+#the easy way
+ssh-copy-id <user>@<server_ip>
+
+#the hard way
+#go to the second server
+cd .ssh
+
+cat authorized_keys  #the file permissions have to be 600
+
+#Working with files and folders
+#back on server 1
+sudo su
+
+mkdir marketing
+
+chown -R user:user /marketing
+
+ll
+
+exit
+
+mkdir /marketing/2015
+
+
+#create a tar with the date
+tar -czf backup-`date +%Y%m%d`.tar.gz /backup
+
+
+#send the backup to the other server
+scp backup-.tar.gz user@<ip>:/
+
+
+#Now extract the achive
+tar -xvf backup.tar.gz
+
+
+
+
+
+
+
+##################################################
+Exercise: Configure key-based authentication for SSH
+##################################################
+The goal of this lab is to setup secure authentication to remote servers using SSH keys and to issue commands to remote servers.
+
+1. Start two LinuxAcademy.com lab servers. This exercise will refer to the servers as server1 and server2.
+
+2. Working as the user "user", on server1 generate a new RSA public and private key with a pass phrase of your choosing.
+
+3. Copy the SSH key to server2.
+
+4. Remotely connect to server2 from server1 using the SSH keys.
+
+5. On server1, issue the correct commands to temporarily store the pass phrase in your current shell session. This will prevent you from having to enter the pass phrase each time you connect to server2.
+
+6. Issue a remote command to create a directory named "test" on server2.
+
+
+##################################################
+
+
+1. Start two LinuxAcademy.com lab servers. This exercise will refer to the servers as server1 and server2.
+
+2. Working as the user "user", on server1 generate a new RSA public and private key with a pass phrase of your choosing.
+[root@server1 ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/user/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /user/.ssh/id_rsa.
+Your public key has been saved in /user/.ssh/id_rsa.pub.
+The key fingerprint is:
+43:eb:29:50:45:57:78:64:58:03:d3:e3:e2:52:dc:0b root@server1.mylabserver.com
+The key's randomart image is:
++--[ RSA 2048]----+
+|       .o +O*    |
+|       . .oo+.   |
+|      . .. + .   |
+|     . . .E o    |
+|    .   So o .   |
+|     . ..o. .    |
+|      . o.       |
+|       .         |
+|                 |
+
++-----------------+
+
+3. Copy the SSH key to server2.
+[root@server1 ~]# ssh-copy-id user@52.25.4.176
+
+4. Remotely connect to server2 from server1 using the SSH keys.
+[root@server1 ~]# ssh user@52.25.4.176
+Enter passphrase for key '/user/.ssh/id_rsa':
+
+5. On server1, issue the correct commands to temporarily store the pass phrase in your current shell session. This will prevent you from having to enter the pass phrase each time you connect to server2.
+[root@server1 ~]# ssh-agent bash
+[root@server1 ~]# ssh-add
+Enter passphrase for /user/.ssh/id_rsa:
+Identity added: /root/.ssh/id_rsa (/user/.ssh/id_rsa)
+[root@server1 ~]# ssh user@52.25.4.176
+
+6. Issue a remote command to create a directory named "test" on server2.
+[root@server1 ~]# ssh user@52.25.4.176 mkdir test
+
+##################################################
+Exercise: Working With SELinux Context, Booleans, and Troubleshooting
+##################################################
+1. Download and install the apache web server.
+
+2. Modify the /etc/httpd/conf/httpd.conf configuration file and replace /var/www/html with /content. Create the /content directory and then create a static index.html file in the /content directory that says "this is my website".
+
+3. Modify the /etc/httpd/conf.d/userdir.conf directory and replace UserDir disabled with UserDir public_html.
+
+4. Create the public_html directory in the /home/user directory. Echo a simple html file with the text "this is my website" into the /home/user/public_html/index.html file.
+
+5. Set the user owner and group owner of the /home/user directory to "user". Set permissions to 711 /home/user and 755 recursively on /home/user/public_html.
+
+6. Restart the httpd service.
+
+7.  Install the correct packages for troubleshooting SELinux policy denials and violations.
+
+8. Copy your IP address and attempt to open the index.html file in your browser. Troubleshoot using the proper SELinux troubleshooting package what may be causing the issue. Once you have determined the issue, implement a solution to fix the policy violation.
+
+ 9. Attempt to open the user "user"'s homedir via the web browser (Example: http://tcox1.mylabserver.com/~user/). If permission is denied, troubleshoot the issue using the proper SELinux troubleshooting tools. Once the issue is discovered, implement a persistent fix and try again.
+
+
+
+##################################################
+
+
+
+1. Download and install the apache web server.
+[root@localhost ~]# yum install httpd
+
+2. Modify the /etc/httpd/conf/httpd.conf configuration file and replace /var/www/html with /content. Create the /content directory and then create a static index.html file in the /content directory that says "this is my website".
+[root@localhost ~]# sed -i 's/\/var\/www\/html/\/content/' /etc/httpd/conf/httpd.conf
+[root@localhost ~]# vim /etc/httpd/conf/httpd.conf then find and replace /var/www/html with /content
+[root@localhost ~]# mkdir /content
+[root@localhost ~]# echo "this is my website" > /content/index.html
+
+3. Modify the /etc/httpd/conf.d/userdir.conf directory and replace UserDir disabled with UserDir public_html.
+[root@localhost ~]# sed -i 's/disabled/public_html/' /etc/httpd/conf.d/userdir.conf
+or
+Manually modify the /etc/httpd/conf.d/userdir.conf
+
+4. Create the public_html directory in the /home/user directory. Echo a simple html file with the text "this is my website" into the /home/user/public_html/index.html file.
+ [root@localhost ~]# mkdir /home/user/public_html
+[root@localhost ~]# echo "this is my website" > /home/user/public_html/index.html
+
+5. Set the user owner and group owner of the /home/user directory to "user". Set permissions to 711 /home/user and 755 recursively on /home/user/public_html.
+[root@localhost ~]# chmod 711 /home/user
+[root@localhost ~]# chmod 755 -R /home/user/public_html
+[root@localhost ~]# chown user:user -R /home/user/public_html
+
+6. Restart the httpd service.
+[root@localhost ~]# systemctl restart httpd
+
+7.  Install the correct packages for troubleshooting SELinux policy denials and violations.
+[root@localhost ~]# yum install -y setroubleshoot-server
+
+8. Copy your IP address and attempt to open the index.html file in your browser. Troubleshoot using the proper SELinux troubleshooting package what may be causing the issue. Once you have determined the issue, implement a solution to fix the policy violation.
+[root@localhost ~]# sealert -a /var/log/audit/audit.log
+[root@localhost ~]# semanage fcontext -a -t httpd_sys_content_t '/content(/.*)?'
+[root@localhost ~]# restorecon -Rv /content
+restorecon reset /content context unconfined_u:object_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+restorecon reset /content/index.html context unconfined_u:object_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+9. Attempt to open the user "user"'s homedir via the web browser (Example: http://tcox1.mylabserver.com/~user/). If permission is denied, troubleshoot the issue using the proper SELinux troubleshooting tools. Once the issue is discovered, implement a persistent fix and try again.
+[root@localhost ~]# sealert -a /var/log/audit/audit.log
+[root@localhost ~]# setsebool -P httpd_enable_homedirs on
+
+
+
+
+##################################################
+Exercise: Working With SELinux Context, Booleans, and Troubleshooting
+##################################################
+1. Download and install the apache web server.
+
+2. Modify the /etc/httpd/conf/httpd.conf configuration file and replace /var/www/html with /content. Create the /content directory and then create a static index.html file in the /content directory that says "this is my website".
+
+3. Modify the /etc/httpd/conf.d/userdir.conf directory and replace UserDir disabled with UserDir public_html.
+
+4. Create the public_html directory in the /home/user directory. Echo a simple html file with the text "this is my website" into the /home/user/public_html/index.html file.
+
+5. Set the user owner and group owner of the /home/user directory to "user". Set permissions to 711 /home/user and 755 recursively on /home/user/public_html.
+
+6. Restart the httpd service.
+
+7.  Install the correct packages for troubleshooting SELinux policy denials and violations.
+
+8. Copy your IP address and attempt to open the index.html file in your browser. Troubleshoot using the proper SELinux troubleshooting package what may be causing the issue. Once you have determined the issue, implement a solution to fix the policy violation.
+
+9. Attempt to open the user "user"'s homedir via the web browser (Example: http://tcox1.mylabserver.com/~user/). If permission is denied, troubleshoot the issue using the proper SELinux troubleshooting tools. Once the issue is discovered, implement a persistent fix and try again.
+
+
+##################################################
+1. Download and install the apache web server.
+
+[root@localhost ~]# yum install httpd
+
+2. Modify the /etc/httpd/conf/httpd.conf configuration file and replace /var/www/html with /content. Create the /content directory and then create a static index.html file in the /content directory that says "this is my website".
+
+[root@localhost ~]# sed -i 's/\/var\/www\/html/\/content/' /etc/httpd/conf/httpd.conf
+
+[root@localhost ~]# vim /etc/httpd/conf/httpd.conf then find and replace /var/www/html with /content
+
+[root@localhost ~]# mkdir /content
+
+[root@localhost ~]# echo "this is my website" > /content/index.html
+
+3. Modify the /etc/httpd/conf.d/userdir.conf directory and replace UserDir disabled with UserDir public_html.
+
+[root@localhost ~]# sed -i 's/disabled/public_html/' /etc/httpd/conf.d/userdir.conf
+
+or
+
+Manually modify the /etc/httpd/conf.d/userdir.conf
+
+4. Create the public_html directory in the /home/user directory. Echo a simple html file with the text "this is my website" into the /home/user/public_html/index.html file.
+
+ [root@localhost ~]# mkdir /home/user/public_html
+
+[root@localhost ~]# echo "this is my website" > /home/user/public_html/index.html
+
+5. Set the user owner and group owner of the /home/user directory to "user". Set permissions to 711 /home/user and 755 recursively on /home/user/public_html.
+
+[root@localhost ~]# chmod 711 /home/user
+
+[root@localhost ~]# chmod 755 -R /home/user/public_html
+
+[root@localhost ~]# chown user:user -R /home/user/public_html
+
+6. Restart the httpd service.
+
+[root@localhost ~]# systemctl restart httpd
+
+7.  Install the correct packages for troubleshooting SELinux policy denials and violations.
+
+[root@localhost ~]# yum install -y setroubleshoot-server
+
+8. Copy your IP address and attempt to open the index.html file in your browser. Troubleshoot using the proper SELinux troubleshooting package what may be causing the issue. Once you have determined the issue, implement a solution to fix the policy violation.
+
+[root@localhost ~]# sealert -a /var/log/audit/audit.log
+
+[root@localhost ~]# semanage fcontext -a -t httpd_sys_content_t '/content(/.*)?'
+
+[root@localhost ~]# restorecon -Rv /content
+
+restorecon reset /content context unconfined_u:object_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+restorecon reset /content/index.html context unconfined_u:object_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+9. Attempt to open the user "user"'s homedir via the web browser (Example: http://tcox1.mylabserver.com/~user/). If permission is denied, troubleshoot the issue using the proper SELinux troubleshooting tools. Once the issue is discovered, implement a persistent fix and try again.
+
+[root@localhost ~]# sealert -a /var/log/audit/audit.log
+
+[root@localhost ~]# setsebool -P httpd_enable_homedirs on
+
+
+
+##################################################
+Quiz: Finding help or documentation while in the exam
+##################################################
+
+1) The key to being successful in the exam is to practice the material and know how to find help while in the exam, NOT to simply memorize it.
+
+Correct
+
+Correct answer
+True
+
+2) Which package has additional SELinux man pages that can be downloaded from yum?
+
+Correct
+
+Correct answer
+selinux-policy-devel
+
+3) If you cannot remember the command or utility your needing to use, what steps might you take to find the utility?
+
+Correct
+
+Correct answer
+Browse to the bottom of a "related" man page to look for related utilities under "see also section"
+
+4) What commands might you issue to find Kickstart format documentation?
+
+Correct
+
+Correct answer
+rpm -qd pykickstart, rpm -ql pykickstart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################
+##################################################
+
+##################################################
+##################################################
+
+##################################################
+##################################################
+
+##################################################
+##################################################
+
+##################################################

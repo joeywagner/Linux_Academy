@@ -1,0 +1,1827 @@
+################################################
+Introduction To Ruby Programming Language On Linux
+################################################
+################################################
+Lecture: What's a Programming Language?
+################################################
+
+
+################################################
+Lecture: Installing Ruby
+################################################
+Installing Ruby:
+-Distribution Packages
+--managing updates
+--Security managed
+--Homogenized versions
+
+-RVM
+--Updates are manual
+--multiple versions side by side
+-gemsets
+
+#is ruby installed
+ruby --version
+
+#for centos
+yum install ruby
+yum install irb
+yum install rubygems
+
+#for ubuntu
+apt-get install ruby
+
+#RVM basics
+rvm use
+rvm gemset [list, create]
+rvm --ruby-version use ...
+
+rvm list
+rvm use ruby-2.1.3
+rvm gemset list
+rvm gemset create linuxacademy
+rvm gemset use linuxacademy
+rvm list
+rvm gemset list
+
+rvm --ruby-version use ruby-2.1.3@linuxacademy
+
+
+################################################
+Lecture: The Ruby Environment
+################################################
+The ruby environment:
+-Source code
+--extention.rd
+-Programs
+--ruby
+--irb
+--gem
+-Gems
+--libraries
+
+
+Source Code
+-example.rb
+#!/usr/bin/ruby #optional command interpreter
+puts "my example script"
+
+vim example.rb
+puts "my example script"
+:wq
+ruby example.rb
+
+#if you use the optional command interpreter chmod +x
+
+### IRB interactive ruby shell
+-Run code live
+-test snippets
+-interact with ruby directly
+
+irb  #this starts irb
+puts "my example script"
+
+nil => #this means that the puts string value returned a nil value
+
+Gems - Extend ruby
+gem [install, list]
+-http://rubygems.org
+-libraries for interfacing with various apis
+-libraries for different tasks
+--web widgets
+
+
+################################################
+Learning Basic Ruby Syntax
+################################################
+################################################
+Ruby Basics
+################################################
+################################################
+Lecture: Hello World!
+################################################
+hello.rb
+puts "Hello World"  #puts is the method, "hello world is the argument"
+:wq
+
+Methods
+-Methods
+--encapsulate code
+--can take arguments
+-Syntax
+--Method name + arguments (comma seperated)
+-Ambiguity
+--();
+--eg puts("Hello World");
+
+-Return objects
+--nil
+
+eg puts("hello world").class
+
+
+################################################
+Exercise: Ruby Environment Setup
+################################################
+Go ahead and fire up a lab server, selecting the "Ruby on Linux - Ruby 101." Get yourself logged in, and make sure you can execute administrative commands with sudo.
+
+1) Install the ruby and irb packages for CentOS
+sudo yum install ruby irb rubygems
+Go ahead and fire up a second lab server. Select CentOS for the type. Log in, and make sure you can execute administrative commands with sudo.
+
+1) Go to rvm.io in your web browser and retrieve the commands to start installing rvm, then run them in your lab server.
+First:
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+Second:
+\curl -sSL https://get.rvm.io | bash -s stable
+Third:
+source /home/USERNAME/.rvm/scripts/rvm
+
+2) Use rvm to install the latest version of ruby. (Hint: You may need to supply a password while installing ruby)
+rvm install ruby
+
+3) Select the version of Ruby that you just installed.
+Use 'rvm list' to find out the version of ruby. Then:
+rvm use ruby-X.X.X
+
+4) Create a gemset named rvm-test for the installed version of ruby.
+rvm gemset create rvm-test
+
+5) Create a directory named ruby-test.
+mkdir ruby-test
+
+6) Create files to automatically select your version of ruby as well as your new gemset when you enter the new directory.
+cd ruby-test
+rvm --ruby-version use ruby-X.X.X@rvm-test
+
+7) Using the documentation on rvm.io, install an older version of Ruby, 1.9.3. (Hint: http://rvm.io/rvm/install#try-out-your-new-rvm-installation)
+rvm list known
+rvm install 1.9.3
+
+8) Use rvm commands to temporarily switch to the older version.
+rvm use ruby-1.9.3
+
+9) Switch back to the latest version.
+rvm use ruby-X.X.X
+
+
+
+################################################
+Lecture: Variables
+################################################
+Variables
+-like algebra
+-value can change
+-Can be used in complex statements
+
+Variable assignment
+my_variable = 1000
+a = "Hello world"
+@temperature =200
+
+Vaiable names
+-must start with lowercase letter
+-can have underscores _
+-descriptive names
+-avoid keywords of ruby. for, if, end, do, etc
+
+###
+irb
+rows = 10
+cars = 10
+cars * rows
+
+my_string = "Hello World"
+puts my_string
+
+##
+Variable Scope
+-Can be used in certain places
+-local  #local variables begin with letters
+-instance
+--@
+-class
+--@@
+-Global
+--$
+
+Changing a variable
+-Assign a new value
+temperature = 200
+temperature = 300
+
+Constants
+-Begin with Capital
+
+################################################
+Lecture: Types of Variables
+################################################
+Types of variables:
+Literals
+-explicitly given values
+Variables
+-names that link to values
+
+Type of variable corresponds to type of literal
+
+Variable types:
+-Ruby automatically assigns the variable type
+-Common types:
+--numbers
+--Booleans
+--Strings
+--Arrays
+--Hashes
+
+
+###
+Numbers
+my_integrer = 0
+my_float = 1.0569324
+
+Types of numbers
+-integers
+--Bignum and fixnum
+-floats
+
+Booleans
+light_on = true
+true or false
+
+-Distinction between positive integer and true
+
+Strings
+ridicuclous_text = "the quick brown fox jumped"
+silly_string = 'over the lazy dog'
+
+-text
+
+
+Arrays:
+Contains a set of data
+first_four_numbers = [1,2,3]
+
+Values retrieved or set indide of []
+Index starts with 0
+
+first_four_numbers[3] = 4
+
+Sometimes need to be created empty
+my_array = []
+
+Hash
+more of a key value pair than an array
+my_hash = { "simple string"  => "my string", "my number" => 4}
+my_hash["simple string"]
+
+Sometimes need to be created empty
+my_hash = {}
+
+###
+irb
+
+my_favorite_array = [42, "blue"]
+puts my_favorite_array
+
+my_favorite_hash = {}
+puts my_favorite_hash["number"] = my_favorite_array[1]
+
+################################################
+Lecture: Basic Math
+################################################
+Basic math:
+-Addition +
+-Subtraction -
+-Multiplication *
+-Division /
+-Exponent **
+-Modulus %
+-Math::PI
+
+Using math in a program:
+-Can operate on both literals and variables
+
+4 * 4
+area = 4 * 4
+
+base = 4
+height = 4
+base * height
+
+area = base * height
+
+Assignment of variable with math:
+-Right side evaluated first, then given to the left side
+
+area = 4 * 4
+
+base = 4
+height = 4
+area = base * height
+height = 3
+
+(area = 16, not 12 )
+
+Volume of a box
+length = 10
+height =20
+width = 50
+
+volume = length * height * width
+
+puts volume
+
+##
+100.to_s
+=> "100"
+irb(main):004:0> 100.to_i
+=> 100
+irb(main):005:0> 100.to_f
+=> 100.0
+
+################################################
+Lecture: Conditionals
+################################################
+Conditional:
+-test conditons
+--is my variable greater than 10
+-perform actions based on the result
+--print out a message
+
+Basic Conditional:
+if my_variable > 10
+  puts my_variable
+end
+
+Extended Conditional:
+if my_variable > 10
+  puts my_variable
+else
+  puts "Too Small!"
+end
+
+Extended Conditionals: Part II
+if my_variable > 10
+  ...
+elseif my_variable < 10
+  ...
+else
+  ...
+end
+
+One Line Conditionals:
+  puts "Big number" if my_variable > 10
+  puts "Small number" unless my_variable > 10
+
+Basic Negated Conditional:
+unless my_variable > 10
+  puts my_variable
+end
+
+Ternary Statement:
+  if my_variable > 10
+    puts "big"
+  else
+    puts "small"
+  end
+
+#all on one line
+my_variable > 10 ? puts ("big") : puts("small")
+
+Basic Comparison Tests:
+-Greater that
+-- a > b
+-Less than
+-- a < b
+-Greater than or equal
+-- a >= b
+-Less than or equal
+-- a <= b
+-Equal
+-- a == b
+
+
+#####
+puts "Input an integer"
+user_input = gets.to_i
+
+if user_input > 10
+  output = user_input * user_input
+else
+  output = user_input * 2
+end
+
+puts output
+
+
+################################################
+Lecture: Conditionals Continued
+################################################
+Conditionals can have more than one elseif:
+
+if my_var == 10
+  ...
+elsif my_var == 9
+  ...
+elsif my_var == 8
+  ...
+elsif my_var == 7
+  ...
+end
+
+Case: (AKA switch)
+  Simpler alternative to multiple elsif clauses
+
+case my_var
+  when 10
+    ...
+  when 9
+    ...
+  when 8
+    ...
+  when 7
+    ...
+end
+
+Conditionals can test multiple conditions at once:
+
+-Boolean AND
+--&&
+
+if my_var == 10 && your_var == 5
+  ...
+end
+
+-Boolean OR
+--||
+
+if my_var == 10 || your_var == 5
+  ...
+end
+
+Conditions can be negated:
+
+-NOT
+--!
+
+if !my_var == 10
+  ...
+end
+
+We can also test for inequality
+
+if my_var != 10
+  ...
+end
+
+We can also test strings
+  if my_var == "Y"
+    ...
+  elsif my_var == "N"
+    ...
+  else
+    ...
+  end
+
+#####
+puts "Hello! "
+puts "Do you have a phone (Y/N) "
+case gets
+  when "Y\n"
+    phone = true
+  when "N\n"
+    phone = false
+end
+
+puts "you have a phone. " if phone
+
+puts "you dont have a phone " if !phone
+
+
+################################################
+Lecture: Iterators
+################################################
+Iterators:
+operate on:
+each member of a collection
+
+first_five_integers = [1,2,3,4,5]
+
+Run specific code on each member:
+puts ...
+
+How would i do this?
+puts first_five_integers[0]
+puts first_five_integers[1]
+.....
+
+first_five_integers.each do |my_integer|
+  puts my_integer
+end
+
+'each' iterator:
+-a method called on a collection object
+first_five_integers.each
+
+-take a program block as an argument
+first_five_integers.each do
+  ...
+end
+
+'each' iterator: continued
+-supplies a variable to the block
+-variables is a member of the data collection
+
+first_five_integers.each do |my_integer|
+  puts my_integer
+end
+
+####
+grocery_items = {"oranges" => false, "bananas" => false}
+puts "do you need:"
+grocery_items.each do | item, need_for_item |
+  puts items + "? (Y/N)"
+  case gets
+    when "Y\n"
+      grocery_items[item] = true
+    when "N\n"
+      grocery_items[item] = false
+  end
+end
+puts " here's your list:"
+grocery_items.each do | item, need_for_item |
+  puts item if need_for_item
+end
+
+
+
+
+################################################
+Lecture: Arrays and Hashes
+################################################
+Nested Arrays:  (aka multi-dimentional arrays)
+
+childhood_games_played = [["make believe", true], ["tag", false]]
+
+Accessing the data:
+
+childhood_games_played[0][0]
+  "make believe"
+childhood_games_played[1][0]
+  "tag"
+childhood_games_played[0][1]
+  true
+childhood_games_played[1][1]
+  false
+
+Nested Hashes:
+cocktails = {"martini" => {"vodka" => true, "gin" => false}}
+cocktails["martini"]["vodka"]
+true
+cocktails["martini"]["gin"]
+false
+
+
+Array Sorting:
+Sorting:
+my_array.sort #returns a new sorted array
+my_array.sort! #sorts the array itself
+
+Sorting with a block of code
+my_array.sort do |a,b|
+  a <=>b
+end
+
+Array or hash length
+.count
+.length
+
+What's in my collection
+".include?"
+first_five_integers.include? 1
+
+Build an array off data in an array:
+my_array = [1,2,3]
+
+odd_or_even = my_array.map do |element|
+  element % 2 == 0 ? "even" : "odd"
+end
+
+################################################
+Lecture: Strings
+################################################
+Double quoted Strings:
+
+bank_account = 50
+
+puts "you have"
+puts bank_account
+puts "dollars"
+
+puts "you have #{bank_account} dollars."
+...
+puts "you have #{bank_account1 + bank_account2}"
+
+####
+#{variable} #this is called an interpolation
+
+Adding Strings:  (Concatenation)
+name = "John"
+puts "Your name is " + name + "."
+
+Split up a string:
+my_sentence = "my sentence has lots of words to break up into individual elements."
+words_in_my_sentence = my.sentence.split(" ")
+
+###
+puts "Please type a sentence"
+user_sentence = gets
+number_of_words = user_sentence.split(" ").count
+puts "your sentence had #{number_of_words} word #{number_of_words == 1 ? "." : "s."}"
+
+
+################################################
+Lecture: While Loop
+################################################
+While loop:
+repeats a section of code as long as a specific condition is true
+
+generally requires the condition to change as the loop executes in order to avoid infinite loops
+
+while loop: syntax
+
+while condition do
+  ...
+end
+
+Helpful math
+my_integer += 1
+
+While loop example:
+my_var = 10
+
+while my_var < 30 do
+  puts "my_var = #{my_var}"
+  my_var += 1
+end
+
+
+###
+loops and arrays:  the perfect match
+incremental indexes in the array
+incrementing value of the test condition variable
+
+eg.
+pets - ["cats", "dogs", "ducks", "chickens", "fish"]
+pet_index = 0
+while pet_index < pets.count do
+  if pets[pet_index] == "ducks" || pets[pet_index] == "chickens"
+    pets[pet_index] = nil
+  end
+  pet_index += 1
+end
+
+#####
+The until loop:  the inverse of the while loop
+my_var = 10
+
+until my_var > 30 do
+  puts "my_var = #{my_var}"
+  my_var += 1
+end
+
+######
+integers = []
+current_integer = 0
+while current_integer < 10 do
+  puts "Type an integer"
+  integers [current_integer] = gets.to_i
+    current_integer += 1
+end
+
+integers.sort.each do |this_int|
+  puts this_int
+end
+
+
+
+################################################
+Lecture: For Loop
+################################################
+for loops
+begin the next iteration as long as another element exists in the collection it was built with
+
+mostly superseded by the "each" integrator
+
+for loop: syntax
+for variable in collection do
+  ...
+end
+
+for loop example
+bags = ["suitcase", "messenger bag", "satchel", "backpack"]
+
+for bag_type in bag do
+  puts bag_type
+end
+
+
+For loop: syntax continued
+Inclusive range:
+  for variable in 1..4 do
+    ...
+  end
+
+Exclusive Range:
+  for variable in 1...4 do
+    ...
+  end
+
+################################################
+Lecture: Loop Control
+################################################
+next:
+
+Skips the rest of the iteration and moves to the next iteration, if the condition is still true.
+
+my_var = 0
+while my_var < 10 do
+  if my_var == 3
+    my_var += 1
+    next
+  end
+  puts my_var
+  my_var += 1
+end
+
+redo:
+Goes to the beginning of this iteration of the loop, whether or not the condition is still true.
+
+my_var = 0
+while my_var < 10 do
+  puts my_var
+  if my_var == 3
+    my_var = 10
+    redo
+  end
+  my_var += 1
+end
+
+
+break:
+exit the loop immediately
+
+puts "Type something to continue. or nothing to quit"
+while a = gets do
+  in a == "\n"
+    break
+  end
+  puts a
+end
+
+
+####
+total = 0
+puts "input your numbers"
+while input = gets do
+  if input == "\n"
+    break
+  end
+  total = total + input.to_f
+  puts "running total = #{total}"
+end
+
+puts "Total: #{total}"
+
+
+################################################
+Lecture: Methods
+################################################
+Methods:
+perform a collection of actions abstract program logic into chunks keep code from repeating
+
+Parts of a method definition:
+
+def method_name
+  ...
+end
+
+Method Example:
+def hello_user
+  puts "Enter your name"
+  username = gets
+  puts "Hello " + username
+end
+
+Calling the Method:
+
+hello_user
+
+####
+Methods return objects:
+def method_name
+  ...
+  returned_object
+end
+
+def hello_user
+  puts "Enter your name"
+  username = gets
+  puts "Hello " + username
+end
+
+####
+Modified hello_user:
+def hello_user
+  puts "Enter your name"
+  username = gets
+  "Hello #{username.chop}."
+end
+
+####
+Methods sometimes return Booleans
+def hello_user
+  puts "enter your name"
+  username = gets
+  if username != "\n"
+    "Hello #{username.chop}."
+  else
+    false
+  end
+end
+
+
+######
+def get_ingredient
+  new_ingredient = gets
+  if new_ingredient != "\n"
+    new_ingredient
+  else
+    false
+  end
+end
+
+ingredients = []
+puts "Input your ingredients"
+while my_ingredient = get_ingredient do
+  ingredients[ingredients.count] = my_ingredient
+end
+
+puts "Input your instructions"
+instructions = gets
+puts "Ingredients:"
+puts ingredients
+puts "Instructions:"
+puts instructions
+
+################################################
+Lecture: Methods Continued
+################################################
+Methods with arguments:
+def method_name argument1, argument2
+  ...
+end
+
+Example:
+def double_my_number number
+  number *= 2
+end
+
+####
+Methods that take program blocks:
+def my_method
+  puts "executing your code ..."
+  yields
+  puts "done"
+end
+
+my_method do
+  puts 2 + 2
+end
+
+#####
+def multiply_this a, b
+  total = a * b
+  if total < 0
+    false
+  else
+    total
+  end
+end
+
+user_input = []
+puts "Input two numbers"
+while user_number = gets do
+  user_input[user_input.count] = user_number.to_f
+  if user_input.count == 2
+    break
+  end
+end
+
+if result = multiply_this(user_input[0], user_input[1])
+  puts result
+else
+  puts "Invalid Input"
+end
+
+################################################
+Lecture: Using Classes
+################################################
+Classes: What are they?
+Generic description of a kind of object
+Structures for the data that belong to specific objects of a kind
+Definitions for the relationship of the data used in the parts of a program
+System for creating specific objects called instances
+
+Classes that we have already seen:
+Array, Hash,, all the variable types.
+
+irb
+my_array = []
+my_array = Array.new
+
+Classes:
+Variable definitions
+Mathod definitions
+
+"Array" class definitions include the "each" method definition
+
+Instances:
+
+variables with values assigned
+represent specific objects, instead of types of objects
+my_array.each ...
+
+Multiple instances of the same class can coexist.
+my_first_array = Array.new
+my_second_array = Array.new
+my_first_array[0] = 1
+my_second_array[0] = 2
+
+my_first_array != my_second_array
+
+Classes: Inheritances
+Classes can include the properties of other classes:
+
+################################################
+Lecture: Creating Classes
+################################################
+Creating a class:
+class Class_name
+  ...
+end
+
+Instantiating:
+my_object = Class_name.new  #the .new instantiates a new object for you
+
+Example of a class:
+
+class Table
+  attr_accessor :height, :width, :length  #properties
+end
+
+##In Ruby, getters and setters are typically defined by using the class method `attr_accessor`.
+Normally you see this at the top of the class and it sort of defines what properties that instances of the class will have
+
+###
+Extending the class:
+class Table
+  def cost
+    @length * @width * 5 + 4 * @height * 2
+  end
+end
+
+
+################################################
+Lecture: Creating Classes Continued
+################################################
+Initializing an instance
+Tell Ruby what to do when you instantiate a class
+
+class Table
+  def initiailze ilength = 3, iwidth = 3, iheight = 3
+    @length = ilength
+    @width = iwidth
+    @height = iheight
+  end
+end
+
+
+my_table = Table.new
+
+my_table = Table.new 5, 10, 3
+
+###
+Private methods:
+Can only be accessed within the class code, not outside of it.
+
+class Table
+  private  #its private because the private keyword proceeds the method
+
+  def table_top_area
+    @length * @width
+  end
+end
+
+
+Inheritance:
+Default inheritance from "Object" class.
+
+Give access to all of a parents properties and methods
+
+class LibraryTable < Table  #the class inherits from table
+  def cost
+    table_top_area * 10 + 4 * @height * 3
+  end
+end
+
+
+Protected Methods:
+Make sure a method is only accessed in the code of sibling objects or child objects on the defining class
+
+Useful for comparisons.
+
+protected
+
+################################################
+Lecture: Variable Scope Revisited
+################################################
+Variable Scope
+1) local:  begins with a lowercase letter
+2) instance: begin with a @
+3) class: begin with @@
+4) global: begin with $
+
+Variables in Classes:  Instance Variables shared across all methods in a instance
+
+class Square
+    def initialize
+      @length = 10
+    end
+
+    def printout
+      puts "Length = #{@length}."
+    end
+end
+
+
+
+
+################################################
+Lecture: Class Methods and Singletons
+################################################
+Class Methods:
+
+Perform functions related to the class, but not necessarily a particular object of that class
+
+Uses:
+Operate on all members of a class, class variables, database cleanup methods.
+
+
+Defining a class method:
+
+class Tree
+  def self.trim
+    "All trees are trimmed now!"
+  end
+end
+
+
+Calling a class method:
+
+class_name.method_name
+eg Tree.trim
+
+
+Singlton Method
+A method that is defined on only one object
+
+eg
+abc = "abc"
+
+def abc.twice
+  "#{self}#{self}"
+end
+
+abc.twice
+
+Singleton Classes
+Objects that exist in only one instance
+Help to provide a "top" structure structure to a hierarchy
+
+multiple ways to create singltons:
+-Create a blank class, then operate on it directly
+-Create an instance of class Object, then extend it
+
+
+Create a blank class, then operate on it directly
+class TableCorportation
+end
+
+class <<  TableCorporation
+  ...
+end
+
+-OR-
+
+class TableCorporation
+  class << self
+    ...
+  end
+end
+
+
+Create an instance of class Object, then extend it.
+
+TableCorporation = Object.new
+class << TableCorportation
+  ...
+end
+
+
+Attributes and methods
+
+class TableCorportation
+class << self
+  attr_accessor :owner, :corporation_name
+
+  def print_owner
+    puts @owner
+  end
+
+  def print_name
+    puts @corporation_name
+  end
+
+end
+end
+
+
+################################################
+Exercise: Getting Acquainted with Ruby (Hello World - Conditionals)
+################################################
+array_123 = [1,2,3]
+
+array_onrtwothree = ["one", "two", "three"]
+
+puts "Type 1 for integers, or 'one' for strings"
+
+user_input = gets.strip
+
+if user_input == "1"
+  puts "#{array_123[0]}, #{array_123[1]}, #{array_123[2]}"
+
+elsif user_input == "one"
+  puts "#{array_onrtwothree[0]}, #{array_onrtwothree[1]}, #{array_onrtwothree[2]}"
+
+end
+
+
+
+
+
+################################################
+Exercise: Practice with Nested Hashes and Iterators
+################################################
+time_tables = [
+	 {"route" => "New York -> Boston", "schedule" =>
+		 {"New York" => "12:02", "New Haven" => "13:50", "Providence" => "15:13", "Boston" => "16:36"}
+	},
+	 {"route" => "New York -> Chicago", "schedule" =>
+		 {"New York" => "8:19", "Albany" => "11:40", "Buffalo" => "17:21", "Cleveland" => "21:12", "Toledo" => "23:18", "Chicago" => "5:28"}
+	 }
+ ]
+
+ puts "Please select a train #"
+ time_tables.each_with_index do |train, index|
+	 puts "#{index+1}: #{train["route"]}"
+ end
+ user_input = gets.to_i
+ puts time_tables[user_input - 1]["route"]
+ time_tables[user_input - 1]["schedule"].each do |city, time|
+	 puts "#{city}: #{time}"
+ end
+
+
+
+
+
+################################################
+Exercise: Writing Methods
+################################################
+puts "Please input a radius to calculate the area and circumference of a circle."
+user_input = gets.to_f
+
+def area radius
+	Math::PI * radius ** 2
+end
+
+def circumference radius
+	2 * Math::PI * radius
+end
+
+if user_input >= 0
+	puts "Area          = #{area user_input}"
+	puts "Circumference = #{circumference user_input}"
+else
+	puts "Radius #{user_input} is invalid"
+end
+
+
+
+
+
+################################################
+Exercise: Writing a Program that Utilizes a Class
+################################################
+class Ingredient
+	attr_accessor :type, :stock, :daily
+	def amount_needed
+		@daily * 7 - @stock
+	end
+
+end
+
+inventory = []
+
+def add_new_ingredient inventory
+	new_ingredient = Ingredient.new
+	puts "Type of ingredient"
+	new_ingredient.type = gets.strip
+	puts "Current Stock"
+	new_ingredient.stock = gets.to_i
+	puts "Daily Amount Required"
+	new_ingredient.daily = gets.to_i
+	inventory[inventory.size] = new_ingredient
+end
+
+def shopping_list inventory
+	inventory.each do |ingredient|
+		puts "#{ingredient.type} \t\t\t #{ingredient.amount_needed}"
+	end
+end
+
+def info
+	puts "'1' to add an ingredient. '2' to print out shopping list '3' to exit"
+end
+
+info
+while user_input = gets.strip
+
+	case user_input
+		when "1"
+			add_new_ingredient inventory
+		when "2"
+			shopping_list inventory
+		when "3"
+			break
+	end
+	info
+end
+
+
+
+
+
+################################################
+Start Building a Log Parsing Program
+################################################
+################################################
+Intermediate Ruby
+################################################
+################################################
+Lecture: Log Parsing Program
+################################################
+Log Parser: basic sketch of features:
+1) Read apache log files
+2)  Provide ways to sort and/or filter log entries
+3)  Display matching entries and scroll through them
+
+
+Project Organization:MVC
+Model / View / Controller
+
+Model:
+Organizes Data and Handles Logic
+
+View:
+Displays the data for the user.
+
+Controller:
+Handles user interaction
+Figures out what program logic to use
+Figures out what view to display
+Fetches the correct data from the model
+Sends it along to the appropriate view
+
+
+
+Model Classes:
+
+Log entry:  One line of a log file
+  Time Stamp
+  remote IP address / name
+  local IP address / name
+  request path
+  response code
+
+Log File:
+  File date
+  file name
+  file path
+  Array of log entries
+  Read file method
+  Sort data method
+  Filter data method
+
+
+View:
+  file Dialog
+  table of log entries
+  Menu:
+    Open a New File
+  Sort / Filter
+    Columns and Direction
+    field search
+
+
+Controller:
+  keep track of current view
+  Monitor up.down left/right keys
+  Monitor for return key
+
+File Layout
+  model.rb
+  view.rb
+  controller.rb
+  logparser.rb
+
+
+logparser.rb
+require '.model.rb'
+require '.view.rb'
+require './controller.rb'
+
+
+@controller =
+
+model.rb
+class LogFile
+end
+
+class LogEntry
+end
+
+
+view.rb
+
+class BasicView
+end
+class FileDialogView < BasicView
+  def display
+    puts "Select an apache log file"
+  end
+end
+
+class LogListView < BasicView
+end
+class SortFilterView  < BasicView
+end
+
+
+controller.rb
+
+class LogParserController
+
+  def initialize
+    @log_file = LogFile.new
+    @current_view = FileDialog_View.new
+  end
+
+  def run
+    while true do
+      @current_view.display
+      break
+    end
+  end
+end
+
+
+
+Iterative Programming:
+
+Often called agil, stresses the importance of building with multiple short iterations with demostratable results at each stage
+
+DRY:
+Do not repeate yourself:  make code resuable in different parts of the program
+
+MVC:
+used in many frameworks suck as rails
+Seems abstract at first: but helps organize code
+requires a little extra code when working from scratch, so benifits are not immediate at the beginning
+just keep working along and feel
+
+
+################################################
+Lecture: Strings and Escapes
+################################################
+Strings and Escapes:
+  if double quoted, we can format the output
+
+  ex.
+    "This string will print\n on two lines"
+
+Escape sequence / codes:
+  Start with \
+  followed by a character
+Common Escape sequences:
+  \n : new line
+  \t : tab
+  \b : backspace
+  \\ : \
+  \" : "
+
+ANSI terminal escape codes
+
+class BasicView
+  def clear_display
+    print "\e[2J"
+  end
+
+  def set_cursor row = 1, column = 1
+    print "\e[#{row};#{column}H]"
+  end
+end
+
+
+
+################################################
+Lecture: User Input
+################################################
+When 'gets' isnt enough.
+
+IO has several ways to read input from files or the $stdin stream. .getc -> retrieves the next character and waits for a new one .getbyte -> retrieves the next byte and waits for a new one
+-> getc and getbyte return nil at the end of a file (eof), they wait for user input if called on $stdin
+  .read -> read until eof, with blocking
+  .read_nonblock max_length -> read max_length
+without blocking
+  .readchar->readsinglecharwithblocking
+until eof, raises error and blocks
+  .readbyte->asabovebutwithbytes
+  .readline->like'gets'butreaisesanerror at eof
+
+
+
+################################################
+Lecture: Exception Handling
+################################################
+Users do the unexpected? programs do odd things?
+Ruby 101
+
+
+Exceptions
+Exceptions are:
+Errors in the processing
+Defined in advance by either Ruby, or the programmer
+Exceptions can be dealt with!
+
+
+Exceptions and the Begin/rescue/end program block.
+
+begin  -> Specifies an exception handling block
+  ...
+rescue    -> Code which may raise an exception
+  retry -> The retry keyword Goes back to the beginning of the block
+...  end  -> If we ge an exception, execute the following
+
+ensure
+  ... -> No matter what, run this code
+end
+
+
+
+################################################
+Lecture: Filling in the MVC stubs
+################################################
+Model / View / Controller
+Model:
+  Stores all the data which the view needs to output
+  1) the names of files and directories
+  2) an index to keep track of which file is highlighted
+  3) a starting point in case there are more files than terminal rows
+  4) a starting directory
+
+
+################################################
+Lecture: File Objects
+################################################
+
+
+
+
+################################################
+Lecture: Reading a Log File
+################################################
+
+
+
+################################################
+Lecture: Regular Expressions
+################################################
+
+
+
+################################################
+Lecture: Building the LogEntry Class
+################################################
+
+
+
+
+################################################
+Lecture: Time
+################################################
+
+
+
+
+
+################################################
+Lecture: Symbols, Strings, Comments
+################################################
+
+Comments:
+Begin with '#' for single line comments
+# This is a one line comment
+###############################
+# This is commented out too. But it
+# is also very eye-catching
+###############################
+
+=begin
+Multi line comments go here, but these aren't used very often.
+=end
+
+
+################################################
+Lecture: Modules and Mixins
+################################################
+Modules:
+
+Groups of classes, methods, attributes, constants Accessible via Module_Name::
+Can be included into another object or class Provide namespace separation
+
+
+Mdule Definition:
+module ModuleName
+  MY_CONSTANT = 1
+end
+  ModuleName::MY_CONSTANT
+OR
+
+include ModuleName  MY_CONSTANT
+
+
+Module Nesting:
+module ModuleName
+  MY_CONSTANT = 1
+  module InnerModule
+  end
+end
+
+module ModuleName::InnerModule  end
+
+
+Module nesting:
+module ModuleName
+  class SpecialClass
+  end
+end
+
+my_instance = ModuleName::SpecialClass.new
+
+Mixin:
+include module_name
+class MyClass
+  include ModuleName
+  def const
+    MY_CONSTANT    end
+end
+
+a = MyClass.new
+a.const
+
+
+Module methods:
+module MyModule
+  MY_CONSTANT = 1
+  def my_instance_method
+    :instance_method
+  end
+  def self.my_class_method #sometimes module method
+    :class_method
+  end
+end
+  MyModule::my_class_method  MyModule::MY_CONSTANT  include MyModule  my_instance_method  MY_CONSTANT
+
+
+Extend:  Access instance methods:
+module MyModule
+  def my_instance_method
+    :instance_method
+  end
+  def self.my_class_method #sometimes module method
+    :class_method
+  end
+end
+
+module MySecondMod
+  extend MyModule
+  def self.new_method
+    my_instance_method
+  end  end
+
+################################################
+Lecture: Advanced Math
+################################################
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Sorting Part 1
+################################################
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Sorting Part 2
+################################################
+How to call a method   .... from a symbol
+
+class MyClass
+def my_number
+8 end
+end
+
+my_instance = MyClass.new
+
+my_instance.send :my_number => 8
+
+
+################################################
+Lecture: Exceptions Revisited
+################################################
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: LogEntry Display
+################################################
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Method Arguments Addendum
+################################################
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Dive into concurrent processing models.
+################################################
+################################################
+Advanced Ruby
+################################################
+################################################
+Lecture: Threads
+################################################
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Thread Queue
+################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Progress Bar
+################################################
+
+
+
+
+
+
+
+
+
+
+################################################
+Lecture: Mutex
+################################################
+Mutex:
+Provides a locking mechanism Allows only one thread to lock
+Allows data to be modified by the locking code block,
+but keeps other code blocks locked out
+
+
+################################################
+Lecture: Fibers
+################################################
+When threads are too much:  Fibers
+Like threads, except:
+Fibers must be controlled by the programmer They are never automatically scheduled Fibers must cooperate with scheduling
+
+Creating a Fiber:
+
+my_fiber = Fiber.new do
+
+  ...
+
+end
+
+################################################
+Lecture: Sub Processes, etc
+################################################
+Executing Outside Programs:
+`command`-> using backticks (top left corner of the keyboard returns the output from standard output status recorded in $?
+my_user_name = `whoami`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################
+
+################################################
