@@ -1,1 +1,5 @@
+<<<<<<< HEAD
+=======
+# Don't track content of these folders
+>>>>>>> 796684a773c6405a7f45fb81537cbb7cfb4311a4
 .DS_Store
