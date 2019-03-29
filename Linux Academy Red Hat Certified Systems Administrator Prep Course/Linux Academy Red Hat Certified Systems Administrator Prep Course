@@ -1,4 +1,4 @@
-##################################################
+actually##################################################
 Linux Academy Red Hat Certified Systems Administrator Prep Course
 ##################################################
 There is one that is taking place at tlg learning in seattle on friday april 20th and friday 11 may starting at 9am
@@ -4306,7 +4306,7 @@ rpm -U <package> #this will upgrade or install the package
 
 rpm -F <package>  #this will upgrade a package only if its already installed
 
-rpm -ivh namo  #this will install verbosly with a hash, a hash is a progress bar
+rpm -ivh namo  #this will install verbosely with a hash, a hash is a progress bar
 
 rpm -qa #query all , this will all install packages
 
