@@ -1,0 +1,191 @@
+##################################################
+Questions
+##################################################
+1.  Crack the root password
+kernel
+press e
+after UTF-8 rd.break
+ctrl+x
+mount -o remount, rw /sysroot/
+chroot /sysroot/
+passwd
+touch /.autorelable
+exit
+reboot
+
+
+2.  Network setup
+172.25.1.11/24 (ip)
+172.25.1.254 (gw)
+172.25.254.254 (dns)
+hostname example.com
+
+nmcli connection add con-name meetdarji ifname eth0 type ethernet ip4 172.25.1.11/24 gw4 172.25.1.254
+nmcli connection modify meetdarji ipv4.dns 172.25.254.254
+nmcli connection up meetdarji
+nmcli connection show
+systemctl restart Networkmanager
+systemctl enable Networkmanager
+
+set the hostname
+
+hostnamectl set-hostname example.com
+
+
+3.  If the vm has set with multi-user.target then set it to the graphical.target, but dont forget to revert back to multi-user.target
+systemctl get-default
+systemctl set-default graphical.target
+
+
+4.  Configure Selinux
+The machine should be running enforcing mode
+
+vim /etc/selinux/config
+
+change this
+
+SELINUX=enforcing
+
+Dont forget to reboot so that it will take affect
+
+
+5.  Create a new 100MB physical partition mounted under /gluster
+fdisk /dev/vdb
+partx /dev/vdb
+mkfs.ext4 /dev/vdb2
+mkdir -p /gluster
+blkid
+vim /etc/fstab
+UUID=<blkid> /gluster ext4 defaults 0 0
+mount -a
+df -hT
+
+
+
+6.  Create a new 150MB swap partition f/s.
+fdisk /dev/vdb
+partx /dev/vdb
+mkswap /dev/vdb3
+swapon /dev/vdb3
+swapon -a
+vim /etc/fstab
+UUID=<blkid> swap swap defaults 0 0
+free -m
+swapon -s
+
+
+7. Create a repository for http://content.example.com/rhel7.0/x86_64/dvd
+vim /etc/yum.repos.d/rhcsa.repo
+[localrepo]
+name = Local Repo for RHCSA exam
+baseurl = http://content.example.com/rhel7.0/x86_64/dvd
+gpgcheck = 0
+enabled = 1
+
+yum clean all
+yum list all
+yum repolist
+
+
+
+8.  Create the following user, groups, and group memberships:
+A group named sysgrp
+A user Andrew who belongs to the sysgrp as a secondary group
+A user Susan also belongs to sysgrp as a secondary group
+a user Sarah who does not have access to an interactive shell on system and who not a member of sysgrp
+susan,sara,andrew password = "Postroll"
+
+groupadd sysgrp
+useradd andrew
+useradd susan
+useradd -s /sbin/nologin sarah
+usermod -aG sysgrp andrew
+usermod -aG sysgrp susan
+
+
+9.  Create a collaborative directory /redhat/sysgrp with the following characteristics:
+Group ownership of /redhat/sysgrp is sysgrp
+The directory should be readable, writable, and accessable to members of sysgrp but not to any other user
+Files created in /redhat/sysgrp automatically have group ownership set to the sysgrp group
+
+mkdir -p /redhat/sysgrp
+chgrp sysgrp /redhat/sysgrp
+chmod 2770 /redhat/sysgrp
+
+
+10.  Install the appropriate kernel update from http://content.example.com/rhel7.0/x86_64/errata
+The updated kernel is the default kernel whenthe system rebooted
+The original kernel remains available and bootable on the system
+
+
+vim /etc/yum.repos.d/rhcsa.repo
+[kernelrepo]
+name = Local Repo for Kernel
+baseurl = http://content.example.com/rhel7.0/x86_64/errata
+gpgcheck = 0
+enabled = 1
+
+yum repolist
+uname -rms
+
+yum install kernel
+
+uname -rms
+
+
+
+11.  Enable IP forwarding on your machine
+vim /etc/sysctl.conf
+net.ipv4.ip_forward = 1
+
+Enable it using
+sysctl -p
+
+
+12.  The user andrew must configure a cron job that runs daily at 14:23 local time and executes - /bin/echo hiya
+yum install cronie
+systemctl enable crond
+systemctl start crond
+crontab -eu andrew
+23 14 * * * /bin/echo hiya
+
+verification
+crontab -el andrew
+
+13.  Bind with LDAP used provided by classroom.example.com for userr authentication
+The LDAP search base DN is dc=example,dc=com
+The LDAP certificate file is  http://classroom.example.com/pub/EXAMPLE-CA-CERT
+ldapuserX should be able to log into your system, whereX is your ServerX ((hint:where X is your domain number), but will not have a home directory, until you have completed the autofs requirement, below all LDAP users have password of "password")
+yum install authconfig-gtk sssd krb5-workstation
+autoconfig-gtk
+systemctl start sssd
+systemctl enable sssd
+
+Verification:
+getent passwd ldapuser9
+ddh ladapuser9@localhost
+
+
+
+14.  Configure autofs to automount the home directories of LDAP users,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################################
+
+##################################################
