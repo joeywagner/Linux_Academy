@@ -150,7 +150,7 @@ crontab -eu andrew
 23 14 * * * /bin/echo hiya
 
 verification
-crontab -el andrew
+crontab -lu andrew
 
 13.  Bind with LDAP used provided by classroom.example.com for userr authentication
 The LDAP search base DN is dc=example,dc=com
@@ -168,11 +168,123 @@ ddh ladapuser9@localhost
 
 
 14.  Configure autofs to automount the home directories of LDAP users,
+classroom.example.com (172.25.254.254), NFS-exports /home/guests to your system, where X is your service number
+LDAP userX's home directory is classroom.example.com:/home/guests/ldapuserX
+LDAP userX's home directory should be auto mounted locally beneath /home as /home/guests/ldapuserX
+home directories must be writable by their users
+while you are able to login as any of the other users ldapuser1 through ldapuser20 the one home directory that is accessible from your system is ldapuserX
+Example: classroom.example.com would configure tthe automaster such that ldapuser100's home directory /home/guests/ldapuserX gets automatically mounted upon login.  The NFS share would be classroom.example.com:/home/guests/ldapuser100
+
+yum install autofs
+vim /etc/auto.master.d/home.autofs
+/home/guests /etc/auto.home
+
+vim /etc/auto.home
+ldapuser9 -rw,sync classroom.example.com:/home/guests/&
+
+systemctl enable autofs
+systemctl start autofs
+
+Verification:
+ssh ldapuser9@localhost
+df -h
 
 
 
+15.  Configure your system so that it is a NTP client of classroom.example.com
+
+yum install chrony
+vim /etc/chrony.conf
+server classroom.example.com iburst
+
+systemctl restart chronyd
+systemctl enable chronyd
+
+Verification:
+chronyc sources -V
 
 
+16.  Copy the file /etc/fstab to /var/tmp, configure the permission of /var/tmp/fstab so that the file /var/tmp/fstab is owned by the root user, belongs to the group root should not be executable by anyone
+The user andrew is able to read & write /var/tmp/fstab
+the user susan can not write or read /var/tmp/fstab
+all other users (current and furure) have the ability to read /var/tmp/fstab
+
+cp /etc/fstab /var/tmp
+chown root:root /var/tmp/fstab
+setfacl -m u:andrew:rw- /vat/tmp/fstab
+setfacl -m u:susan:--- /var/tmp/fstab
+
+Verification:
+getfacl /var/tmp/fstab
+
+
+
+17.  Resize the logical volume, logical-data and its filesystem to 400MB make sure the file system contents remain intact
+
+df -Th
+unmount /datasource
+e2fsck f /dev/datacontainer/datacopy
+resize2fs /dev/datacontainer/datacopy 400M
+lvreduce L 400M /dev/datacontainer/datacopy
+
+mount -a
+
+
+18.  Add the user talusan with userid 2985
+
+useradd -u 2985 talsusan
+
+Verification:
+id talusan
+
+
+19.  Find the file which is owned by the user julice and copy the file into /root/findresults directory
+
+mkdir -p /root/findresults
+find / -user julice -exec cp -rfp {} /root/findresults \ ;
+
+
+20.  Create a new physical volume, create a new volume group in the name of datacontainer, vg extent is 16.00MB
+create a new logical volume in the name datacopy with the size of 50 extents and the file system must be vfat, then mount it under /datasource
+
+
+fdisk /dev/vdb
+partx /dev/vdb
+pvcreate /dev/vdb5
+vgcreate -s 16M datacontainer /dev/vdb5
+vgdisplay
+lvcreate -l 50 -n datacopy datacontainer
+lvdisplay
+mkfs.vfat /dev/datacontainer/datacopy
+mkdir -p /gluster
+blkid /dev/datacontainer/datacopy
+vim /etc/fstab
+UUID=<blkid> /datasource vfat defaults 0 0
+
+mount -a
+
+Verification:
+df -hT
+
+
+21.  Create a archive file /root/local.tgz for /usr/local.
+it should be compressed by gzip
+
+tar -cvzf /root/localtgz /usr/local
+
+
+22.  Search the string sarah in the /etc/passwd file and save the output in /root/lines
+grep sarah /etc/passwd > /root/lines
+cat lines
+
+
+##################################################
+
+##################################################
+
+
+
+https://www.youtube.com/watch?v=sQn5AEQDyGU
 
 
 
